@@ -33,3 +33,5 @@ build/
 .vscode/
 
 firebase-key.json
+private-key.json
+src/main/resources/private-key.json
