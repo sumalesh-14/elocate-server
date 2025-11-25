@@ -1,3 +1,20 @@
 spring:
   application:
     name: elocate
+server:
+  servlet:
+    context-path: /elocate
+
+firebase:
+  web-api-key: AIzaSyCP1bR4MO8zRnzdp15Wuh4kwuBaELKPDIg  # Replace with your actual Firebase Web API Key
+  type: service_account
+  project_id: elocate-13c62
+  private_key_id: 3eeb4c6f058d807dfcba6eae6c54f821f022e979
+  private_key: AIzaSyCP1bR4MO8zRnzdp15Wuh4kwuBaELKPDIg
+  client_email: firebase-adminsdk-fbsvc@elocate-13c62.iam.gserviceaccount.com
+  client_id: 108550149421322001626
+  auth_uri: https://accounts.google.com/o/oauth2/auth
+  token_uri: https://oauth2.googleapis.com/token
+  auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
+  client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40elocate-13c62.iam.gserviceaccount.com
+  universe_domain : googleapis.com
