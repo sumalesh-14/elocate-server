@@ -10,6 +10,7 @@ import com.elocate.elocate.model.UserWallet;
 import com.elocate.elocate.repository.UserAddressRepository;
 import com.elocate.elocate.repository.UserRepository;
 import com.elocate.elocate.repository.UserWalletRepository;
+import com.elocate.elocate.security.JwtUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -36,6 +37,7 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final FirebaseAuth firebaseAuth;
     private final AuthService authService;  // Your existing Firebase login service
+    private final JwtUtil jwtUtil;
     
     /**
      * Login with email and password using Firebase REST API
@@ -80,6 +82,12 @@ public class AuthenticationService {
         // Build profile response with Firebase token
         UserProfileResponse profile = buildProfileResponse(user, address, wallet);
         profile.setFirebaseToken(firebaseResponse.getIdToken());
+        
+        // Generate JWT token for API authentication
+        String jwtToken = jwtUtil.generateToken(user.getId(), user.getFullName(), user.getEmail());
+        profile.setJwtToken(jwtToken);
+        
+        log.info("JWT token generated for user: {}", user.getId());
         
         return profile;
     }

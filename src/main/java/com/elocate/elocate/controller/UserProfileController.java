@@ -1,5 +1,6 @@
 package com.elocate.elocate.controller;
 
+import com.elocate.elocate.context.UserContextHolder;
 import com.elocate.elocate.dto.UpdateProfileDto;
 import com.elocate.elocate.dto.UserProfileResponse;
 import com.elocate.elocate.service.AuthenticationService;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 /**
  * Controller for user profile management
+ * User ID is extracted from JWT token via UserContextHolder
  */
 @Slf4j
 @RestController
@@ -34,7 +36,8 @@ public class UserProfileController {
      * - Wallet (current points balance)
      */
     @GetMapping
-    public ResponseEntity<UserProfileResponse> getProfile(@RequestParam UUID userId) {
+    public ResponseEntity<UserProfileResponse> getProfile() {
+        UUID userId = UserContextHolder.getContext().getUserId();
         log.info("GET /api/v1/profile - userId: {}", userId);
         
         UserProfileResponse response = profileService.getUserProfile(userId);
@@ -52,8 +55,8 @@ public class UserProfileController {
      */
     @PutMapping
     public ResponseEntity<UserProfileResponse> updateProfile(
-            @RequestParam UUID userId,
             @Valid @RequestBody UpdateProfileDto dto) {
+        UUID userId = UserContextHolder.getContext().getUserId();
         log.info("PUT /api/v1/profile - userId: {}", userId);
         
         UserProfileResponse response = profileService.updateProfile(userId, dto);
@@ -65,8 +68,8 @@ public class UserProfileController {
      */
     @PostMapping("/change-email-request")
     public ResponseEntity<Map<String, String>> requestEmailChange(
-            @RequestParam UUID userId,
             @RequestParam String newEmail) {
+        UUID userId = UserContextHolder.getContext().getUserId();
         log.info("POST /api/v1/profile/change-email-request - userId: {}, newEmail: {}", userId, newEmail);
         
         String message = authenticationService.requestEmailChange(userId, newEmail);
@@ -78,9 +81,9 @@ public class UserProfileController {
      */
     @PostMapping("/verify-email-change")
     public ResponseEntity<Map<String, String>> verifyEmailChange(
-            @RequestParam UUID userId,
             @RequestParam String newEmail,
             @RequestParam String otp) {
+        UUID userId = UserContextHolder.getContext().getUserId();
         log.info("POST /api/v1/profile/verify-email-change - userId: {}", userId);
         
         String message = authenticationService.verifyEmailChange(userId, newEmail, otp);

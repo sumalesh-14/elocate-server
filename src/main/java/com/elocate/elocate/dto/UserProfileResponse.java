@@ -25,6 +25,9 @@ public class UserProfileResponse {
     // Firebase authentication token (for API requests)
     private String firebaseToken;
     
+    // JWT token (for API authentication)
+    private String jwtToken;
+    
     // Address Info
     private AddressInfo address;
     
