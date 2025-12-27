@@ -1,8 +1,10 @@
 package com.elocate.elocate.controller;
 
 import com.elocate.elocate.dto.FacilityResponse;
+import com.elocate.elocate.dto.GetFacilities;
 import com.elocate.elocate.model.RecyclingFacility;
 import com.elocate.elocate.service.FacilityService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +22,9 @@ public class FacilityController {
     private final FacilityService facilityService;
     
     @GetMapping
-    public ResponseEntity<List<FacilityResponse>> getAllFacilities() {
-        return ResponseEntity.ok(facilityService.getAllFacilities());
+    public ResponseEntity<List<FacilityResponse>> getAllFacilities(
+            @Valid @RequestBody GetFacilities getFacilities) {
+        return ResponseEntity.ok(facilityService.getAllFacilities(getFacilities));
     }
     
     @GetMapping("/{id}")

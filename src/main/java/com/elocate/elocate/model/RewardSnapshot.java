@@ -39,7 +39,7 @@ public class RewardSnapshot {
     private BigDecimal conditionMultiplier;
 
     @Column(name = "total_points")
-    private Integer totalPoints;
+    private BigDecimal totalPoints;
 
     @CreationTimestamp
     @Column(name = "created_at")

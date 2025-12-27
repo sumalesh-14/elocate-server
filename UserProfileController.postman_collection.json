@@ -1,0 +1,163 @@
+{
+    "info": {
+        "_postman_id": "user-profile-controller-001",
+        "name": "User Profile Controller",
+        "description": "All endpoints from UserProfileController for user profile management",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Get User Profile",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8080/elocate/api/v1/profile?userId={{userId}}",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "elocate",
+                        "api",
+                        "v1",
+                        "profile"
+                    ],
+                    "query": [
+                        {
+                            "key": "userId",
+                            "value": "{{userId}}",
+                            "description": "User UUID"
+                        }
+                    ]
+                },
+                "description": "Get current user's complete profile including:\n- User details (name, mobile, email)\n- Address (user's single default address)\n- Wallet (current points balance)"
+            },
+            "response": []
+        },
+        {
+            "name": "Update User Profile",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"fullName\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"address\": \"123 Main Street\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"pincode\": \"10001\",\n    \"latitude\": 40.7128,\n    \"longitude\": -74.0060\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:8080/elocate/api/v1/profile?userId={{userId}}",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "elocate",
+                        "api",
+                        "v1",
+                        "profile"
+                    ],
+                    "query": [
+                        {
+                            "key": "userId",
+                            "value": "{{userId}}",
+                            "description": "User UUID"
+                        }
+                    ]
+                },
+                "description": "Update user profile including:\n- Personal details (name, email)\n- Address details (all address fields)\n\nNote: Mobile number change requires separate OTP flow"
+            },
+            "response": []
+        },
+        {
+            "name": "Request Email Change",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8080/elocate/api/v1/profile/change-email-request?userId={{userId}}&newEmail=newemail@example.com",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "elocate",
+                        "api",
+                        "v1",
+                        "profile",
+                        "change-email-request"
+                    ],
+                    "query": [
+                        {
+                            "key": "userId",
+                            "value": "{{userId}}",
+                            "description": "User UUID"
+                        },
+                        {
+                            "key": "newEmail",
+                            "value": "newemail@example.com",
+                            "description": "New email address"
+                        }
+                    ]
+                },
+                "description": "Request email change with OTP. Sends OTP to new email address."
+            },
+            "response": []
+        },
+        {
+            "name": "Verify Email Change",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8080/elocate/api/v1/profile/verify-email-change?userId={{userId}}&newEmail=newemail@example.com&otp=123456",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080",
+                    "path": [
+                        "elocate",
+                        "api",
+                        "v1",
+                        "profile",
+                        "verify-email-change"
+                    ],
+                    "query": [
+                        {
+                            "key": "userId",
+                            "value": "{{userId}}",
+                            "description": "User UUID"
+                        },
+                        {
+                            "key": "newEmail",
+                            "value": "newemail@example.com",
+                            "description": "New email address"
+                        },
+                        {
+                            "key": "otp",
+                            "value": "123456",
+                            "description": "OTP code (currently static: 123456)"
+                        }
+                    ]
+                },
+                "description": "Verify email change with OTP. Updates email in Firebase and database."
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "userId",
+            "value": "YOUR_USER_UUID_HERE",
+            "type": "string"
+        }
+    ]
+}

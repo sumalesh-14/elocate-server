@@ -2,9 +2,12 @@ package com.elocate.elocate.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -18,8 +21,9 @@ public class MetalRate {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "metal_type", nullable = false)
-    private String metalType;
+    private MetalType metalType;
 
     @Column(nullable = false)
     private String unit;
@@ -36,4 +40,12 @@ public class MetalRate {
     @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

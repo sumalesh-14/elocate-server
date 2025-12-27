@@ -20,7 +20,12 @@ public class DeviceBrand {
     private UUID id;
 
     @Column(nullable = false, unique = true)
+    private String code;
+
+    @Column(nullable = false)
     private String name;
+
+    private String description;
 
     @Builder.Default
     @Column(name = "is_active")

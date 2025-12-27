@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -34,20 +35,27 @@ public class RecycleRequest {
     @JoinColumn(name = "recycling_facility_id")
     private RecyclingFacility recyclingFacility;
 
-    @Column(name = "is_pickup_require")
-    private Boolean isPickupRequire;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pickup_address_id")
     private UserAddress pickupAddress;
 
-    @Column(name = "estimated_points")
-    private Integer estimatedPoints;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fulfillment_type", nullable = false)
+    private FulfillmentType fulfillmentType;
 
-    @Column(name = "final_points")
-    private Integer finalPoints;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fulfillment_status", nullable = false)
+    private FulfillmentStatus fulfillmentStatus;
 
-    private String status;
+    @Column(name = "estimated_points", precision = 10, scale = 2)
+    private BigDecimal estimatedPoints;
+
+    @Column(name = "final_points", precision = 10, scale = 2)
+    private BigDecimal finalPoints;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RecycleStatus status;
 
     @Column(name = "pickup_date")
     private LocalDate pickupDate;

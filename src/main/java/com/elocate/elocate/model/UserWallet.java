@@ -3,6 +3,7 @@ package com.elocate.elocate.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class UserWallet {
 
     @Builder.Default
     @Column(name = "points_balance")
-    private Integer pointsBalance = 0;
+    private BigDecimal pointsBalance = BigDecimal.valueOf(0L);
 
     @Column(name = "last_updated_at")
     private LocalDateTime lastUpdatedAt;

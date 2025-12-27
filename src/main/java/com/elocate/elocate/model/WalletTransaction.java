@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class WalletTransaction {
     @Column(name = "transaction_type")
     private String transactionType;
 
-    private Integer points;
+    private BigDecimal points;
 
     private String description;
 

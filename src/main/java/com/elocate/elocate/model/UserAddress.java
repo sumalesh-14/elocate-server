@@ -23,6 +23,13 @@ public class UserAddress {
     private UUID userId;
 
     private String address;
+    
+    private String city;
+    
+    private String state;
+    
+    @Column(length = 6)
+    private String pincode;
 
     @Column(precision = 10, scale = 8)
     private BigDecimal latitude;

@@ -20,9 +20,29 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kasumalesh@gmail.com # Set in environment variables
+    password: "dwqx mclv bkkf soxt"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        transport:
+          protocol: smtp
+
 server:
   servlet:
     context-path: /elocate
+
+app:
+  otp:
+    expiry-minutes: 10  # OTP validity duration
+    max-attempts: 3     # Max OTP generation attempts per hour (optional, for future rate limiting)
 
 firebase:
   web-api-key: AIzaSyCP1bR4MO8zRnzdp15Wuh4kwuBaELKPDIg  # Replace with your actual Firebase Web API Key
