@@ -1,7 +1,7 @@
 package com.elocate.elocate.service;
 
 import com.elocate.elocate.dto.UserRegistrationDto;
-import com.elocate.elocate.model.OtpType;
+import com.elocate.elocate.model.enums.OtpType;
 import com.elocate.elocate.model.User;
 import com.elocate.elocate.model.UserAddress;
 import com.elocate.elocate.model.UserWallet;

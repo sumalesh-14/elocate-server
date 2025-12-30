@@ -1,6 +1,6 @@
 package com.elocate.elocate.dto;
 
-import com.elocate.elocate.model.MetalType;
+import com.elocate.elocate.model.enums.MetalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

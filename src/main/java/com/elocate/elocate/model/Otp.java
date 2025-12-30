@@ -1,5 +1,6 @@
 package com.elocate.elocate.model;
 
+import com.elocate.elocate.model.enums.OtpType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

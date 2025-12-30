@@ -7,6 +7,7 @@ import com.elocate.elocate.service.FacilityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,14 @@ public class FacilityController {
     public ResponseEntity<List<FacilityResponse>> getAllFacilities(
             @Valid @RequestBody GetFacilities getFacilities) {
         return ResponseEntity.ok(facilityService.getAllFacilities(getFacilities));
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Page<RecyclingFacility>> listFacilities(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search) {
+        return ResponseEntity.ok(facilityService.listFacilities(page, size, search));
     }
     
     @GetMapping("/{id}")

@@ -2,6 +2,8 @@ package com.elocate.elocate.repository;
 
 import com.elocate.elocate.dto.FacilityWithDistanceProjection;
 import com.elocate.elocate.model.RecyclingFacility;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -32,13 +34,18 @@ public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFaci
         ) AS distance
     FROM recycling_facility f
     WHERE f.is_active = true
+    HAVING distance <= :distance
     ORDER BY distance
     LIMIT 10
 """, nativeQuery = true)
     List<FacilityWithDistanceProjection> findNearestFacilities(
             @Param("lat") double lat,
-            @Param("lon") double lon
+            @Param("lon") double lon,
+            @Param("distance") double distance
     );
+
+    Page<RecyclingFacility> findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(
+            String name, String address, Pageable pageable);
 
 
 }

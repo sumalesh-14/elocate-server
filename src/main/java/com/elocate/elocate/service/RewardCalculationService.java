@@ -2,7 +2,7 @@ package com.elocate.elocate.service;
 
 import com.elocate.elocate.model.DeviceModel;
 import com.elocate.elocate.model.MetalRate;
-import com.elocate.elocate.model.MetalType;
+import com.elocate.elocate.model.enums.MetalType;
 import com.elocate.elocate.repository.MetalRateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

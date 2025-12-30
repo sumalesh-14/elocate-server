@@ -53,4 +53,8 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "role", length = Integer.MAX_VALUE)
+    private String role;
+
 }

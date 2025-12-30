@@ -1,4 +1,4 @@
-package com.elocate.elocate.model;
+package com.elocate.elocate.model.enums;
 
 /**
  * OTP type enum for different OTP use cases

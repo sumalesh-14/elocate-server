@@ -1,6 +1,6 @@
 package com.elocate.elocate.service;
 
-import com.elocate.elocate.model.FulfillmentStatus;
+import com.elocate.elocate.model.enums.FulfillmentStatus;
 import com.elocate.elocate.model.RecycleRequest;
 import com.elocate.elocate.model.RecycleStatusHistory;
 import com.elocate.elocate.repository.RecycleStatusHistoryRepository;

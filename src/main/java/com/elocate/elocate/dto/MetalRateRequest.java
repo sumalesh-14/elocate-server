@@ -1,6 +1,6 @@
 package com.elocate.elocate.dto;
 
-import com.elocate.elocate.model.MetalType;
+import com.elocate.elocate.model.enums.MetalType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;

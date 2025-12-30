@@ -2,7 +2,7 @@ package com.elocate.elocate.controller;
 
 import com.elocate.elocate.dto.MetalRateRequest;
 import com.elocate.elocate.dto.MetalRateResponse;
-import com.elocate.elocate.model.MetalType;
+import com.elocate.elocate.model.enums.MetalType;
 import com.elocate.elocate.service.MetalRateService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,8 @@
 package com.elocate.elocate.service;
 
 import com.elocate.elocate.dto.CreateRecycleRequestDto;
-import com.elocate.elocate.model.FulfillmentStatus;
-import com.elocate.elocate.model.FulfillmentType;
+import com.elocate.elocate.model.enums.FulfillmentStatus;
+import com.elocate.elocate.model.enums.FulfillmentType;
 import com.elocate.elocate.model.UserAddress;
 import com.elocate.elocate.repository.UserAddressRepository;
 import lombok.RequiredArgsConstructor;

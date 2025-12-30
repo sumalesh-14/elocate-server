@@ -9,6 +9,8 @@ import com.elocate.elocate.utils.DistanceUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -28,11 +30,21 @@ public class FacilityService {
         return facilityRepository
                 .findNearestFacilities(
                         request.getUserLatitute(),
-                        request.getUserLongitude()
+                        request.getUserLongitude(),
+                        request.getDistance()
                 )
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    public Page<RecyclingFacility> listFacilities(int page, int size, String search) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        if (search != null && !search.trim().isEmpty()) {
+            return facilityRepository.findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(
+                    search, search, pageRequest);
+        }
+        return facilityRepository.findAll(pageRequest);
     }
 
     private FacilityResponse mapToResponse(FacilityWithDistanceProjection f) {

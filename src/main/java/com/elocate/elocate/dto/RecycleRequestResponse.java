@@ -1,7 +1,7 @@
 package com.elocate.elocate.dto;
 
-import com.elocate.elocate.model.FulfillmentStatus;
-import com.elocate.elocate.model.FulfillmentType;
+import com.elocate.elocate.model.enums.FulfillmentStatus;
+import com.elocate.elocate.model.enums.FulfillmentType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

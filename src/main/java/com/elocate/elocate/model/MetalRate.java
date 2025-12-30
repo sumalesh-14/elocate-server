@@ -1,5 +1,6 @@
 package com.elocate.elocate.model;
 
+import com.elocate.elocate.model.enums.MetalType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

@@ -1,7 +1,7 @@
 package com.elocate.elocate.repository;
 
 import com.elocate.elocate.model.Otp;
-import com.elocate.elocate.model.OtpType;
+import com.elocate.elocate.model.enums.OtpType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

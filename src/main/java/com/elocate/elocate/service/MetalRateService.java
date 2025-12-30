@@ -4,7 +4,7 @@ import com.elocate.elocate.dto.MetalRateRequest;
 import com.elocate.elocate.dto.MetalRateResponse;
 import com.elocate.elocate.exception.MetalRateNotFoundException;
 import com.elocate.elocate.model.MetalRate;
-import com.elocate.elocate.model.MetalType;
+import com.elocate.elocate.model.enums.MetalType;
 import com.elocate.elocate.repository.MetalRateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

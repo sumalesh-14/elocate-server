@@ -1,7 +1,6 @@
 package com.elocate.elocate.controller;
 
 import com.elocate.elocate.dto.*;
-import com.elocate.elocate.model.OtpType;
 import com.elocate.elocate.service.AuthenticationService;
 import com.elocate.elocate.service.OtpService;
 import com.elocate.elocate.service.UserRegistrationService;

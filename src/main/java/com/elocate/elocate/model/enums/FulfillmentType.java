@@ -1,4 +1,4 @@
-package com.elocate.elocate.model;
+package com.elocate.elocate.model.enums;
 
 /**
  * Defines how the device will be handed over for recycling

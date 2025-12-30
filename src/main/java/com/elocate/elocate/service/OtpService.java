@@ -1,7 +1,7 @@
 package com.elocate.elocate.service;
 
 import com.elocate.elocate.model.Otp;
-import com.elocate.elocate.model.OtpType;
+import com.elocate.elocate.model.enums.OtpType;
 import com.elocate.elocate.repository.OtpRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

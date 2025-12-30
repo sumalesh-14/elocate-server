@@ -1,6 +1,6 @@
 package com.elocate.elocate.dto;
 
-import com.elocate.elocate.model.FulfillmentType;
+import com.elocate.elocate.model.enums.FulfillmentType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

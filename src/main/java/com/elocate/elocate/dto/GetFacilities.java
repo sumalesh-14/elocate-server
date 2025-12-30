@@ -18,4 +18,7 @@ public class GetFacilities {
     @NotNull(message = "userLongitude is required")
     private Double userLongitude;
 
+    @NotNull(message = "distance is required")
+    private Double distance; // Distance in kilometers
+
 }

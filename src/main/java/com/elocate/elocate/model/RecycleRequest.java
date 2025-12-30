@@ -1,5 +1,7 @@
 package com.elocate.elocate.model;
 
+import com.elocate.elocate.model.enums.FulfillmentStatus;
+import com.elocate.elocate.model.enums.FulfillmentType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
