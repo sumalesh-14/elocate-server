@@ -19,11 +19,15 @@ public class fireBaseConfig {
 
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
-        InputStream credentials = privateKey.getInputStream();
-        FirebaseOptions firebaseOptions = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(credentials))
-                .build();
-        return FirebaseApp.initializeApp(firebaseOptions);
+        if (FirebaseApp.getApps().isEmpty()) {
+            InputStream credentials = privateKey.getInputStream();
+            FirebaseOptions firebaseOptions = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(credentials))
+                    .build();
+            return FirebaseApp.initializeApp(firebaseOptions);
+        } else {
+            return FirebaseApp.getInstance();
+        }
     }
 
     @Bean

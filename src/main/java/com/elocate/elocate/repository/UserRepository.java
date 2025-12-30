@@ -41,4 +41,12 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * @return true if exists, false otherwise
      */
     boolean existsByMobileNumber(String mobileNumber);
+    
+    /**
+     * Find user by Firebase UID
+     * 
+     * @param firebaseUid Firebase UID
+     * @return Optional containing user if found
+     */
+    Optional<User> findByFirebaseUid(String firebaseUid);
 }

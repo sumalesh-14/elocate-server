@@ -86,4 +86,14 @@ public class AuthController {
         String message = authenticationService.forgotPassword(email);
         return ResponseEntity.ok(Map.of("message", message));
     }
+
+    /**
+     * Refresh access tokens
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<UserProfileResponse> refresh(@Valid @RequestBody TokenRefreshRequest request) {
+        log.info("POST /api/v1/auth/refresh");
+        UserProfileResponse response = authenticationService.refreshToken(request.getRefreshToken());
+        return ResponseEntity.ok(response);
+    }
 }

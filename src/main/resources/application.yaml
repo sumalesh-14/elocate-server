@@ -42,7 +42,7 @@ server:
 app:
   jwt:
     secret: elocate-super-secret-key-change-in-production-minimum-256-bits-required
-    expiration-ms: 86400000  # 24 hours
+    expiration-ms: 900000    # 15 mins
   otp:
     expiry-minutes: 10  # OTP validity duration
     max-attempts: 3     # Max OTP generation attempts per hour (optional, for future rate limiting)

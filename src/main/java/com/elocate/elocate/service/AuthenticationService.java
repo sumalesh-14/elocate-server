@@ -48,24 +48,27 @@ public class AuthenticationService {
     public UserProfileResponse login(LoginRequestDto dto) {
         log.info("Login attempt for email: {}", dto.getEmail());
         
+        // First check if user exists in our database
+        User user = userRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found in database"));
+        
+        log.info("User found in database - ID: {}, FirebaseUID: {}, EmailVerified: {}", 
+                user.getId(), user.getFirebaseUid(), user.getIsEmailVerified());
+        
         // Authenticate with Firebase using your existing AuthService
         // This verifies email + password via Firebase REST API
         FirebaseSignInResponse firebaseResponse = authService.login(dto.getEmail(), dto.getPassword());
         
         log.info("Firebase authentication successful for: {}", dto.getEmail());
         
-        // Find user in our database
-        User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found in database"));
-        
         // Check if email is verified
-        if (!user.getIsEmailVerified()) {
+        if (Boolean.FALSE.equals(user.getIsEmailVerified())) {
             log.warn("Login attempt with unverified email: {}", dto.getEmail());
             throw new IllegalArgumentException("Email not verified. Please verify your email first.");
         }
         
         // Check if account is active
-        if (!user.getIsActive()) {
+        if (Boolean.FALSE.equals(user.getIsActive())) {
             throw new IllegalArgumentException("Account is inactive. Please contact support.");
         }
         
@@ -81,13 +84,50 @@ public class AuthenticationService {
         // Build profile response with Firebase token
         UserProfileResponse profile = buildProfileResponse(user, address, wallet);
         profile.setFirebaseToken(firebaseResponse.getIdToken());
-        
+        profile.setRefreshToken(firebaseResponse.getRefreshToken());
         // Generate JWT token for API authentication
-        String jwtToken = jwtUtil.generateToken(user.getId(), user.getFullName(), user.getEmail());
+        String jwtToken = jwtUtil.generateToken(user.getId(), user.getFullName(), user.getEmail(), user.getRole());
         profile.setJwtToken(jwtToken);
         
         log.info("JWT token generated for user: {}", user.getId());
         
+        return profile;
+    }
+
+    /**
+     * Refresh tokens using Firebase refresh token
+     */
+    @Transactional(readOnly = true)
+    public UserProfileResponse refreshToken(String refreshToken) {
+        log.info("Token refresh attempt");
+
+        // Exchange refresh token for new tokens with Firebase
+        com.elocate.elocate.dto.FirebaseRefreshResponse firebaseResponse = authService.refreshToken(refreshToken);
+
+        // Firebase refresh response returns UID as user_id
+        String firebaseUid = firebaseResponse.getUserId();
+
+        // Find user by firebase UID
+        User user = userRepository.findByFirebaseUid(firebaseUid)
+                .orElseThrow(() -> new IllegalArgumentException("User not found for provided token"));
+
+        // Get address and wallet (same as login)
+        UserAddress address = userAddressRepository.findByUserIdAndIsDefault(user.getId(), true)
+                .orElseThrow(() -> new IllegalArgumentException("User address not found"));
+
+        UserWallet wallet = userWalletRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
+
+        // Build response
+        UserProfileResponse profile = buildProfileResponse(user, address, wallet);
+        profile.setFirebaseToken(firebaseResponse.getIdToken());
+        profile.setRefreshToken(firebaseResponse.getRefreshToken());
+        
+        // Generate new JWT
+        String jwtToken = jwtUtil.generateToken(user.getId(), user.getFullName(), user.getEmail(), user.getRole());
+        profile.setJwtToken(jwtToken);
+
+        log.info("Token balanced successfully for user: {}", user.getId());
         return profile;
     }
     
@@ -124,6 +164,15 @@ public class AuthenticationService {
             // Check if user exists in our database
             if (!userRepository.existsByEmail(email)) {
                 throw new IllegalArgumentException("Email not registered");
+            }
+            
+            // Check if user exists in Firebase and log details
+            try {
+                UserRecord userRecord = firebaseAuth.getUserByEmail(email);
+                log.info("Firebase user found - UID: {}, Email: {}, Disabled: {}", 
+                        userRecord.getUid(), userRecord.getEmail(), userRecord.isDisabled());
+            } catch (FirebaseAuthException e) {
+                log.error("Firebase user not found: {}", e.getMessage());
             }
             
             // Generate Firebase password reset link

@@ -27,6 +27,8 @@ public class UserProfileResponse {
     
     // JWT token (for API authentication)
     private String jwtToken;
+
+    private String refreshToken;
     
     // Address Info
     private AddressInfo address;

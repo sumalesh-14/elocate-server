@@ -1,10 +1,12 @@
 package com.elocate.elocate.security;
 
+import com.elocate.elocate.model.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.usertype.UserType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +35,7 @@ public class JwtUtil {
     /**
      * Generate JWT token with user claims
      */
-    public String generateToken(UUID userId, String fullName, String email) {
+    public String generateToken(UUID userId, String fullName, String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
         
@@ -42,6 +44,7 @@ public class JwtUtil {
                 .claim("userId", userId.toString())
                 .claim("fullName", fullName)
                 .claim("email", email)
+                .claim("role", role)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
