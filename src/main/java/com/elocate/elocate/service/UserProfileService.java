@@ -123,22 +123,17 @@ public class UserProfileService {
             User user, UserAddress address, UserWallet wallet) {
         
         return UserProfileResponse.builder()
-                .id(user.getId())
-                .fullName(user.getFullName())
-                .mobileNumber(user.getMobileNumber())
-                .email(user.getEmail())
-                .address(UserProfileResponse.AddressInfo.builder()
-                        .id(address.getId())
-                        .address(address.getAddress())
-                        .city(address.getCity())
-                        .state(address.getState())
-                        .pincode(address.getPincode())
-                        .latitude(address.getLatitude())
-                        .longitude(address.getLongitude())
+                .status("success")
+                .message("Profile fetched successfully")
+                .user(UserProfileResponse.UserData.builder()
+                        .id(user.getId())
+                        .fullName(user.getFullName())
+                        .mobileNumber(user.getMobileNumber())
+                        .email(user.getEmail())
+                        .role(user.getRole())
                         .build())
-                .wallet(UserProfileResponse.WalletInfo.builder()
-                        .pointsBalance(wallet.getPointsBalance())
-                        .build())
+                // No tokens for profile fetch, or maybe we shouldn't return tokens here
+                .tokens(null) 
                 .build();
     }
 }

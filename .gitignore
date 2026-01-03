@@ -35,3 +35,5 @@ build/
 firebase-key.json
 private-key.json
 src/main/resources/private-key.json
+# Environment variables
+.env

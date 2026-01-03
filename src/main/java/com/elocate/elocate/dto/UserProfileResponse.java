@@ -5,11 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
- * Complete user profile response including user, address, and wallet info
+ * Structured user profile response
  */
 @Data
 @Builder
@@ -17,44 +16,31 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserProfileResponse {
     
-    private UUID id;
-    private String fullName;
-    private String mobileNumber;
-    private String email;
-    
-    // Firebase authentication token (for API requests)
-    private String firebaseToken;
-    
-    // JWT token (for API authentication)
-    private String jwtToken;
-
-    private String refreshToken;
-    
-    // Address Info
-    private AddressInfo address;
-    
-    // Wallet Info
-    private WalletInfo wallet;
+    private String status;
+    private String message;
+    private UserData user;
+    private TokenData tokens;
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class AddressInfo {
+    public static class UserData {
         private UUID id;
-        private String address;
-        private String city;
-        private String state;
-        private String pincode;
-        private BigDecimal latitude;
-        private BigDecimal longitude;
+        private String fullName;
+        private String email;
+        private String mobileNumber;
+        private String role;
     }
     
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class WalletInfo {
-        private BigDecimal pointsBalance;
+    public static class TokenData {
+        private String accessToken;       // Local JWT for API access
+        private String refreshToken;      // Refresh token
+        private String providerAccessToken; // Provider (Auth0) token
+        private long expiresIn;           // Expiration time in milliseconds
     }
 }

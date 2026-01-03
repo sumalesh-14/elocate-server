@@ -59,4 +59,7 @@ public class UserRegistrationDto {
     @DecimalMin(value = "-180", message = "Longitude must be between -180 and 180")
     @DecimalMax(value = "180", message = "Longitude must be between -180 and 180")
     private BigDecimal longitude;
+
+    // Optional role field (defaults to CITIZEN if null)
+    private String role;
 }

@@ -188,6 +188,25 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * Handle InvalidCredentialsException
+     */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCredentials(
+            InvalidCredentialsException ex, 
+            HttpServletRequest request) {
+        log.error("Invalid credentials: {}", ex.getMessage());
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.UNAUTHORIZED.value());
+        response.put("error", "Unauthorized");
+        response.put("message", ex.getMessage());
+        response.put("field", "credentials");
+        response.put("path", request.getRequestURI());
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+    
+    /**
      * Handle InvalidLoginCredentialsException
      */
     @ExceptionHandler(InvalidLoginCredentialsException.class)

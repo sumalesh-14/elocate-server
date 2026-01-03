@@ -19,12 +19,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
+        format_sql: false
   mail:
     host: smtp.gmail.com
     port: 587
-    username: kasumalesh@gmail.com # Set in environment variables
-    password: "dwqx mclv bkkf soxt"
+    username: kasumalesh@gmail.com
+    password: dwqx mclv bkkf soxt
     properties:
       mail:
         smtp:
@@ -36,27 +36,20 @@ spring:
           protocol: smtp
 
 server:
+  port: 8080
   servlet:
     context-path: /elocate
 
 app:
   jwt:
     secret: elocate-super-secret-key-change-in-production-minimum-256-bits-required
-    expiration-ms: 900000    # 15 mins
+    expiration-ms: 86400000 # 24 hours
   otp:
-    expiry-minutes: 10  # OTP validity duration
-    max-attempts: 3     # Max OTP generation attempts per hour (optional, for future rate limiting)
+    expiry-minutes: 10
+    max-attempts: 3
 
-firebase:
-  web-api-key: AIzaSyCP1bR4MO8zRnzdp15Wuh4kwuBaELKPDIg  # Replace with your actual Firebase Web API Key
-  type: service_account
-  project_id: elocate-13c62
-  private_key_id: 3eeb4c6f058d807dfcba6eae6c54f821f022e979
-  private_key: AIzaSyCP1bR4MO8zRnzdp15Wuh4kwuBaELKPDIg
-  client_email: firebase-adminsdk-fbsvc@elocate-13c62.iam.gserviceaccount.com
-  client_id: 108550149421322001626
-  auth_uri: https://accounts.google.com/o/oauth2/auth
-  token_uri: https://oauth2.googleapis.com/token
-  auth_provider_x509_cert_url: https://www.googleapis.com/oauth2/v1/certs
-  client_x509_cert_url: https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40elocate-13c62.iam.gserviceaccount.com
-  universe_domain : googleapis.com
+auth0:
+  domain: elocate-dev.us.auth0.com
+  clientId: gSMm494WIxE59MtZxODuYvdCRy4yFT10
+  clientSecret: NalHurNjv35rQu_zgmR_vkOHB2-OmuOofKBY2lMRUz4Lu3d6F2RQVM9T8REVqHtZ
+  connection: Username-Password-Authentication

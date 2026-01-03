@@ -8,9 +8,6 @@ import com.elocate.elocate.model.UserWallet;
 import com.elocate.elocate.repository.UserAddressRepository;
 import com.elocate.elocate.repository.UserRepository;
 import com.elocate.elocate.repository.UserWalletRepository;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +27,7 @@ public class UserRegistrationService {
     private final UserAddressRepository userAddressRepository;
     private final UserWalletRepository userWalletRepository;
     private final OtpService otpService;
-    private final FirebaseAuth firebaseAuth;
+    private final Auth0Service auth0Service;
     
     /**
      * Register new user with Firebase and email verification
@@ -50,28 +47,22 @@ public class UserRegistrationService {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("Email already registered: " + dto.getEmail());
         }
-        
+
         String firebaseUid;
         try {
-            // Create user in Firebase Authentication
-            UserRecord.CreateRequest firebaseRequest = new UserRecord.CreateRequest()
-                    .setEmail(dto.getEmail())
-                    .setPassword(dto.getPassword())
-                    .setDisplayName(dto.getFullName())
-                    .setPhoneNumber(formatPhoneNumber(dto.getMobileNumber()))
-                    .setEmailVerified(false)
-                    .setDisabled(false);
+            // Create user in Auth0
+            // We use the email as username or allow Auth0 to generate one? 
+            // signUp takes (email, username, password, connection). We can pass email as username if needed, or null/empty if handled by connection.
+            // Using email as username for now.
+            firebaseUid = auth0Service.createUser(dto.getEmail(), dto.getPassword(), dto.getEmail());
+            log.info("Created Auth0 user with ID: {}", firebaseUid);
             
-            UserRecord userRecord = firebaseAuth.createUser(firebaseRequest);
-            firebaseUid = userRecord.getUid();
-            log.info("Created Firebase user with UID: {}", firebaseUid);
-            
-        } catch (FirebaseAuthException e) {
-            log.error("Failed to create Firebase user: {}", e.getMessage());
-            if (e.getMessage().contains("EMAIL_EXISTS")) {
-                throw new IllegalArgumentException("Email already registered in Firebase");
+        } catch (Exception e) {
+            log.error("Failed to create Auth0 user: {}", e.getMessage());
+            if (e.getMessage().contains("User already exists") || e.getMessage().contains("email_exists")) {
+                throw new IllegalArgumentException("Email already registered in Auth0");
             }
-            throw new RuntimeException("Firebase registration failed: " + e.getMessage());
+            throw new RuntimeException("Auth0 registration failed: " + e.getMessage());
         }
         
         // Create user in our database (email not verified yet)
@@ -79,10 +70,13 @@ public class UserRegistrationService {
                 .fullName(dto.getFullName())
                 .mobileNumber(dto.getMobileNumber())
                 .email(dto.getEmail())
-                .passwordHash("FIREBASE_MANAGED") // Password managed by Firebase
+                .passwordHash("AUTH0_MANAGED") // Password managed by Auth0
                 .firebaseUid(firebaseUid)
                 .isEmailVerified(false)
                 .isActive(true)
+                .role(dto.getRole() != null && !dto.getRole().isEmpty() 
+                        ? dto.getRole().toUpperCase() 
+                        : com.elocate.elocate.model.enums.UserRole.CITIZEN.name())
                 .build();
         User savedUser = userRepository.save(user);
         log.info("Created user in database with ID: {}", savedUser.getId());

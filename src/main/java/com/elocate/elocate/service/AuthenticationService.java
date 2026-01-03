@@ -1,6 +1,6 @@
 package com.elocate.elocate.service;
 
-import com.elocate.elocate.dto.FirebaseSignInResponse;
+import com.auth0.json.auth.TokenHolder;
 import com.elocate.elocate.dto.LoginRequestDto;
 import com.elocate.elocate.dto.UserProfileResponse;
 import com.elocate.elocate.model.enums.OtpType;
@@ -11,9 +11,7 @@ import com.elocate.elocate.repository.UserAddressRepository;
 import com.elocate.elocate.repository.UserRepository;
 import com.elocate.elocate.repository.UserWalletRepository;
 import com.elocate.elocate.security.JwtUtil;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 /**
- * Service for Firebase authentication operations
+ * Service for Auth0 authentication operations
  */
 @Service
 @Slf4j
@@ -34,32 +32,28 @@ public class AuthenticationService {
     private final UserWalletRepository userWalletRepository;
     private final OtpService otpService;
     private final EmailService emailService;
-    private final FirebaseAuth firebaseAuth;
-    private final AuthService authService;  // Your existing Firebase login service
+    private final Auth0Service auth0Service;  // Replace Firebase with Auth0
     private final JwtUtil jwtUtil;
     
     /**
-     * Login with email and password using Firebase REST API
+     * Login with email and password using Auth0
      * 
      * @param dto Login credentials
-     * @return User profile with Firebase ID token
+     * @return User profile with Auth0 tokens
      */
     @Transactional(readOnly = true)
     public UserProfileResponse login(LoginRequestDto dto) {
         log.info("Login attempt for email: {}", dto.getEmail());
         
-        // First check if user exists in our database
+        // Authenticate with Auth0
+        com.auth0.json.auth.TokenHolder auth0Response = auth0Service.login(dto.getEmail(), dto.getPassword());
+        
+        // Check if user exists in our database
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found in database"));
         
-        log.info("User found in database - ID: {}, FirebaseUID: {}, EmailVerified: {}", 
-                user.getId(), user.getFirebaseUid(), user.getIsEmailVerified());
-        
-        // Authenticate with Firebase using your existing AuthService
-        // This verifies email + password via Firebase REST API
-        FirebaseSignInResponse firebaseResponse = authService.login(dto.getEmail(), dto.getPassword());
-        
-        log.info("Firebase authentication successful for: {}", dto.getEmail());
+        log.info("User found in database - ID: {}, EmailVerified: {}", 
+                user.getId(), user.getIsEmailVerified());
         
         // Check if email is verified
         if (Boolean.FALSE.equals(user.getIsEmailVerified())) {
@@ -74,61 +68,29 @@ public class AuthenticationService {
         
         log.info("Login successful for user: {}", user.getId());
         
-        // Get address and wallet
-        UserAddress address = userAddressRepository.findByUserIdAndIsDefault(user.getId(), true)
-                .orElseThrow(() -> new IllegalArgumentException("User address not found"));
-        
-        UserWallet wallet = userWalletRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
-        
-        // Build profile response with Firebase token
-        UserProfileResponse profile = buildProfileResponse(user, address, wallet);
-        profile.setFirebaseToken(firebaseResponse.getIdToken());
-        profile.setRefreshToken(firebaseResponse.getRefreshToken());
         // Generate JWT token for API authentication
         String jwtToken = jwtUtil.generateToken(user.getId(), user.getFullName(), user.getEmail(), user.getRole());
-        profile.setJwtToken(jwtToken);
         
-        log.info("JWT token generated for user: {}", user.getId());
-        
-        return profile;
+        // Build profile response with structured tokens
+        return buildProfileResponse(user, jwtToken, auth0Response.getRefreshToken(), auth0Response.getAccessToken());
     }
 
     /**
      * Refresh tokens using Firebase refresh token
      */
+    /**
+     * Refresh tokens using Auth0 refresh token
+     */
     @Transactional(readOnly = true)
     public UserProfileResponse refreshToken(String refreshToken) {
         log.info("Token refresh attempt");
 
-        // Exchange refresh token for new tokens with Firebase
-        com.elocate.elocate.dto.FirebaseRefreshResponse firebaseResponse = authService.refreshToken(refreshToken);
+        // Exchange refresh token for new tokens with Auth0
+        TokenHolder auth0Response = auth0Service.refreshToken(refreshToken);
 
-        // Firebase refresh response returns UID as user_id
-        String firebaseUid = firebaseResponse.getUserId();
-
-        // Find user by firebase UID
-        User user = userRepository.findByFirebaseUid(firebaseUid)
-                .orElseThrow(() -> new IllegalArgumentException("User not found for provided token"));
-
-        // Get address and wallet (same as login)
-        UserAddress address = userAddressRepository.findByUserIdAndIsDefault(user.getId(), true)
-                .orElseThrow(() -> new IllegalArgumentException("User address not found"));
-
-        UserWallet wallet = userWalletRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
-
-        // Build response
-        UserProfileResponse profile = buildProfileResponse(user, address, wallet);
-        profile.setFirebaseToken(firebaseResponse.getIdToken());
-        profile.setRefreshToken(firebaseResponse.getRefreshToken());
-        
-        // Generate new JWT
-        String jwtToken = jwtUtil.generateToken(user.getId(), user.getFullName(), user.getEmail(), user.getRole());
-        profile.setJwtToken(jwtToken);
-
-        log.info("Token balanced successfully for user: {}", user.getId());
-        return profile;
+        // For refresh token, we need user info but can't parse Auth0 ID token with our JWT util
+        // Temporary solution: require login again
+        throw new IllegalArgumentException("Token refresh not implemented. Please login again.");
     }
     
     /**
@@ -166,27 +128,13 @@ public class AuthenticationService {
                 throw new IllegalArgumentException("Email not registered");
             }
             
-            // Check if user exists in Firebase and log details
-            try {
-                UserRecord userRecord = firebaseAuth.getUserByEmail(email);
-                log.info("Firebase user found - UID: {}, Email: {}, Disabled: {}", 
-                        userRecord.getUid(), userRecord.getEmail(), userRecord.isDisabled());
-            } catch (FirebaseAuthException e) {
-                log.error("Firebase user not found: {}", e.getMessage());
-            }
-            
-            // Generate Firebase password reset link
-            String resetLink = firebaseAuth.generatePasswordResetLink(email);
-            
-            // Send password reset link via email
-            emailService.sendPasswordResetEmail(email, resetLink);
-            
-            log.info("Password reset email sent to: {}", email);
+            // Trigger Auth0 password reset
+            auth0Service.resetPassword(email);
             
             return "Password reset email sent. Please check your inbox.";
             
-        } catch (FirebaseAuthException e) {
-            log.error("Failed to generate password reset link: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to trigger password reset: {}", e.getMessage());
             throw new RuntimeException("Failed to send password reset email");
         }
     }
@@ -225,10 +173,8 @@ public class AuthenticationService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         
         try {
-            // Update email in Firebase
-            UserRecord.UpdateRequest request = new UserRecord.UpdateRequest(user.getFirebaseUid())
-                    .setEmail(newEmail);
-            firebaseAuth.updateUser(request);
+            // TODO: Update email in Auth0 (Requires Management API)
+            // For now, we only update local DB
             
             // Update email in our database
             user.setEmail(newEmail);
@@ -238,8 +184,8 @@ public class AuthenticationService {
             log.info("Email changed successfully for user: {}", userId);
             return "Email changed successfully";
             
-        } catch (FirebaseAuthException e) {
-            log.error("Failed to update email in Firebase: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to update email: {}", e.getMessage());
             throw new RuntimeException("Failed to update email");
         }
     }
@@ -247,23 +193,25 @@ public class AuthenticationService {
     /**
      * Build profile response
      */
-    private UserProfileResponse buildProfileResponse(User user, UserAddress address, UserWallet wallet) {
+    /**
+     * Build profile response
+     */
+    private UserProfileResponse buildProfileResponse(User user, String jwtToken, String refreshToken, String providerToken) {
         return UserProfileResponse.builder()
-                .id(user.getId())
-                .fullName(user.getFullName())
-                .mobileNumber(user.getMobileNumber())
-                .email(user.getEmail())
-                .address(UserProfileResponse.AddressInfo.builder()
-                        .id(address.getId())
-                        .address(address.getAddress())
-                        .city(address.getCity())
-                        .state(address.getState())
-                        .pincode(address.getPincode())
-                        .latitude(address.getLatitude())
-                        .longitude(address.getLongitude())
+                .status("success")
+                .message("Authentication successful")
+                .user(UserProfileResponse.UserData.builder()
+                        .id(user.getId())
+                        .fullName(user.getFullName())
+                        .mobileNumber(user.getMobileNumber())
+                        .email(user.getEmail())
+                        .role(user.getRole())
                         .build())
-                .wallet(UserProfileResponse.WalletInfo.builder()
-                        .pointsBalance(wallet.getPointsBalance())
+                .tokens(UserProfileResponse.TokenData.builder()
+                        .accessToken(jwtToken)
+                        .refreshToken(refreshToken)
+                        .providerAccessToken(providerToken)
+                        .expiresIn(jwtUtil.getExpirationTime())
                         .build())
                 .build();
     }
