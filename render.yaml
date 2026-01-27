@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: elocate-api
+    runtime: java
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/elocate-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx512m -Xms256m
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: SERVER_PORT
+        value: 8080
+      - key: CONTEXT_PATH
+        value: /elocate
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USERNAME
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRATION_MS
+        value: 86400000
+      - key: AUTH0_DOMAIN
+        sync: false
+      - key: AUTH0_CLIENT_ID
+        sync: false
+      - key: AUTH0_CLIENT_SECRET
+        sync: false
+      - key: AUTH0_CONNECTION
+        value: Username-Password-Authentication
+      - key: OTP_EXPIRY_MINUTES
+        value: 10
+      - key: OTP_MAX_ATTEMPTS
+        value: 3
