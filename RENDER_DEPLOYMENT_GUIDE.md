@@ -40,11 +40,14 @@
    - Region: Choose closest to you (e.g., Oregon, Ohio, Frankfurt)
    - Branch: `main` (or your default branch)
    - Root Directory: Leave blank
-   - Runtime: `Java`
 
-   **Build Settings:**
-   - Build Command: `chmod +x mvnw && ./mvnw clean package -DskipTests`
-   - Start Command: `java -Dspring.profiles.active=production -Xmx512m -Xms256m -jar target/elocate-0.0.1-SNAPSHOT.jar`
+   **IMPORTANT - Runtime Selection:**
+   - Language/Runtime: **Docker** ⭐ (Select Docker from dropdown, NOT Java)
+   
+   **Docker Configuration:**
+   - Dockerfile Path: `./Dockerfile`
+   - Docker Context: `.`
+   - Docker Command: Leave blank (uses Dockerfile ENTRYPOINT)
 
    **Instance Type:**
    - Select **"Free"** (512 MB RAM, shared CPU)

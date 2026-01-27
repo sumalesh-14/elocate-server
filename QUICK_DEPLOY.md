@@ -18,17 +18,20 @@
 Name: elocate-api
 Region: Oregon (US West)
 Branch: main
-Runtime: Java
+Runtime: Docker ⭐ (IMPORTANT: Select Docker from dropdown)
 Instance Type: Free
 ```
 
-### 3. Build & Start Commands
+### 3. Docker Configuration
 ```bash
-# Build Command:
-chmod +x mvnw && ./mvnw clean package -DskipTests
+# Dockerfile Path:
+./Dockerfile
 
-# Start Command:
-java -Dspring.profiles.active=production -Xmx512m -Xms256m -jar target/elocate-0.0.1-SNAPSHOT.jar
+# Docker Context:
+.
+
+# Docker Command:
+(leave blank - uses Dockerfile ENTRYPOINT)
 ```
 
 ### 4. Environment Variables (Copy-Paste Ready)
