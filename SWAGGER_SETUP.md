@@ -8,13 +8,15 @@ Swagger UI (OpenAPI 3.0) has been integrated into your Elocate API for interacti
 
 ### Local Development
 ```
-http://localhost:8080/elocate/swagger-ui.html
+http://localhost:8080/elocate/swagger-ui/index.html
 ```
 
 ### Production (Render)
 ```
-https://elocate-server-m2zi.onrender.com/elocate/swagger-ui.html
+https://elocate-server-m2zi.onrender.com/elocate/swagger-ui/index.html
 ```
+
+**Quick Link:** [Open Swagger UI](https://elocate-server-m2zi.onrender.com/elocate/swagger-ui/index.html)
 
 ## How to Use
 
@@ -53,12 +55,13 @@ For protected endpoints:
 
 ## Next Steps
 
-After deploying:
+✅ **Swagger is now live!** Access it at:
+https://elocate-server-m2zi.onrender.com/elocate/swagger-ui/index.html
 
-1. Update the production server URL in `OpenApiConfig.java` if needed
-2. Run `mvn clean install` to download the new dependency
-3. Deploy to Render
-4. Access Swagger at your production URL
+To keep Render from going inactive:
+1. Set up [UptimeRobot](https://uptimerobot.com) (free)
+2. Monitor: `https://elocate-server-m2zi.onrender.com/elocate/actuator/health`
+3. Check interval: Every 5 minutes
 
 ## Features
 
