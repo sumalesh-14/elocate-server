@@ -53,3 +53,12 @@ auth0:
   clientId: gSMm494WIxE59MtZxODuYvdCRy4yFT10
   clientSecret: NalHurNjv35rQu_zgmR_vkOHB2-OmuOofKBY2lMRUz4Lu3d6F2RQVM9T8REVqHtZ
   connection: Username-Password-Authentication
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha

@@ -37,7 +37,11 @@ public class SecurityConfig {
             "/api/v1/auth/forgot-password",
             "/api/v1/test/**",
             "/actuator/**",
-            "/error"
+            "/error",
+            // Swagger UI endpoints
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html"
     };
     
     @Bean

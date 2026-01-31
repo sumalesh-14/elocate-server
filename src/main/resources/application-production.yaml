@@ -53,3 +53,12 @@ auth0:
   clientId: ${AUTH0_CLIENT_ID}
   clientSecret: ${AUTH0_CLIENT_SECRET}
   connection: ${AUTH0_CONNECTION:Username-Password-Authentication}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
