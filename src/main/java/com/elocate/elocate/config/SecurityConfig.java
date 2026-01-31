@@ -36,7 +36,9 @@ public class SecurityConfig {
             "/api/v1/auth/resend-otp",
             "/api/v1/auth/forgot-password",
             "/api/v1/test/**",
-            "/actuator/**",
+            "/actuator/health",
+            "/actuator/health/**",
+            "/actuator/info",
             "/error",
             // Swagger UI endpoints
             "/v3/api-docs/**",

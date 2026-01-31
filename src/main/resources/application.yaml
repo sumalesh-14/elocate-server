@@ -40,6 +40,18 @@ server:
   servlet:
     context-path: /elocate
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
 app:
   jwt:
     secret: elocate-super-secret-key-change-in-production-minimum-256-bits-required
