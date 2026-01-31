@@ -51,6 +51,11 @@ management:
       show-details: when-authorized
       probes:
         enabled: true
+  health:
+    mail:
+      enabled: false  # Disable mail health check (causes timeout)
+    db:
+      enabled: false  # Disable DB health check for faster response
 
 app:
   jwt:

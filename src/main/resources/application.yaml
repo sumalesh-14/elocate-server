@@ -51,6 +51,9 @@ management:
       show-details: always
       probes:
         enabled: true
+  health:
+    mail:
+      enabled: false  # Disable mail health check
 
 app:
   jwt:
