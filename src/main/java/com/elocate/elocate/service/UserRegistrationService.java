@@ -105,10 +105,15 @@ public class UserRegistrationService {
         userWalletRepository.save(wallet);
         log.info("Created wallet for user: {}", savedUser.getId());
         
-        // Send OTP for email verification
-        otpService.generateAndSendOtp(dto.getEmail(), OtpType.EMAIL_VERIFICATION);
+        // Auto-verify email (OTP disabled for now)
+        savedUser.setIsEmailVerified(true);
+        userRepository.save(savedUser);
+        log.info("Auto-verified email for user: {}", savedUser.getId());
         
-        return "Registration successful! Please check your email for verification OTP.";
+        // OTP sending disabled - users are auto-verified
+        // otpService.generateAndSendOtp(dto.getEmail(), OtpType.EMAIL_VERIFICATION);
+        
+        return "Registration successful! You can now login with your credentials.";
     }
     
     /**
