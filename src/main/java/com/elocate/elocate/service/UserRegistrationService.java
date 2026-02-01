@@ -110,7 +110,7 @@ public class UserRegistrationService {
         // userRepository.save(savedUser);
         // log.info("Auto-verified email for user: {}", savedUser.getId());
         
-        OTP sending disabled - users are auto-verified
+       // OTP sending disabled - users are auto-verified
         otpService.generateAndSendOtp(dto.getEmail(), OtpType.EMAIL_VERIFICATION);
         
         return "Registration successful! You can now login with your credentials.";
