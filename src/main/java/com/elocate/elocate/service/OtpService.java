@@ -61,7 +61,7 @@ public class OtpService {
         log.info("OTP saved for email: {}, expires at: {}", email, expiresAt);
         
         // Send OTP via email
-        emailService.sendOtpEmail(email, otpCode, otpType);
+        // emailService.sendOtpEmail(email, otpCode, otpType);
         
         return otpCode; // Return for testing, should be removed in production
     }
