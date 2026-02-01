@@ -36,6 +36,8 @@ public class SecurityConfig {
             "/api/v1/auth/resend-otp",
             "/api/v1/auth/forgot-password",
             "/api/v1/test/**",
+            "/api/v1/health",
+            "/api/v1/ping",
             "/actuator/health",
             "/actuator/health/**",
             "/actuator/info",
@@ -79,16 +81,23 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Add your Render URL here - replace with your actual URL
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000", 
-                "http://localhost:3001",
-                "https://elocate-server-m2zi.onrender.com"  // TODO: Replace with your actual Render URL
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        
+        // Allow all origins using patterns (for Swagger UI and external clients)
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        
+        // Alternative: Specify exact origins
+        // configuration.setAllowedOrigins(List.of(
+        //     "http://localhost:3000", 
+        //     "http://localhost:3001",
+        //     "https://elocate-server-m2zi.onrender.com",
+        //     "https://elocate-api-production-2b4c.up.railway.app"
+        // ));
+        
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

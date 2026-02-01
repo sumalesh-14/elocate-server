@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 
 /**
- * Service for user registration with Firebase and email verification
+ * Service for user registration with Auth0 and email verification
  */
 @Service
 @Slf4j
@@ -30,11 +30,11 @@ public class UserRegistrationService {
     private final Auth0Service auth0Service;
     
     /**
-     * Register new user with Firebase and email verification
+     * Register new user with Auth0 and email verification
      * 
      * Flow:
-     * 1. Check email uniqueness in database
-     * 2. Create user in Firebase Auth
+     * 1. Check email and mobile uniqueness in database
+     * 2. Create user in Auth0
      * 3. Create user in our database (email_verified = false)
      * 4. Create address and wallet
      * 5. Send verification OTP
@@ -45,22 +45,24 @@ public class UserRegistrationService {
         
         // Check email uniqueness in our database
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Email already registered: " + dto.getEmail());
+            throw new com.elocate.elocate.exception.AccountAlreadyExistsException("Email already registered: " + dto.getEmail());
+        }
+        
+        // Check mobile number uniqueness in our database
+        if (userRepository.existsByMobileNumber(dto.getMobileNumber())) {
+            throw new com.elocate.elocate.exception.DuplicateMobileNumberException("Mobile number already registered: " + dto.getMobileNumber());
         }
 
         String firebaseUid;
         try {
             // Create user in Auth0
-            // We use the email as username or allow Auth0 to generate one? 
-            // signUp takes (email, username, password, connection). We can pass email as username if needed, or null/empty if handled by connection.
-            // Using email as username for now.
             firebaseUid = auth0Service.createUser(dto.getEmail(), dto.getPassword(), dto.getEmail());
             log.info("Created Auth0 user with ID: {}", firebaseUid);
             
         } catch (Exception e) {
             log.error("Failed to create Auth0 user: {}", e.getMessage());
-            if (e.getMessage().contains("User already exists") || e.getMessage().contains("email_exists")) {
-                throw new IllegalArgumentException("Email already registered in Auth0");
+            if (e.getMessage().contains("User already exists") || e.getMessage().contains("email_exists") || e.getMessage().contains("already exists")) {
+                throw new com.elocate.elocate.exception.AccountAlreadyExistsException("Email already registered in Auth0");
             }
             throw new RuntimeException("Auth0 registration failed: " + e.getMessage());
         }

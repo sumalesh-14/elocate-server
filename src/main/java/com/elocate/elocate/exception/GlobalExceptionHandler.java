@@ -245,6 +245,25 @@ public class GlobalExceptionHandler {
     }
     
     /**
+     * Handle DuplicateMobileNumberException
+     */
+    @ExceptionHandler(DuplicateMobileNumberException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateMobileNumber(
+            DuplicateMobileNumberException ex, 
+            HttpServletRequest request) {
+        log.error("Duplicate mobile number: {}", ex.getMessage());
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.CONFLICT.value());
+        response.put("error", "Conflict");
+        response.put("message", ex.getMessage());
+        response.put("field", "mobileNumber");
+        response.put("path", request.getRequestURI());
+        
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+    
+    /**
      * Handle IllegalArgumentException (used for various validation errors)
      */
     @ExceptionHandler(IllegalArgumentException.class)
