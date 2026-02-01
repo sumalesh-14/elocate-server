@@ -16,28 +16,20 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         
-        // Allow requests from frontend and same-origin (for Swagger UI)
-        config.setAllowedOriginPatterns(List.of("*")); // Allow all origins
-        
-        // Alternative: Specify exact origins
-        // config.setAllowedOrigins(Arrays.asList(
-        //     "http://localhost:3000",
-        //     "http://localhost:3001",
-        //     "https://elocate-server-m2zi.onrender.com",
-        //     "https://elocate-api-production-2b4c.up.railway.app"
-        // ));
+        // Allow all origins without credentials restriction
+        config.setAllowedOriginPatterns(List.of("*"));
         
         // Allow all HTTP methods
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
         
         // Allow all headers
-        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setAllowedHeaders(List.of("*"));
         
-        // Allow credentials
-        config.setAllowCredentials(true);
+        // Disable credentials to work with wildcard origins
+        config.setAllowCredentials(false);
         
         // Expose headers
-        config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        config.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
         
         // Set max age for preflight requests
         config.setMaxAge(3600L);

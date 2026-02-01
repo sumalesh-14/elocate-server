@@ -85,18 +85,10 @@ public class SecurityConfig {
         // Allow all origins using patterns (for Swagger UI and external clients)
         configuration.setAllowedOriginPatterns(List.of("*"));
         
-        // Alternative: Specify exact origins
-        // configuration.setAllowedOrigins(List.of(
-        //     "http://localhost:3000", 
-        //     "http://localhost:3001",
-        //     "https://elocate-server-m2zi.onrender.com",
-        //     "https://elocate-api-production-2b4c.up.railway.app"
-        // ));
-        
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(false); // Must be false when using wildcard origins
+        configuration.setExposedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
