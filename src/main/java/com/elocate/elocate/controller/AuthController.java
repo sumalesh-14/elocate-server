@@ -33,6 +33,14 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody UserRegistrationDto dto) {
+        System.out.println("=== USER REGISTRATION BACKEND ===");
+        System.out.println("Endpoint: POST /api/v1/auth/register");
+        System.out.println("Request: " + dto);
+        System.out.println("Email: " + dto.getEmail());
+        System.out.println("Full Name: " + dto.getFullName());
+        System.out.println("Role: " + dto.getRole());
+        System.out.println("================================");
+        
         log.info("POST /api/v1/auth/register - email: {}", dto.getEmail());
         
         String message = userRegistrationService.register(dto);

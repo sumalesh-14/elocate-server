@@ -10,7 +10,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
+import com.elocate.elocate.model.User;
 
 @Repository
 public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFacility, UUID> {
@@ -47,5 +50,18 @@ public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFaci
     Page<RecyclingFacility> findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(
             String name, String address, Pageable pageable);
 
+    Optional<RecyclingFacility> findByRegistrationNumber(String registrationNumber);
+
+    Page<RecyclingFacility> findByIsVerified(Boolean isVerified, Pageable pageable);
+
+    Page<RecyclingFacility> findByNameContainingIgnoreCaseOrRegistrationNumberContainingIgnoreCase(
+            String name, String registrationNumber, Pageable pageable);
+
+    Page<RecyclingFacility> findByNameContainingIgnoreCaseOrRegistrationNumberContainingIgnoreCaseAndIsVerified(
+            String name, String registrationNumber, Boolean isVerified, Pageable pageable);
+
+    Optional<RecyclingFacility> findByUser(User user);
+
+    Page<RecyclingFacility> findByApprovalStatus(String approvalStatus, Pageable pageable);
 
 }

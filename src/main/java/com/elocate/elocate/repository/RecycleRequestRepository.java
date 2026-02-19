@@ -1,6 +1,7 @@
 package com.elocate.elocate.repository;
 
 import com.elocate.elocate.model.RecycleRequest;
+import com.elocate.elocate.model.RecyclingFacility;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +16,10 @@ public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, 
     
     // Find by status
     List<RecycleRequest> findByStatusOrderByCreatedAtDesc(String status);
+    
+    // Count by recycling facility
+    Long countByRecyclingFacility(RecyclingFacility recyclingFacility);
+    
+    // Count by recycling facility and status
+    Long countByRecyclingFacilityAndStatus(RecyclingFacility recyclingFacility, String status);
 }

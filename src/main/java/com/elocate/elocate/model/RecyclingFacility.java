@@ -26,7 +26,7 @@ public class RecyclingFacility {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String address;
 
     @Column(nullable = false, precision = 10, scale = 8)
@@ -73,6 +73,18 @@ public class RecyclingFacility {
     @Size(max = 20)
     @Column(name = "pincode", length = 20)
     private String pincode;
+
+    @Size(max = 100)
+    @Column(name = "registration_number", length = 100, unique = true)
+    private String registrationNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Builder.Default
+    @Column(name = "approval_status", length = 20)
+    private String approvalStatus = "PENDING";
 
     @OneToMany(mappedBy = "facility")
     private Set<FacilityServiceArea> facilityServiceAreas = new LinkedHashSet<>();

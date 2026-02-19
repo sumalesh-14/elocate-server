@@ -63,6 +63,11 @@ public class AuthenticationService {
         
         // Check if account is active
         if (Boolean.FALSE.equals(user.getIsActive())) {
+            // Check if this is a partner account pending approval
+            if ("PARTNER".equals(user.getRole())) {
+                log.warn("Login attempt for pending partner account: {}", dto.getEmail());
+                throw new IllegalArgumentException("Your partner account is pending approval. You'll receive an email once approved.");
+            }
             throw new IllegalArgumentException("Account is inactive. Please contact support.");
         }
         

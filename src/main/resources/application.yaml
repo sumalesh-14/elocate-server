@@ -2,9 +2,9 @@ spring:
   application:
     name: elocate
   datasource:
-    url: jdbc:postgresql://ep-gentle-salad-admc88pi-pooler.c-2.us-east-1.aws.neon.tech/elocate?sslmode=require
-    username: neondb_owner
-    password: npg_veoMfz2N9xds
+    url: jdbc:postgresql://db.qnnkizacregmdsfgqrsw.supabase.co:5432/postgres?sslmode=require
+    username: postgres
+    password: AL+4kWTv%A+k9DK
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
@@ -14,7 +14,7 @@ spring:
       connection-timeout: 30000
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -37,8 +37,9 @@ spring:
 
 server:
   port: 8080
-  servlet:
-    context-path: /elocate
+  # Context path removed to match frontend API calls
+  # servlet:
+  #   context-path: /elocate
 
 management:
   endpoints:
