@@ -1,45 +1,43 @@
 services:
   - type: web
-    name: elocate-api
-    runtime: docker
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    name: elocate-backend
+    env: java
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java $JAVA_TOOL_OPTIONS -jar target/elocate-0.0.1-SNAPSHOT.jar
     envVars:
-      - key: JAVA_TOOL_OPTIONS
-        value: -Xmx512m -Xms256m
-      - key: SPRING_PROFILES_ACTIVE
-        value: production
-      - key: SERVER_PORT
-        value: 8080
-      - key: CONTEXT_PATH
-        value: /elocate
       - key: DB_URL
-        sync: false
+        value: jdbc:postgresql://db.qnnkizacregmdsfgqrsw.supabase.co:5432/postgres?sslmode=require
       - key: DB_USERNAME
-        sync: false
+        value: postgres
       - key: DB_PASSWORD
-        sync: false
+        value: AL+4kWTv%A+k9DK
       - key: EMAIL_HOST
         value: smtp.gmail.com
       - key: EMAIL_PORT
         value: 587
       - key: EMAIL_USERNAME
-        sync: false
+        value: kasumalesh@gmail.com
       - key: EMAIL_PASSWORD
-        sync: false
+        value: dwqx mclv bkkf soxt
       - key: JWT_SECRET
-        sync: false
+        value: elocate-super-secret-key-change-in-production-minimum-256-bits-required
       - key: JWT_EXPIRATION_MS
         value: 86400000
-      - key: AUTH0_DOMAIN
-        sync: false
-      - key: AUTH0_CLIENT_ID
-        sync: false
-      - key: AUTH0_CLIENT_SECRET
-        sync: false
-      - key: AUTH0_CONNECTION
-        value: Username-Password-Authentication
       - key: OTP_EXPIRY_MINUTES
         value: 10
       - key: OTP_MAX_ATTEMPTS
         value: 3
+      - key: AUTH0_DOMAIN
+        value: elocate-dev.us.auth0.com
+      - key: AUTH0_CLIENT_ID
+        value: gSMm494WIxE59MtZxODuYvdCRy4yFT10
+      - key: AUTH0_CLIENT_SECRET
+        value: NalHurNjv35rQu_zgmR_vkOHB2-OmuOofKBY2lMRUz4Lu3d6F2RQVM9T8REVqHtZ
+      - key: AUTH0_CONNECTION
+        value: Username-Password-Authentication
+      - key: SERVER_PORT
+        value: 8080
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx512m -Xms256m
