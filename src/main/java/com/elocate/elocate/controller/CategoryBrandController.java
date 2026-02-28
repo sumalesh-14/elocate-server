@@ -6,11 +6,13 @@ import com.elocate.elocate.service.CategoryBrandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -18,9 +20,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/category-brands")
 @RequiredArgsConstructor
 public class CategoryBrandController {
-    
+
     private final CategoryBrandService categoryBrandService;
-    
+
     @PostMapping
     public ResponseEntity<CategoryBrandResponse> createCategoryBrand(
             @Valid @RequestBody CategoryBrandRequest request) {
@@ -28,25 +30,36 @@ public class CategoryBrandController {
         CategoryBrandResponse created = categoryBrandService.createCategoryBrand(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-    
+
     @GetMapping
-    public ResponseEntity<List<CategoryBrandResponse>> getAllCategoryBrands() {
-        log.info("GET /api/v1/category-brands");
-        return ResponseEntity.ok(categoryBrandService.getAllCategoryBrands());
+    public ResponseEntity<Page<CategoryBrandResponse>> getAllCategoryBrands(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /api/v1/category-brands - page: {}, size: {}", page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(categoryBrandService.getAllCategoryBrands(pageable));
     }
-    
+
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<CategoryBrandResponse>> getBrandsByCategory(@PathVariable UUID categoryId) {
-        log.info("GET /api/v1/category-brands/category/{}", categoryId);
-        return ResponseEntity.ok(categoryBrandService.getBrandsByCategory(categoryId));
+    public ResponseEntity<Page<CategoryBrandResponse>> getBrandsByCategory(
+            @PathVariable UUID categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /api/v1/category-brands/category/{} - page: {}, size: {}", categoryId, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(categoryBrandService.getBrandsByCategory(categoryId, pageable));
     }
-    
+
     @GetMapping("/brand/{brandId}")
-    public ResponseEntity<List<CategoryBrandResponse>> getCategoriesByBrand(@PathVariable UUID brandId) {
-        log.info("GET /api/v1/category-brands/brand/{}", brandId);
-        return ResponseEntity.ok(categoryBrandService.getCategoriesByBrand(brandId));
+    public ResponseEntity<Page<CategoryBrandResponse>> getCategoriesByBrand(
+            @PathVariable UUID brandId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /api/v1/category-brands/brand/{} - page: {}, size: {}", brandId, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(categoryBrandService.getCategoriesByBrand(brandId, pageable));
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategoryBrand(@PathVariable UUID id) {
         log.info("DELETE /api/v1/category-brands/{}", id);

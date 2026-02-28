@@ -13,64 +13,62 @@ import com.elocate.elocate.repository.DeviceBrandRepository;
 import com.elocate.elocate.repository.DeviceCategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryBrandService {
-    
+
     private final CategoryBrandRepository categoryBrandRepository;
     private final DeviceCategoryRepository categoryRepository;
     private final DeviceBrandRepository brandRepository;
-    
+
     @Transactional
     public CategoryBrandResponse createCategoryBrand(CategoryBrandRequest request) {
-        log.info("Creating CategoryBrand link - categoryId: {}, brandId: {}", request.getCategoryId(), request.getBrandId());
-        
+        log.info("Creating CategoryBrand link - categoryId: {}, brandId: {}", request.getCategoryId(),
+                request.getBrandId());
+
         if (categoryBrandRepository.existsByCategoryIdAndBrandId(request.getCategoryId(), request.getBrandId())) {
             throw new IllegalArgumentException("Link between this Category and Brand already exists");
         }
-        
+
         DeviceCategory category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Device Category not found"));
-                
+
         DeviceBrand brand = brandRepository.findById(request.getBrandId())
                 .orElseThrow(() -> new ResourceNotFoundException("Device Brand not found"));
-        
+
         CategoryBrand categoryBrand = CategoryBrand.builder()
                 .category(category)
                 .brand(brand)
                 .isActive(request.getIsActive())
                 .build();
-                
+
         CategoryBrand saved = categoryBrandRepository.save(categoryBrand);
         return mapToResponse(saved);
     }
-    
-    public List<CategoryBrandResponse> getAllCategoryBrands() {
-        return categoryBrandRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+
+    public Page<CategoryBrandResponse> getAllCategoryBrands(Pageable pageable) {
+        return categoryBrandRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
-    
-    public List<CategoryBrandResponse> getBrandsByCategory(UUID categoryId) {
-        return categoryBrandRepository.findByCategoryId(categoryId).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+
+    public Page<CategoryBrandResponse> getBrandsByCategory(UUID categoryId, Pageable pageable) {
+        return categoryBrandRepository.findByCategoryId(categoryId, pageable)
+                .map(this::mapToResponse);
     }
-    
-    public List<CategoryBrandResponse> getCategoriesByBrand(UUID brandId) {
-        return categoryBrandRepository.findByBrandId(brandId).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+
+    public Page<CategoryBrandResponse> getCategoriesByBrand(UUID brandId, Pageable pageable) {
+        return categoryBrandRepository.findByBrandId(brandId, pageable)
+                .map(this::mapToResponse);
     }
-    
+
     @Transactional
     public void deleteCategoryBrand(UUID id) {
         if (!categoryBrandRepository.existsById(id)) {
@@ -78,7 +76,7 @@ public class CategoryBrandService {
         }
         categoryBrandRepository.deleteById(id);
     }
-    
+
     private CategoryBrandResponse mapToResponse(CategoryBrand entity) {
         return CategoryBrandResponse.builder()
                 .id(entity.getId())
