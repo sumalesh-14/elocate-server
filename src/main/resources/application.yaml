@@ -2,9 +2,9 @@ spring:
   application:
     name: elocate
   datasource:
-    url: jdbc:postgresql://db.qnnkizacregmdsfgqrsw.supabase.co:5432/postgres?sslmode=require
-    username: postgres
-    password: AL+4kWTv%A+k9DK
+    url: ${DB_URL:jdbc:postgresql://db.qnnkizacregmdsfgqrsw.supabase.co:5432/postgres?sslmode=require}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:AL+4kWTv%A+k9DK}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
@@ -21,10 +21,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: kasumalesh@gmail.com
-    password: dwqx mclv bkkf soxt
+    host: ${EMAIL_HOST:smtp.gmail.com}
+    port: ${EMAIL_PORT:587}
+    username: ${EMAIL_USERNAME:kasumalesh@gmail.com}
+    password: ${EMAIL_PASSWORD:dwqx mclv bkkf soxt}
     properties:
       mail:
         smtp:
@@ -36,7 +36,7 @@ spring:
           protocol: smtp
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   # Context path removed to match frontend API calls
   # servlet:
   #   context-path: /elocate
@@ -58,17 +58,17 @@ management:
 
 app:
   jwt:
-    secret: elocate-super-secret-key-change-in-production-minimum-256-bits-required
-    expiration-ms: 86400000 # 24 hours
+    secret: ${JWT_SECRET:elocate-super-secret-key-change-in-production-minimum-256-bits-required}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   otp:
-    expiry-minutes: 10
-    max-attempts: 3
+    expiry-minutes: ${OTP_EXPIRY_MINUTES:10}
+    max-attempts: ${OTP_MAX_ATTEMPTS:3}
 
 auth0:
-  domain: elocate-dev.us.auth0.com
-  clientId: gSMm494WIxE59MtZxODuYvdCRy4yFT10
-  clientSecret: NalHurNjv35rQu_zgmR_vkOHB2-OmuOofKBY2lMRUz4Lu3d6F2RQVM9T8REVqHtZ
-  connection: Username-Password-Authentication
+  domain: ${AUTH0_DOMAIN:elocate-dev.us.auth0.com}
+  clientId: ${AUTH0_CLIENT_ID:gSMm494WIxE59MtZxODuYvdCRy4yFT10}
+  clientSecret: ${AUTH0_CLIENT_SECRET:NalHurNjv35rQu_zgmR_vkOHB2-OmuOofKBY2lMRUz4Lu3d6F2RQVM9T8REVqHtZ}
+  connection: ${AUTH0_CONNECTION:Username-Password-Authentication}
 
 springdoc:
   api-docs:
