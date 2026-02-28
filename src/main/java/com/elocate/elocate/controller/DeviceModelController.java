@@ -6,11 +6,13 @@ import com.elocate.elocate.service.DeviceModelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -18,9 +20,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/device-models")
 @RequiredArgsConstructor
 public class DeviceModelController {
-    
+
     private final DeviceModelService modelService;
-    
+
     /**
      * Get all models with optional search and filters
      * Query params:
@@ -30,17 +32,21 @@ public class DeviceModelController {
      * - brandId: Filter by brand UUID
      */
     @GetMapping
-    public ResponseEntity<List<DeviceModelResponse>> getAllModels(
+    public ResponseEntity<Page<DeviceModelResponse>> getAllModels(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean isActive,
             @RequestParam(required = false) UUID categoryId,
-            @RequestParam(required = false) UUID brandId) {
-        log.info("GET /api/v1/device-models - search: {}, isActive: {}, categoryId: {}, brandId: {}", 
-                search, isActive, categoryId, brandId);
-        List<DeviceModelResponse> models = modelService.getAllModels(search, isActive, categoryId, brandId);
+            @RequestParam(required = false) UUID brandId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info(
+                "GET /api/v1/device-models - search: {}, isActive: {}, categoryId: {}, brandId: {}, page: {}, size: {}",
+                search, isActive, categoryId, brandId, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DeviceModelResponse> models = modelService.getAllModels(search, isActive, categoryId, brandId, pageable);
         return ResponseEntity.ok(models);
     }
-    
+
     /**
      * Get model by ID
      */
@@ -50,7 +56,7 @@ public class DeviceModelController {
         DeviceModelResponse model = modelService.getModelById(id);
         return ResponseEntity.ok(model);
     }
-    
+
     /**
      * Create new model
      */
@@ -61,7 +67,7 @@ public class DeviceModelController {
         DeviceModelResponse created = modelService.createModel(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-    
+
     /**
      * Update existing model
      */
@@ -73,7 +79,7 @@ public class DeviceModelController {
         DeviceModelResponse updated = modelService.updateModel(id, request);
         return ResponseEntity.ok(updated);
     }
-    
+
     /**
      * Soft delete model (set isActive to false)
      */
@@ -83,7 +89,7 @@ public class DeviceModelController {
         modelService.deleteModel(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     /**
      * Hard delete model (permanent deletion)
      */
@@ -93,15 +99,18 @@ public class DeviceModelController {
         modelService.hardDeleteModel(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     /**
      * Search models
      */
     @GetMapping("/search")
-    public ResponseEntity<List<DeviceModelResponse>> searchModels(
-            @RequestParam String q) {
-        log.info("GET /api/v1/device-models/search?q={}", q);
-        List<DeviceModelResponse> results = modelService.searchModels(q);
+    public ResponseEntity<Page<DeviceModelResponse>> searchModels(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        log.info("GET /api/v1/device-models/search?q={} - page: {}, size: {}", q, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DeviceModelResponse> results = modelService.searchModels(q, pageable);
         return ResponseEntity.ok(results);
     }
 }

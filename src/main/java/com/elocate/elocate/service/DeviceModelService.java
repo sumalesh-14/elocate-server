@@ -13,64 +13,63 @@ import com.elocate.elocate.repository.DeviceCategoryRepository;
 import com.elocate.elocate.repository.DeviceModelRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class DeviceModelService {
-    
+
     private final DeviceModelRepository modelRepository;
     private final DeviceCategoryRepository categoryRepository;
     private final DeviceBrandRepository brandRepository;
-    
+
     /**
      * Get all models with optional search and filters
      */
     @Transactional(readOnly = true)
-    public List<DeviceModelResponse> getAllModels(String search, Boolean isActive, UUID categoryId, UUID brandId) {
-        log.info("Fetching models with search: {}, isActive: {}, categoryId: {}, brandId: {}", 
-                search, isActive, categoryId, brandId);
-        
-        List<DeviceModel> models;
-        
+    public Page<DeviceModelResponse> getAllModels(String search, Boolean isActive, UUID categoryId, UUID brandId,
+            Pageable pageable) {
+        log.info("Fetching models with search: {}, isActive: {}, categoryId: {}, brandId: {}, pageable: {}",
+                search, isActive, categoryId, brandId, pageable);
+
+        Page<DeviceModel> models;
+
         // Apply filters based on provided parameters
         if (categoryId != null && brandId != null) {
-            models = modelRepository.findByCategoryIdAndBrandId(categoryId, brandId);
+            models = modelRepository.findByCategoryIdAndBrandId(categoryId, brandId, pageable);
         } else if (categoryId != null) {
             if (search != null && !search.trim().isEmpty()) {
-                models = modelRepository.searchModelsByCategory(categoryId, search);
+                models = modelRepository.searchModelsByCategory(categoryId, search, pageable);
             } else {
-                models = modelRepository.findByCategoryId(categoryId);
+                models = modelRepository.findByCategoryId(categoryId, pageable);
             }
         } else if (brandId != null) {
             if (search != null && !search.trim().isEmpty()) {
-                models = modelRepository.searchModelsByBrand(brandId, search);
+                models = modelRepository.searchModelsByBrand(brandId, search, pageable);
             } else {
-                models = modelRepository.findByBrandId(brandId);
+                models = modelRepository.findByBrandId(brandId, pageable);
             }
         } else if (search != null && !search.trim().isEmpty()) {
             if (isActive != null) {
-                models = modelRepository.searchModelsWithActiveFilter(search, isActive);
+                models = modelRepository.searchModelsWithActiveFilter(search, isActive, pageable);
             } else {
-                models = modelRepository.searchModels(search);
+                models = modelRepository.searchModels(search, pageable);
             }
         } else if (isActive != null) {
-            models = modelRepository.findByIsActiveOrderByModelNameAsc(isActive);
+            models = modelRepository.findByIsActiveOrderByModelNameAsc(isActive, pageable);
         } else {
-            models = modelRepository.findAll();
+            models = modelRepository.findAll(pageable);
         }
-        
-        return models.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+
+        return models.map(this::mapToResponse);
     }
-    
+
     /**
      * Get model by ID
      */
@@ -81,22 +80,22 @@ public class DeviceModelService {
                 .orElseThrow(() -> new ModelNotFoundException(id));
         return mapToResponse(model);
     }
-    
+
     /**
      * Create new model
      */
     @Transactional
     public DeviceModelResponse createModel(DeviceModelRequest request) {
         log.info("Creating new model: {}", request.getModelName());
-        
+
         // Validate category exists
         DeviceCategory category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new CategoryNotFoundException(request.getCategoryId()));
-        
+
         // Validate brand exists
         DeviceBrand brand = brandRepository.findById(request.getBrandId())
                 .orElseThrow(() -> new BrandNotFoundException(request.getBrandId()));
-        
+
         DeviceModel model = DeviceModel.builder()
                 .modelName(request.getModelName())
                 .category(category)
@@ -111,37 +110,37 @@ public class DeviceModelService {
                 .basePoints(request.getBasePoints())
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
-        
+
         DeviceModel saved = modelRepository.save(model);
         log.info("Model created successfully with id: {}", saved.getId());
-        
+
         return mapToResponse(saved);
     }
-    
+
     /**
      * Update existing model
      */
     @Transactional
     public DeviceModelResponse updateModel(UUID id, DeviceModelRequest request) {
         log.info("Updating model with id: {}", id);
-        
+
         DeviceModel model = modelRepository.findById(id)
                 .orElseThrow(() -> new ModelNotFoundException(id));
-        
+
         // Validate and update category if changed
         if (!model.getCategory().getId().equals(request.getCategoryId())) {
             DeviceCategory category = categoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> new CategoryNotFoundException(request.getCategoryId()));
             model.setCategory(category);
         }
-        
+
         // Validate and update brand if changed
         if (!model.getBrand().getId().equals(request.getBrandId())) {
             DeviceBrand brand = brandRepository.findById(request.getBrandId())
                     .orElseThrow(() -> new BrandNotFoundException(request.getBrandId()));
             model.setBrand(brand);
         }
-        
+
         model.setModelName(request.getModelName());
         model.setReleaseYear(request.getReleaseYear());
         model.setAvgWeightGrams(request.getAvgWeightGrams());
@@ -152,61 +151,59 @@ public class DeviceModelService {
         model.setRecyclabilityScore(request.getRecyclabilityScore());
         model.setBasePoints(request.getBasePoints());
         model.setIsActive(request.getIsActive() != null ? request.getIsActive() : model.getIsActive());
-        
+
         DeviceModel updated = modelRepository.save(model);
         log.info("Model updated successfully");
-        
+
         return mapToResponse(updated);
     }
-    
+
     /**
      * Soft delete model (set isActive to false)
      */
     @Transactional
     public void deleteModel(UUID id) {
         log.info("Deleting model with id: {}", id);
-        
+
         DeviceModel model = modelRepository.findById(id)
                 .orElseThrow(() -> new ModelNotFoundException(id));
-        
+
         model.setIsActive(false);
         modelRepository.save(model);
-        
+
         log.info("Model soft deleted successfully");
     }
-    
+
     /**
      * Hard delete model (permanent deletion)
      */
     @Transactional
     public void hardDeleteModel(UUID id) {
         log.info("Hard deleting model with id: {}", id);
-        
+
         if (!modelRepository.existsById(id)) {
             throw new ModelNotFoundException(id);
         }
-        
+
         modelRepository.deleteById(id);
         log.info("Model hard deleted successfully");
     }
-    
+
     /**
      * Search models
      */
     @Transactional(readOnly = true)
-    public List<DeviceModelResponse> searchModels(String search) {
-        log.info("Searching models with term: {}", search);
-        
+    public Page<DeviceModelResponse> searchModels(String search, Pageable pageable) {
+        log.info("Searching models with term: {} and pageable: {}", search, pageable);
+
         if (search == null || search.trim().isEmpty()) {
-            return getAllModels(null, null, null, null);
+            return getAllModels(null, null, null, null, pageable);
         }
-        
-        List<DeviceModel> models = modelRepository.searchModels(search);
-        return models.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+
+        Page<DeviceModel> models = modelRepository.searchModels(search, pageable);
+        return models.map(this::mapToResponse);
     }
-    
+
     /**
      * Map entity to response DTO
      */
