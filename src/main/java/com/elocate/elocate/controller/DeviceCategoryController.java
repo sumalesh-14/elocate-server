@@ -6,6 +6,9 @@ import com.elocate.elocate.service.DeviceCategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,24 +21,30 @@ import java.util.UUID;
 @RequestMapping("/api/v1/device-categories")
 @RequiredArgsConstructor
 public class DeviceCategoryController {
-    
+
     private final DeviceCategoryService categoryService;
-    
+
     /**
-     * Get all categories with optional search and filter
+     * Get all categories with optional search, filter and pagination
      * Query params:
      * - search: Search term for name, code, or description
      * - isActive: Filter by active status (true/false)
+     * - page: Page number (default: 0)
+     * - size: Page size (default: 10)
      */
     @GetMapping
-    public ResponseEntity<List<DeviceCategoryResponse>> getAllCategories(
+    public ResponseEntity<Page<DeviceCategoryResponse>> getAllCategories(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) Boolean isActive) {
-        log.info("GET /api/v1/device-categories - search: {}, isActive: {}", search, isActive);
-        List<DeviceCategoryResponse> categories = categoryService.getAllCategories(search, isActive);
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /api/v1/device-categories - search: {}, isActive: {}, page: {}, size: {}", search, isActive, page,
+                size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DeviceCategoryResponse> categories = categoryService.getAllCategories(search, isActive, pageable);
         return ResponseEntity.ok(categories);
     }
-    
+
     /**
      * Get category by ID
      */
@@ -45,7 +54,7 @@ public class DeviceCategoryController {
         DeviceCategoryResponse category = categoryService.getCategoryById(id);
         return ResponseEntity.ok(category);
     }
-    
+
     /**
      * Create new category
      */
@@ -56,7 +65,7 @@ public class DeviceCategoryController {
         DeviceCategoryResponse created = categoryService.createCategory(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-    
+
     /**
      * Update existing category
      */
@@ -68,7 +77,7 @@ public class DeviceCategoryController {
         DeviceCategoryResponse updated = categoryService.updateCategory(id, request);
         return ResponseEntity.ok(updated);
     }
-    
+
     /**
      * Soft delete category (set isActive to false)
      */
@@ -78,7 +87,7 @@ public class DeviceCategoryController {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     /**
      * Hard delete category (permanent deletion)
      */
@@ -88,15 +97,18 @@ public class DeviceCategoryController {
         categoryService.hardDeleteCategory(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     /**
-     * Search categories
+     * Search categories with pagination
      */
     @GetMapping("/search")
-    public ResponseEntity<List<DeviceCategoryResponse>> searchCategories(
-            @RequestParam String q) {
-        log.info("GET /api/v1/device-categories/search?q={}", q);
-        List<DeviceCategoryResponse> results = categoryService.searchCategories(q);
+    public ResponseEntity<Page<DeviceCategoryResponse>> searchCategories(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /api/v1/device-categories/search?q={} - page: {}, size: {}", q, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DeviceCategoryResponse> results = categoryService.searchCategories(q, pageable);
         return ResponseEntity.ok(results);
     }
 }

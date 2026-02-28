@@ -1,5 +1,7 @@
 package com.elocate.elocate.controller;
 
+import com.elocate.elocate.context.UserContext;
+import com.elocate.elocate.context.UserContextHolder;
 import com.elocate.elocate.dto.*;
 import com.elocate.elocate.service.AuthenticationService;
 import com.elocate.elocate.service.OtpService;
@@ -26,7 +28,7 @@ public class AuthController {
     private final UserRegistrationService userRegistrationService;
     private final AuthenticationService authenticationService;
     private final OtpService otpService;
-    
+
     /**
      * Register new user
      * Sends OTP to email for verification
@@ -40,36 +42,36 @@ public class AuthController {
         System.out.println("Full Name: " + dto.getFullName());
         System.out.println("Role: " + dto.getRole());
         System.out.println("================================");
-        
+
         log.info("POST /api/v1/auth/register - email: {}", dto.getEmail());
-        
+
         String message = userRegistrationService.register(dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", message));
     }
-    
+
     /**
      * Verify email with OTP
      */
     @PostMapping("/verify-email")
     public ResponseEntity<Map<String, String>> verifyEmail(@Valid @RequestBody VerifyEmailDto dto) {
         log.info("POST /api/v1/auth/verify-email - email: {}", dto.getEmail());
-        
+
         String message = authenticationService.verifyEmail(dto.getEmail(), dto.getOtp());
         return ResponseEntity.ok(Map.of("message", message));
     }
-    
+
     /**
      * Resend OTP
      */
     @PostMapping("/resend-otp")
     public ResponseEntity<Map<String, String>> resendOtp(@Valid @RequestBody ResendOtpDto dto) {
         log.info("POST /api/v1/auth/resend-otp - email: {}, type: {}", dto.getEmail(), dto.getType());
-        
+
         otpService.generateAndSendOtp(dto.getEmail(), dto.getType());
         return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
     }
-    
+
     /**
      * Login with email and password
      * Firebase verifies password via REST API
@@ -78,11 +80,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<UserProfileResponse> login(@Valid @RequestBody LoginRequestDto dto) {
         log.info("POST /api/v1/auth/login - email: {}", dto.getEmail());
-        
+
         UserProfileResponse response = authenticationService.login(dto);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Request password reset via Firebase
      * Firebase will send password reset email directly
@@ -90,7 +92,7 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(@RequestParam String email) {
         log.info("POST /api/v1/auth/forgot-password - email: {}", email);
-        
+
         String message = authenticationService.forgotPassword(email);
         return ResponseEntity.ok(Map.of("message", message));
     }
@@ -103,5 +105,21 @@ public class AuthController {
         log.info("POST /api/v1/auth/refresh");
         UserProfileResponse response = authenticationService.refreshToken(request.getRefreshToken());
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Validate the current session token
+     * Returns 200 OK if token is valid, otherwise 401/403 handled by filter
+     */
+    @GetMapping("/validate")
+    public ResponseEntity<Map<String, Object>> validate() {
+        UserContext context = UserContextHolder.getContext();
+        log.info("GET /api/v1/auth/validate - userId: {}", context.getUserId());
+
+        return ResponseEntity.ok(Map.of(
+                "valid", true,
+                "userId", context.getUserId(),
+                "email", context.getEmail(),
+                "fullName", context.getFullName()));
     }
 }
