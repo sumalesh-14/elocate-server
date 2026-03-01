@@ -5,7 +5,6 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -31,29 +30,8 @@ public class DeviceModel {
     @Column(name = "model_name", nullable = false)
     private String modelName;
 
-    @Column(name = "release_year")
-    private Integer releaseYear;
-
-    @Column(name = "avg_weight_grams", precision = 10, scale = 2)
-    private BigDecimal avgWeightGrams;
-
-    @Column(name = "gold_mg", precision = 10, scale = 2)
-    private BigDecimal goldMg;
-
-    @Column(name = "silver_mg", precision = 10, scale = 2)
-    private BigDecimal silverMg;
-
-    @Column(name = "copper_g", precision = 10, scale = 2)
-    private BigDecimal copperG;
-
-    @Column(name = "palladium_mg", precision = 10, scale = 2)
-    private BigDecimal palladiumMg;
-
-    @Column(name = "recyclability_score")
-    private Integer recyclabilityScore;
-
-    @Column(name = "base_points")
-    private Integer basePoints;
+    @Column(name = "recycle_items", columnDefinition = "jsonb")
+    private String recycleItems;
 
     @Builder.Default
     @Column(name = "is_active")

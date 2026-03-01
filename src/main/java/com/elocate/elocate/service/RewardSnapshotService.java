@@ -42,10 +42,10 @@ public class RewardSnapshotService {
         
         RewardSnapshot snapshot = RewardSnapshot.builder()
                 .recycleRequest(recycleRequest)
-                .goldMg(deviceModel.getGoldMg())
-                .silverMg(deviceModel.getSilverMg())
-                .copperG(deviceModel.getCopperG())
-                .palladiumMg(deviceModel.getPalladiumMg())
+                // .goldMg(deviceModel.getGoldMg())
+                // .silverMg(deviceModel.getSilverMg())
+                // .copperG(deviceModel.getCopperG())
+                // .palladiumMg(deviceModel.getPalladiumMg())
                 .conditionMultiplier(conditionMultiplier)
                 .totalPoints(totalPoints)
                 .build();

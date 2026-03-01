@@ -59,49 +59,49 @@ public class RewardCalculationService {
         
         BigDecimal totalPoints = BigDecimal.ZERO;
         
-        // Calculate GOLD points (mg × rate)
-        if (deviceModel.getGoldMg() != null && metalRates.containsKey(MetalType.GOLD)) {
-            BigDecimal goldPoints = deviceModel.getGoldMg()
-                    .multiply(metalRates.get(MetalType.GOLD).getPointsPerUnit());
-            totalPoints = totalPoints.add(goldPoints);
-            log.debug("Gold: {} mg × {} pts/mg = {} pts", 
-                    deviceModel.getGoldMg(), 
-                    metalRates.get(MetalType.GOLD).getPointsPerUnit(), 
-                    goldPoints);
-        }
+        // // Calculate GOLD points (mg × rate)
+        // if (deviceModel.getGoldMg() != null && metalRates.containsKey(MetalType.GOLD)) {
+        //     BigDecimal goldPoints = deviceModel.getGoldMg()
+        //             .multiply(metalRates.get(MetalType.GOLD).getPointsPerUnit());
+        //     totalPoints = totalPoints.add(goldPoints);
+        //     log.debug("Gold: {} mg × {} pts/mg = {} pts", 
+        //             deviceModel.getGoldMg(), 
+        //             metalRates.get(MetalType.GOLD).getPointsPerUnit(), 
+        //             goldPoints);
+        // }
         
-        // Calculate SILVER points (mg × rate)
-        if (deviceModel.getSilverMg() != null && metalRates.containsKey(MetalType.SILVER)) {
-            BigDecimal silverPoints = deviceModel.getSilverMg()
-                    .multiply(metalRates.get(MetalType.SILVER).getPointsPerUnit());
-            totalPoints = totalPoints.add(silverPoints);
-            log.debug("Silver: {} mg × {} pts/mg = {} pts", 
-                    deviceModel.getSilverMg(), 
-                    metalRates.get(MetalType.SILVER).getPointsPerUnit(), 
-                    silverPoints);
-        }
+        // // Calculate SILVER points (mg × rate)
+        // if (deviceModel.getSilverMg() != null && metalRates.containsKey(MetalType.SILVER)) {
+        //     BigDecimal silverPoints = deviceModel.getSilverMg()
+        //             .multiply(metalRates.get(MetalType.SILVER).getPointsPerUnit());
+        //     totalPoints = totalPoints.add(silverPoints);
+        //     log.debug("Silver: {} mg × {} pts/mg = {} pts", 
+        //             deviceModel.getSilverMg(), 
+        //             metalRates.get(MetalType.SILVER).getPointsPerUnit(), 
+        //             silverPoints);
+        // }
         
-        // Calculate COPPER points (g × rate)
-        if (deviceModel.getCopperG() != null && metalRates.containsKey(MetalType.COPPER)) {
-            BigDecimal copperPoints = deviceModel.getCopperG()
-                    .multiply(metalRates.get(MetalType.COPPER).getPointsPerUnit());
-            totalPoints = totalPoints.add(copperPoints);
-            log.debug("Copper: {} g × {} pts/g = {} pts", 
-                    deviceModel.getCopperG(), 
-                    metalRates.get(MetalType.COPPER).getPointsPerUnit(), 
-                    copperPoints);
-        }
+        // // Calculate COPPER points (g × rate)
+        // if (deviceModel.getCopperG() != null && metalRates.containsKey(MetalType.COPPER)) {
+        //     BigDecimal copperPoints = deviceModel.getCopperG()
+        //             .multiply(metalRates.get(MetalType.COPPER).getPointsPerUnit());
+        //     totalPoints = totalPoints.add(copperPoints);
+        //     log.debug("Copper: {} g × {} pts/g = {} pts", 
+        //             deviceModel.getCopperG(), 
+        //             metalRates.get(MetalType.COPPER).getPointsPerUnit(), 
+        //             copperPoints);
+        // }
         
-        // Calculate PALLADIUM points (mg × rate)
-        if (deviceModel.getPalladiumMg() != null && metalRates.containsKey(MetalType.PALLADIUM)) {
-            BigDecimal palladiumPoints = deviceModel.getPalladiumMg()
-                    .multiply(metalRates.get(MetalType.PALLADIUM).getPointsPerUnit());
-            totalPoints = totalPoints.add(palladiumPoints);
-            log.debug("Palladium: {} mg × {} pts/mg = {} pts", 
-                    deviceModel.getPalladiumMg(), 
-                    metalRates.get(MetalType.PALLADIUM).getPointsPerUnit(), 
-                    palladiumPoints);
-        }
+        // // Calculate PALLADIUM points (mg × rate)
+        // if (deviceModel.getPalladiumMg() != null && metalRates.containsKey(MetalType.PALLADIUM)) {
+        //     BigDecimal palladiumPoints = deviceModel.getPalladiumMg()
+        //             .multiply(metalRates.get(MetalType.PALLADIUM).getPointsPerUnit());
+        //     totalPoints = totalPoints.add(palladiumPoints);
+        //     log.debug("Palladium: {} mg × {} pts/mg = {} pts", 
+        //             deviceModel.getPalladiumMg(), 
+        //             metalRates.get(MetalType.PALLADIUM).getPointsPerUnit(), 
+        //             palladiumPoints);
+        // }
         
         log.info("Total metal points: {}", totalPoints);
         return totalPoints.setScale(2, RoundingMode.HALF_UP);

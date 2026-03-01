@@ -100,14 +100,14 @@ public class DeviceModelService {
                 .modelName(request.getModelName())
                 .category(category)
                 .brand(brand)
-                .releaseYear(request.getReleaseYear())
-                .avgWeightGrams(request.getAvgWeightGrams())
-                .goldMg(request.getGoldMg())
-                .silverMg(request.getSilverMg())
-                .copperG(request.getCopperG())
-                .palladiumMg(request.getPalladiumMg())
-                .recyclabilityScore(request.getRecyclabilityScore())
-                .basePoints(request.getBasePoints())
+                // .releaseYear(request.getReleaseYear())
+                // .avgWeightGrams(request.getAvgWeightGrams())
+                // .goldMg(request.getGoldMg())
+                // .silverMg(request.getSilverMg())
+                // .copperG(request.getCopperG())
+                // .palladiumMg(request.getPalladiumMg())
+                // .recyclabilityScore(request.getRecyclabilityScore())
+                //.basePoints(request.getBasePoints())
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 
@@ -142,14 +142,14 @@ public class DeviceModelService {
         }
 
         model.setModelName(request.getModelName());
-        model.setReleaseYear(request.getReleaseYear());
-        model.setAvgWeightGrams(request.getAvgWeightGrams());
-        model.setGoldMg(request.getGoldMg());
-        model.setSilverMg(request.getSilverMg());
-        model.setCopperG(request.getCopperG());
-        model.setPalladiumMg(request.getPalladiumMg());
-        model.setRecyclabilityScore(request.getRecyclabilityScore());
-        model.setBasePoints(request.getBasePoints());
+        // model.setReleaseYear(request.getReleaseYear());
+        // model.setAvgWeightGrams(request.getAvgWeightGrams());
+        // model.setGoldMg(request.getGoldMg());
+        // model.setSilverMg(request.getSilverMg());
+        // model.setCopperG(request.getCopperG());
+        // model.setPalladiumMg(request.getPalladiumMg());
+        // model.setRecyclabilityScore(request.getRecyclabilityScore());
+        // model.setBasePoints(request.getBasePoints());
         model.setIsActive(request.getIsActive() != null ? request.getIsActive() : model.getIsActive());
 
         DeviceModel updated = modelRepository.save(model);
@@ -217,14 +217,14 @@ public class DeviceModelService {
                 .brandId(model.getBrand().getId())
                 .brandName(model.getBrand().getName())
                 .brandCode(model.getBrand().getCode())
-                .releaseYear(model.getReleaseYear())
-                .avgWeightGrams(model.getAvgWeightGrams())
-                .goldMg(model.getGoldMg())
-                .silverMg(model.getSilverMg())
-                .copperG(model.getCopperG())
-                .palladiumMg(model.getPalladiumMg())
-                .recyclabilityScore(model.getRecyclabilityScore())
-                .basePoints(model.getBasePoints())
+                // .releaseYear(model.getReleaseYear())
+                // .avgWeightGrams(model.getAvgWeightGrams())
+                // .goldMg(model.getGoldMg())
+                // .silverMg(model.getSilverMg())
+                // .copperG(model.getCopperG())
+                // .palladiumMg(model.getPalladiumMg())
+                // .recyclabilityScore(model.getRecyclabilityScore())
+                // .basePoints(model.getBasePoints())
                 .isActive(model.getIsActive())
                 .createdAt(model.getCreatedAt())
                 .updatedAt(model.getUpdatedAt())
