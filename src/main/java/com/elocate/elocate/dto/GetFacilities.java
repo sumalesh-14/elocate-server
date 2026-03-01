@@ -12,13 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GetFacilities {
 
-    @NotNull(message = "userLatitute is required")
-    private Double userLatitute;
+    private Double userLatitude;
 
-    @NotNull(message = "userLongitude is required")
     private Double userLongitude;
 
-    @NotNull(message = "distance is required")
     private Double distance; // Distance in kilometers
 
 }

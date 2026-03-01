@@ -22,17 +22,16 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class FacilityService {
-    
+
     private final RecyclingFacilityRepository facilityRepository;
-    
+
     public List<FacilityResponse> getAllFacilities(@Valid GetFacilities request) {
         log.info("Fetching all facilities");
         return facilityRepository
                 .findNearestFacilities(
-                        request.getUserLatitute(),
+                        request.getUserLatitude(),
                         request.getUserLongitude(),
-                        request.getDistance()
-                )
+                        request.getDistance())
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -49,6 +48,7 @@ public class FacilityService {
 
     private FacilityResponse mapToResponse(FacilityWithDistanceProjection f) {
         return FacilityResponse.builder()
+                .id(f.getId())
                 .address(f.getAddress())
                 .distance(f.getDistance())
                 .name(f.getName())
@@ -61,20 +61,19 @@ public class FacilityService {
                 .build();
     }
 
-    
     public Optional<RecyclingFacility> getFacilityById(UUID id) {
         return facilityRepository.findById(id);
     }
-    
+
     public RecyclingFacility createFacility(RecyclingFacility facility) {
         return facilityRepository.save(facility);
     }
-    
+
     public RecyclingFacility updateFacility(UUID id, RecyclingFacility facility) {
         facility.setId(id);
         return facilityRepository.save(facility);
     }
-    
+
     public void deleteFacility(UUID id) {
         facilityRepository.deleteById(id);
     }

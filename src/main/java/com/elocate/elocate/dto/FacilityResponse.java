@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class FacilityResponse {
+    private java.util.UUID id;
     private String address;
     private double distance;
     private String name;
