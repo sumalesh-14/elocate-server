@@ -38,22 +38,25 @@ public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFaci
                     )) AS distance
                 FROM recycling_facility f
                 WHERE f.is_active = true
-                HAVING distance <= :distance
+                AND (6371 * acos(
+                    cos(radians(:lat)) *
+                    cos(radians(f.latitude)) *
+                    cos(radians(f.longitude) - radians(:lon)) +
+                    sin(radians(:lat)) *
+                    sin(radians(f.latitude))
+                )) <= :distance
                 ORDER BY distance
             """, countQuery = """
-                SELECT count(*) FROM (
-                    SELECT
-                        6371 * acos(
-                            cos(radians(:lat)) *
-                            cos(radians(latitude)) *
-                            cos(radians(longitude) - radians(:lon)) +
-                            sin(radians(:lat)) *
-                            sin(radians(latitude))
-                        ) AS distance
-                    FROM recycling_facility
-                    WHERE is_active = true
-                    HAVING distance <= :distance
-                ) AS count_query
+                SELECT count(*)
+                FROM recycling_facility
+                WHERE is_active = true
+                AND (6371 * acos(
+                    cos(radians(:lat)) *
+                    cos(radians(latitude)) *
+                    cos(radians(longitude) - radians(:lon)) +
+                    sin(radians(:lat)) *
+                    sin(radians(latitude))
+                )) <= :distance
             """, nativeQuery = true)
     Page<FacilityWithDistanceProjection> findNearestFacilities(
             @Param("lat") double lat,
