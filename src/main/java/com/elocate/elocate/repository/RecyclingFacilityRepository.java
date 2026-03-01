@@ -19,33 +19,47 @@ import com.elocate.elocate.model.User;
 public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFacility, UUID> {
 
     @Query(value = """
-    SELECT 
-        f.name AS name,
-        f.address AS address,
-        f.capacity AS capacity,
-        f.latitude AS latitude,
-        f.longitude AS longitude,
-        f.contact_number AS contactNumber,
-        f.operating_hours AS operatingHours,
-        f.is_verified AS isVerified,
-        6371 * acos(
-            cos(radians(:lat)) *
-            cos(radians(f.latitude)) *
-            cos(radians(f.longitude) - radians(:lon)) +
-            sin(radians(:lat)) *
-            sin(radians(f.latitude))
-        ) AS distance
-    FROM recycling_facility f
-    WHERE f.is_active = true
-    HAVING distance <= :distance
-    ORDER BY distance
-    LIMIT 10
-""", nativeQuery = true)
-    List<FacilityWithDistanceProjection> findNearestFacilities(
+                SELECT
+                    f.id AS id,
+                    f.name AS name,
+                    f.address AS address,
+                    f.capacity AS capacity,
+                    f.latitude AS latitude,
+                    f.longitude AS longitude,
+                    f.contact_number AS contactNumber,
+                    f.operating_hours AS operatingHours,
+                    f.is_verified AS isVerified,
+                    (6371 * acos(
+                        cos(radians(:lat)) *
+                        cos(radians(f.latitude)) *
+                        cos(radians(f.longitude) - radians(:lon)) +
+                        sin(radians(:lat)) *
+                        sin(radians(f.latitude))
+                    )) AS distance
+                FROM recycling_facility f
+                WHERE f.is_active = true
+                HAVING distance <= :distance
+                ORDER BY distance
+            """, countQuery = """
+                SELECT count(*) FROM (
+                    SELECT
+                        6371 * acos(
+                            cos(radians(:lat)) *
+                            cos(radians(latitude)) *
+                            cos(radians(longitude) - radians(:lon)) +
+                            sin(radians(:lat)) *
+                            sin(radians(latitude))
+                        ) AS distance
+                    FROM recycling_facility
+                    WHERE is_active = true
+                    HAVING distance <= :distance
+                ) AS count_query
+            """, nativeQuery = true)
+    Page<FacilityWithDistanceProjection> findNearestFacilities(
             @Param("lat") double lat,
             @Param("lon") double lon,
-            @Param("distance") double distance
-    );
+            @Param("distance") double distance,
+            Pageable pageable);
 
     Page<RecyclingFacility> findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(
             String name, String address, Pageable pageable);

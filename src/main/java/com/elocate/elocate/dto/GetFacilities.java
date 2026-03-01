@@ -18,4 +18,8 @@ public class GetFacilities {
 
     private Double distance; // Distance in kilometers
 
+    private Integer page = 0;
+
+    private Integer size = 10;
+
 }

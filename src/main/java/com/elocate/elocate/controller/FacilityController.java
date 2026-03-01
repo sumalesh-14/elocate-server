@@ -23,24 +23,23 @@ public class FacilityController {
     private final FacilityService facilityService;
 
     @GetMapping
-    public ResponseEntity<List<FacilityResponse>> getAllFacilities(
+    public ResponseEntity<Page<FacilityResponse>> getAllFacilities(
             @Valid @ModelAttribute GetFacilities getFacilities) {
         if (getFacilities.getUserLatitude() == null || getFacilities.getUserLongitude() == null) {
             log.info("Fetching facilities without coordinates - returning all");
-            return ResponseEntity.ok(facilityService.listFacilities(0, 100, null)
-                    .getContent().stream()
-                    .map(f -> FacilityResponse.builder()
-                            .id(f.getId())
-                            .name(f.getName())
-                            .address(f.getAddress())
-                            .lat(f.getLatitude().doubleValue())
-                            .lon(f.getLongitude().doubleValue())
-                            .capacity(f.getCapacity() != null ? f.getCapacity() : 0)
-                            .contact(f.getContactNumber())
-                            .time(f.getOperatingHours())
-                            .verified(Boolean.TRUE.equals(f.getIsVerified()))
-                            .build())
-                    .toList());
+            return ResponseEntity
+                    .ok(facilityService.listFacilities(getFacilities.getPage(), getFacilities.getSize(), null)
+                            .map(f -> FacilityResponse.builder()
+                                    .id(f.getId())
+                                    .name(f.getName())
+                                    .address(f.getAddress())
+                                    .lat(f.getLatitude().doubleValue())
+                                    .lon(f.getLongitude().doubleValue())
+                                    .capacity(f.getCapacity() != null ? f.getCapacity() : 0)
+                                    .contact(f.getContactNumber())
+                                    .time(f.getOperatingHours())
+                                    .verified(Boolean.TRUE.equals(f.getIsVerified()))
+                                    .build()));
         }
         return ResponseEntity.ok(facilityService.getAllFacilities(getFacilities));
     }

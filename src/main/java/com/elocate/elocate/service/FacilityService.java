@@ -25,16 +25,16 @@ public class FacilityService {
 
     private final RecyclingFacilityRepository facilityRepository;
 
-    public List<FacilityResponse> getAllFacilities(@Valid GetFacilities request) {
+    public Page<FacilityResponse> getAllFacilities(@Valid GetFacilities request) {
         log.info("Fetching all facilities");
+        PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
         return facilityRepository
                 .findNearestFacilities(
                         request.getUserLatitude(),
                         request.getUserLongitude(),
-                        request.getDistance())
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+                        request.getDistance(),
+                        pageRequest)
+                .map(this::mapToResponse);
     }
 
     public Page<RecyclingFacility> listFacilities(int page, int size, String search) {
