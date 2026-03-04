@@ -16,59 +16,74 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class FulfillmentStatusValidator {
-    
+
     private final UserAddressRepository userAddressRepository;
-    
+
     /**
      * Validate that the status transition is allowed
      * 
      * @param current Current fulfillment status
-     * @param next Next fulfillment status
+     * @param next    Next fulfillment status
      * @throws IllegalArgumentException if transition is invalid
      */
     public void validateStatusTransition(FulfillmentStatus current, FulfillmentStatus next) {
         // Rule 1: Cannot transition from PICKUP status to DROP status
         if (current.isPickupStatus() && next.isDropStatus()) {
             throw new IllegalArgumentException(
-                    "Invalid status transition: Cannot change from PICKUP status (" + current + 
-                    ") to DROP status (" + next + ")");
+                    "Invalid status transition: Cannot change from PICKUP status (" + current +
+                            ") to DROP status (" + next + ")");
         }
-        
+
         // Rule 2: Cannot transition from DROP status to PICKUP status
         if (current.isDropStatus() && next.isPickupStatus()) {
             throw new IllegalArgumentException(
-                    "Invalid status transition: Cannot change from DROP status (" + current + 
-                    ") to PICKUP status (" + next + ")");
+                    "Invalid status transition: Cannot change from DROP status (" + current +
+                            ") to PICKUP status (" + next + ")");
         }
-        
+
         // Additional validation can be added here for specific transition rules
         // e.g., PICKUP_REQUESTED can only go to PICKUP_ASSIGNED or PICKUP_FAILED
     }
-    
+
     /**
      * Validate pickup requirements and return the address to use
      * 
-     * @param dto The create request DTO
+     * @param dto    The create request DTO
      * @param userId User ID
      * @return The UserAddress entity to use (either provided or default)
      * @throws IllegalArgumentException if validation fails
      */
     public UserAddress validateAndGetPickupAddress(CreateRecycleRequestDto dto, UUID userId) {
-        // If pickup address is provided, fetch and return it
+        // If raw address details are provided, create a new UserAddress
+        if (dto.getAddress() != null && !dto.getAddress().isEmpty()) {
+            UserAddress newAddress = UserAddress.builder()
+                    .userId(userId)
+                    .address(dto.getAddress())
+                    .city(dto.getCity())
+                    .state(dto.getState())
+                    .pincode(dto.getPincode())
+                    .latitude(dto.getLatitude())
+                    .longitude(dto.getLongitude())
+                    .isDefault(false) // Custom addresses are not default by default
+                    .build();
+            return userAddressRepository.save(newAddress);
+        }
+
+        // If pickup address ID is provided, fetch and return it
         if (dto.getPickupAddressId() != null) {
             return userAddressRepository.findById(dto.getPickupAddressId())
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Pickup address not found: " + dto.getPickupAddressId()));
         }
-        
+
         // Otherwise, fetch user's default address
         return userAddressRepository
                 .findByUserIdAndIsDefault(userId, true)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No pickup address provided and user has no default address. " +
-                        "Please provide a pickup address or set a default address."));
+                                "Please provide a pickup address or set a default address."));
     }
-    
+
     /**
      * Validate drop-off requirements
      * 
@@ -81,7 +96,7 @@ public class FulfillmentStatusValidator {
                     "Facility ID is required for DROP_OFF fulfillment type");
         }
     }
-    
+
     /**
      * Get the initial fulfillment status based on fulfillment type
      * 

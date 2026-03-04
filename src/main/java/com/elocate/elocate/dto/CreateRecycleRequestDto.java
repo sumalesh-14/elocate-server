@@ -15,26 +15,33 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateRecycleRequestDto {
-    
+
     @NotNull(message = "Device model ID is required")
     private UUID deviceModelId;
-    
+
     @NotBlank(message = "Condition code is required")
     private String conditionCode;
-    
+
     @NotNull(message = "Fulfillment type is required")
     private FulfillmentType fulfillmentType;
-    
+
     /**
      * Optional - if not provided for PICKUP, default address will be used
      */
     private UUID pickupAddressId;
-    
+
     /**
      * Required for DROP_OFF fulfillment type
      */
     private UUID facilityId;
-    
-    private String notes;
-}
 
+    private String notes;
+
+    // Optional fields for adhoc pickup address
+    private String address;
+    private String city;
+    private String state;
+    private String pincode;
+    private java.math.BigDecimal latitude;
+    private java.math.BigDecimal longitude;
+}

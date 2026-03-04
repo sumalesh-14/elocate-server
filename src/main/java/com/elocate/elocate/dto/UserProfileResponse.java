@@ -15,12 +15,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserProfileResponse {
-    
+
     private String status;
     private String message;
     private UserData user;
     private TokenData tokens;
-    
+    private AddressData address;
+    private WalletData wallet;
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -32,15 +34,37 @@ public class UserProfileResponse {
         private String mobileNumber;
         private String role;
     }
-    
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AddressData {
+        private UUID id;
+        private String address;
+        private String city;
+        private String state;
+        private String pincode;
+        private java.math.BigDecimal latitude;
+        private java.math.BigDecimal longitude;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class WalletData {
+        private java.math.BigDecimal pointsBalance;
+    }
+
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TokenData {
-        private String accessToken;       // Local JWT for API access
-        private String refreshToken;      // Refresh token
+        private String accessToken; // Local JWT for API access
+        private String refreshToken; // Refresh token
         private String providerAccessToken; // Provider (Auth0) token
-        private long expiresIn;           // Expiration time in milliseconds
+        private long expiresIn; // Expiration time in milliseconds
     }
 }
