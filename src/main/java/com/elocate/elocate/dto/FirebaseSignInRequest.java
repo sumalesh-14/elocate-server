@@ -15,9 +15,10 @@ public class FirebaseSignInRequest {
     @NotBlank
     @Email
     private String email;
-    
+
     @NotBlank
     private String password;
-    
+
+    @Builder.Default
     private boolean returnSecureToken = true;
 }

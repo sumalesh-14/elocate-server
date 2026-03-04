@@ -86,6 +86,7 @@ public class RecyclingFacility {
     @Column(name = "approval_status", length = 20)
     private String approvalStatus = "PENDING";
 
+    @Builder.Default
     @OneToMany(mappedBy = "facility")
     private Set<FacilityServiceArea> facilityServiceAreas = new LinkedHashSet<>();
 

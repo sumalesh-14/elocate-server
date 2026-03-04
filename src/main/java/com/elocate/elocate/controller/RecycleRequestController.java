@@ -21,9 +21,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/recycle-requests")
 @RequiredArgsConstructor
 public class RecycleRequestController {
-    
+
     private final RecycleRequestService recycleRequestService;
-    
+
     /**
      * Create new recycle request with point estimation and fulfillment tracking
      * 
@@ -40,13 +40,28 @@ public class RecycleRequestController {
     public ResponseEntity<RecycleRequestResponse> createRecycleRequest(
             @RequestParam UUID userId,
             @Valid @RequestBody CreateRecycleRequestDto request) {
-        log.info("POST /api/v1/recycle-requests - userId: {}, deviceModelId: {}", 
+        log.info("POST /api/v1/recycle-requests - userId: {}, deviceModelId: {}",
                 userId, request.getDeviceModelId());
-        
+
         RecycleRequestResponse response = recycleRequestService.createRecycleRequest(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
+
+    /**
+     * Get recycle requests by user ID with optional filters
+     */
+    @GetMapping
+    public ResponseEntity<List<RecycleRequestResponse>> getRecycleRequests(
+            @RequestParam UUID userId,
+            @RequestParam(required = false) com.elocate.elocate.model.RecycleStatus status,
+            @RequestParam(required = false) String searchTerm) {
+        log.info("GET /api/v1/recycle-requests - userId: {}, status: {}, search: {}",
+                userId, status, searchTerm);
+
+        List<RecycleRequestResponse> responses = recycleRequestService.getRecycleRequests(userId, status, searchTerm);
+        return ResponseEntity.ok(responses);
+    }
+
     /**
      * Get recycle request by ID
      */
@@ -56,7 +71,7 @@ public class RecycleRequestController {
         RecycleRequestResponse response = recycleRequestService.getRecycleRequestById(id);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Verify recycle request and recalculate final points
      * 
@@ -70,30 +85,31 @@ public class RecycleRequestController {
     public ResponseEntity<RecycleRequestResponse> verifyRecycleRequest(
             @PathVariable UUID id,
             @Valid @RequestBody VerifyRecycleRequestDto request) {
-        log.info("PUT /api/v1/recycle-requests/{}/verify - weight: {}, condition: {}", 
+        log.info("PUT /api/v1/recycle-requests/{}/verify - weight: {}, condition: {}",
                 id, request.getVerifiedWeightGrams(), request.getVerifiedConditionCode());
-        
+
         RecycleRequestResponse response = recycleRequestService.verifyRecycleRequest(id, request);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Update fulfillment status of a recycle request
      * 
      * This endpoint allows updating the logistics status (pickup or drop-off flow)
-     * Validates that status transitions are valid (e.g., cannot go from PICKUP to DROP status)
+     * Validates that status transitions are valid (e.g., cannot go from PICKUP to
+     * DROP status)
      */
     @PutMapping("/{id}/fulfillment-status")
     public ResponseEntity<RecycleRequestResponse> updateFulfillmentStatus(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateFulfillmentStatusDto request) {
-        log.info("PUT /api/v1/recycle-requests/{}/fulfillment-status - new status: {}", 
+        log.info("PUT /api/v1/recycle-requests/{}/fulfillment-status - new status: {}",
                 id, request.getNewStatus());
-        
+
         RecycleRequestResponse response = recycleRequestService.updateFulfillmentStatus(id, request);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * Get fulfillment status history for a recycle request
      * 
@@ -103,7 +119,7 @@ public class RecycleRequestController {
     @GetMapping("/{id}/status-history")
     public ResponseEntity<List<RecycleStatusHistory>> getStatusHistory(@PathVariable UUID id) {
         log.info("GET /api/v1/recycle-requests/{}/status-history", id);
-        
+
         List<RecycleStatusHistory> history = recycleRequestService.getStatusHistory(id);
         return ResponseEntity.ok(history);
     }

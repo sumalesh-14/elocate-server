@@ -1,6 +1,5 @@
 package com.elocate.elocate.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,8 +17,10 @@ public class GetFacilities {
 
     private Double distance; // Distance in kilometers
 
+    @Builder.Default
     private Integer page = 0;
 
+    @Builder.Default
     private Integer size = 10;
 
 }
