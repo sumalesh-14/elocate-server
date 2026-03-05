@@ -6,6 +6,10 @@ import com.elocate.elocate.model.Driver;
 import com.elocate.elocate.repository.DriverRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,26 +46,28 @@ public class DriverService {
     }
 
     @Transactional(readOnly = true)
-    public List<DriverResponseDto> getAllDrivers(String availability, String searchTerm) {
-        log.info("Fetching drivers with availability: {}, search: {}", availability, searchTerm);
+    public Page<DriverResponseDto> getAllDrivers(String availability, String searchTerm, int page, int size) {
+        log.info("Fetching drivers - availability: {}, search: {}, page: {}, size: {}", availability, searchTerm, page,
+                size);
 
-        List<Driver> drivers;
-        boolean hasAvailability = availability != null && !availability.isBlank();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Driver> driversPage;
+
+        boolean hasAvailability = availability != null && !availability.isBlank()
+                && !availability.equalsIgnoreCase("All");
         boolean hasSearch = searchTerm != null && !searchTerm.isBlank();
 
         if (hasAvailability && hasSearch) {
-            drivers = driverRepository.findByAvailabilityAndSearchTerm(availability, searchTerm);
+            driversPage = driverRepository.findByAvailabilityAndSearchTerm(availability, searchTerm, pageable);
         } else if (hasAvailability) {
-            drivers = driverRepository.findByAvailabilityIgnoreCase(availability);
+            driversPage = driverRepository.findByAvailabilityIgnoreCase(availability, pageable);
         } else if (hasSearch) {
-            drivers = driverRepository.searchDrivers(searchTerm);
+            driversPage = driverRepository.searchDrivers(searchTerm, pageable);
         } else {
-            drivers = driverRepository.findAll();
+            driversPage = driverRepository.findAll(pageable);
         }
 
-        return drivers.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return driversPage.map(this::mapToResponse);
     }
 
     @Transactional(readOnly = true)

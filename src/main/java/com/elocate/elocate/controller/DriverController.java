@@ -6,11 +6,11 @@ import com.elocate.elocate.service.DriverService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -29,11 +29,14 @@ public class DriverController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DriverResponseDto>> getAllDrivers(
+    public ResponseEntity<Page<DriverResponseDto>> getAllDrivers(
             @RequestParam(required = false) String availability,
-            @RequestParam(required = false) String search) {
-        log.info("GET /api/v1/drivers - availability: {}, search: {}", availability, search);
-        List<DriverResponseDto> responses = driverService.getAllDrivers(availability, search);
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size) {
+        log.info("GET /api/v1/drivers - availability: {}, search: {}, page: {}, size: {}", availability, search, page,
+                size);
+        Page<DriverResponseDto> responses = driverService.getAllDrivers(availability, search, page, size);
         return ResponseEntity.ok(responses);
     }
 
