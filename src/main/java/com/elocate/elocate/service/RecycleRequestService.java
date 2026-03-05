@@ -4,6 +4,8 @@ import com.elocate.elocate.dto.CreateRecycleRequestDto;
 import com.elocate.elocate.dto.RecycleRequestResponse;
 import com.elocate.elocate.dto.UpdateFulfillmentStatusDto;
 import com.elocate.elocate.dto.VerifyRecycleRequestDto;
+import com.elocate.elocate.dto.AssignDriverDto;
+import com.elocate.elocate.dto.DriverActionReasonDto;
 import com.elocate.elocate.exception.ConditionFactorNotFoundException;
 import com.elocate.elocate.exception.ModelNotFoundException;
 import com.elocate.elocate.exception.RecycleRequestNotFoundException;
@@ -318,6 +320,107 @@ public class RecycleRequestService {
         }
 
         /**
+         * Facility owner approves the request
+         */
+        @Transactional
+        public RecycleRequestResponse approveRequest(UUID id) {
+                RecycleRequest request = recycleRequestRepository.findById(id)
+                                .orElseThrow(() -> new RecycleRequestNotFoundException(id));
+                request.setStatus(RecycleStatus.APPROVED);
+                log.info("Request {} approved by facility owner.", id);
+                return mapToResponse(recycleRequestRepository.save(request));
+        }
+
+        /**
+         * Assign driver and trigger email links
+         */
+        @Transactional
+        public RecycleRequestResponse assignDriver(UUID id, AssignDriverDto dto) {
+                RecycleRequest request = recycleRequestRepository.findById(id)
+                                .orElseThrow(() -> new RecycleRequestNotFoundException(id));
+
+                request.setAssignedDriverId(dto.getDriverId());
+                FulfillmentStatus oldStatus = request.getFulfillmentStatus();
+                request.setFulfillmentStatus(FulfillmentStatus.PICKUP_ASSIGNED);
+
+                RecycleRequest saved = recycleRequestRepository.save(request);
+                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_ASSIGNED, null);
+
+                // MOCK EMAIL SENDING
+                String token = UUID.randomUUID().toString(); // In real app, generate secure expiring JWT or DB token
+                log.info("📧 MOCK EMAIL TO DRIVER: You have been assigned to pickup request {}.", id);
+                log.info("🔗 Link 1 (Pickup Done): GET /api/v1/recycle-requests/driver-action/{}/pickup-done?token={}",
+                                id, token);
+                log.info("🔗 Link 2 (Pickup Not Done): POST /api/v1/recycle-requests/driver-action/{}/pickup-failed",
+                                id);
+
+                return mapToResponse(saved);
+        }
+
+        /**
+         * Driver action: direct pickup done from email link
+         */
+        @Transactional
+        public RecycleRequestResponse handleDriverPickupDone(UUID id, String token) {
+                log.info("Driver indicated pickup done directly from link for request {}, token: {}", id, token);
+                // In a real app, validate the token here.
+
+                RecycleRequest request = recycleRequestRepository.findById(id)
+                                .orElseThrow(() -> new RecycleRequestNotFoundException(id));
+
+                FulfillmentStatus oldStatus = request.getFulfillmentStatus();
+                request.setFulfillmentStatus(FulfillmentStatus.PICKUP_COMPLETED);
+
+                RecycleRequest saved = recycleRequestRepository.save(request);
+                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_COMPLETED,
+                                request.getAssignedDriverId());
+
+                return mapToResponse(saved);
+        }
+
+        /**
+         * Driver action: pickup failed with reason
+         */
+        @Transactional
+        public RecycleRequestResponse handleDriverPickupFailed(UUID id, DriverActionReasonDto dto) {
+                log.info("Driver reported pickup failure for request {}, reason: {}", id, dto.getReason());
+
+                RecycleRequest request = recycleRequestRepository.findById(id)
+                                .orElseThrow(() -> new RecycleRequestNotFoundException(id));
+
+                FulfillmentStatus oldStatus = request.getFulfillmentStatus();
+                request.setFulfillmentStatus(FulfillmentStatus.PICKUP_FAILED);
+                request.setDriverFailureReason(dto.getReason());
+
+                // Set lock status
+                request.setStatus(RecycleStatus.LOCKED);
+
+                RecycleRequest saved = recycleRequestRepository.save(request);
+                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_FAILED,
+                                request.getAssignedDriverId());
+
+                return mapToResponse(saved);
+        }
+
+        /**
+         * Officer verifies failure and resolves lock
+         */
+        @Transactional
+        public RecycleRequestResponse verifyFailureAndLock(UUID id, RecycleStatus newStatus) {
+                log.info("Officer resolving locked request {} to new status {}", id, newStatus);
+
+                RecycleRequest request = recycleRequestRepository.findById(id)
+                                .orElseThrow(() -> new RecycleRequestNotFoundException(id));
+
+                if (request.getStatus() != RecycleStatus.LOCKED) {
+                        throw new IllegalStateException("Request is not LOCKED");
+                }
+
+                request.setStatus(newStatus);
+                return mapToResponse(recycleRequestRepository.save(request));
+        }
+
+        /**
          * Map entity to response DTO
          */
         private RecycleRequestResponse mapToResponse(RecycleRequest request) {
@@ -334,6 +437,8 @@ public class RecycleRequestService {
                                 .fulfillmentType(request.getFulfillmentType())
                                 .fulfillmentStatus(request.getFulfillmentStatus())
                                 .fulfillmentStatusDisplay(request.getFulfillmentStatus().getDisplayText())
+                                .assignedDriverId(request.getAssignedDriverId())
+                                .driverFailureReason(request.getDriverFailureReason())
                                 .pickupDate(request.getPickupDate())
                                 .createdAt(request.getCreatedAt())
                                 .updatedAt(request.getUpdatedAt());

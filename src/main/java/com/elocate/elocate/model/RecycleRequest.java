@@ -49,6 +49,12 @@ public class RecycleRequest {
     @Column(name = "fulfillment_status", nullable = false)
     private FulfillmentStatus fulfillmentStatus;
 
+    @Column(name = "assigned_driver_id")
+    private UUID assignedDriverId;
+
+    @Column(name = "driver_failure_reason")
+    private String driverFailureReason;
+
     @Column(name = "estimated_points", precision = 10, scale = 2)
     private BigDecimal estimatedPoints;
 
