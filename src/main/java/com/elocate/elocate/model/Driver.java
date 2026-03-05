@@ -32,10 +32,13 @@ public class Driver {
     @Column(name = "vehicle_number", nullable = false)
     private String vehicleNumber;
 
-    // e.g., AVAILABLE, ON_ROUTE, BUSY, OFFLINE
     @Column(nullable = false)
     @Builder.Default
     private String availability = "AVAILABLE";
+
+    @Column(name = "vehicle_type", nullable = false)
+    @Builder.Default
+    private String vehicleType = "VAN";
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

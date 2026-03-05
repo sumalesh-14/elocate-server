@@ -21,4 +21,6 @@ public class DriverRequestDto {
     private String vehicleNumber;
 
     private String availability;
+
+    private String vehicleType;
 }

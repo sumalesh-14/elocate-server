@@ -34,6 +34,7 @@ public class DriverService {
                 .phone(request.getPhone())
                 .vehicleNumber(request.getVehicleNumber())
                 .availability(request.getAvailability() != null ? request.getAvailability() : "AVAILABLE")
+                .vehicleType(request.getVehicleType() != null ? request.getVehicleType() : "VAN")
                 .build();
 
         Driver saved = driverRepository.save(driver);
@@ -90,6 +91,9 @@ public class DriverService {
         if (request.getAvailability() != null) {
             driver.setAvailability(request.getAvailability());
         }
+        if (request.getVehicleType() != null) {
+            driver.setVehicleType(request.getVehicleType());
+        }
 
         Driver updated = driverRepository.save(driver);
         return mapToResponse(updated);
@@ -111,6 +115,7 @@ public class DriverService {
                 .phone(driver.getPhone())
                 .vehicleNumber(driver.getVehicleNumber())
                 .availability(driver.getAvailability())
+                .vehicleType(driver.getVehicleType())
                 .build();
     }
 }
