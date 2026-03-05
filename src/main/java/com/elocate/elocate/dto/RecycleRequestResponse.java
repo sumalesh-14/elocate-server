@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RecycleRequestResponse {
-    
+
     private UUID id;
     private UUID deviceModelId;
     private String deviceModelName;
@@ -26,7 +27,7 @@ public class RecycleRequestResponse {
     private BigDecimal estimatedPoints;
     private BigDecimal finalPoints;
     private String status;
-    
+
     // Fulfillment tracking fields
     private FulfillmentType fulfillmentType;
     private FulfillmentStatus fulfillmentStatus;
@@ -34,8 +35,16 @@ public class RecycleRequestResponse {
     private UUID pickupAddressId;
     private UUID facilityId;
     private String facilityName;
-    
+
+    // Pickup address details (only present for PICKUP type)
+    private String pickupAddress;
+    private String pickupCity;
+    private String pickupState;
+    private String pickupPincode;
+
+    // Scheduled pickup date
+    private LocalDate pickupDate;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
-

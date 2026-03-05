@@ -143,13 +143,33 @@ public class RecycleRequestService {
         }
 
         /**
-         * Get recycle request by ID
+         * Get recycle requests for a user with optional status and search filters.
+         *
+         * Uses separate repository queries per filter combination to avoid passing
+         * null bind parameters into JPQL, which causes PostgreSQL to fail with
+         * "function lower(bytea) does not exist" when it cannot infer the parameter
+         * type.
          */
         @Transactional(readOnly = true)
         public List<RecycleRequestResponse> getRecycleRequests(UUID userId, RecycleStatus status, String searchTerm) {
                 log.info("Fetching recycle requests for user: {}, status: {}, search: {}", userId, status, searchTerm);
-                return recycleRequestRepository.findByUserIdWithFilters(userId, status, searchTerm)
-                                .stream()
+
+                boolean hasStatus = status != null;
+                boolean hasSearch = searchTerm != null && !searchTerm.isBlank();
+
+                List<RecycleRequest> results;
+                if (hasStatus && hasSearch) {
+                        results = recycleRequestRepository.findByUserIdAndStatusAndSearchTerm(userId, status,
+                                        searchTerm);
+                } else if (hasStatus) {
+                        results = recycleRequestRepository.findByUserIdAndStatus(userId, status);
+                } else if (hasSearch) {
+                        results = recycleRequestRepository.findByUserIdAndSearchTerm(userId, searchTerm);
+                } else {
+                        results = recycleRequestRepository.findByUserId(userId);
+                }
+
+                return results.stream()
                                 .map(this::mapToResponse)
                                 .toList();
         }
@@ -314,12 +334,18 @@ public class RecycleRequestService {
                                 .fulfillmentType(request.getFulfillmentType())
                                 .fulfillmentStatus(request.getFulfillmentStatus())
                                 .fulfillmentStatusDisplay(request.getFulfillmentStatus().getDisplayText())
+                                .pickupDate(request.getPickupDate())
                                 .createdAt(request.getCreatedAt())
                                 .updatedAt(request.getUpdatedAt());
 
-                // Add pickup address if present
+                // Add pickup address details if present
                 if (request.getPickupAddress() != null) {
-                        builder.pickupAddressId(request.getPickupAddress().getId());
+                        UserAddress addr = request.getPickupAddress();
+                        builder.pickupAddressId(addr.getId())
+                                        .pickupAddress(addr.getAddress())
+                                        .pickupCity(addr.getCity())
+                                        .pickupState(addr.getState())
+                                        .pickupPincode(addr.getPincode());
                 }
 
                 // Add facility info if present

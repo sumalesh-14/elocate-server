@@ -13,22 +13,62 @@ import java.util.UUID;
 @Repository
 public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, UUID> {
 
-    @Query("SELECT r FROM RecycleRequest r " +
-            "JOIN r.deviceModel dm " +
-            "JOIN dm.brand b " +
-            "WHERE r.userId = :userId " +
-            "AND (:status IS NULL OR r.status = :status) " +
-            "AND (:searchTerm IS NULL OR LOWER(dm.modelName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
-            "OR LOWER(b.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
-            "ORDER BY r.createdAt DESC")
-    List<RecycleRequest> findByUserIdWithFilters(
-            @Param("userId") UUID userId,
-            @Param("status") RecycleStatus status,
-            @Param("searchTerm") String searchTerm);
+        // All requests for a user (no filters)
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "WHERE r.userId = :userId " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findByUserId(@Param("userId") UUID userId);
 
-    // Legacy methods used by PartnerManagementService
-    Long countByRecyclingFacility(com.elocate.elocate.model.RecyclingFacility recyclingFacility);
+        // Filter by status only
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "WHERE r.userId = :userId " +
+                        "AND r.status = :status " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findByUserIdAndStatus(
+                        @Param("userId") UUID userId,
+                        @Param("status") RecycleStatus status);
 
-    Long countByRecyclingFacilityAndStatus(com.elocate.elocate.model.RecyclingFacility recyclingFacility,
-            String status);
+        // Filter by searchTerm only
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "WHERE r.userId = :userId " +
+                        "AND (LOWER(dm.modelName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+                        "OR LOWER(b.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findByUserIdAndSearchTerm(
+                        @Param("userId") UUID userId,
+                        @Param("searchTerm") String searchTerm);
+
+        // Filter by both status and searchTerm
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "WHERE r.userId = :userId " +
+                        "AND r.status = :status " +
+                        "AND (LOWER(dm.modelName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+                        "OR LOWER(b.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findByUserIdAndStatusAndSearchTerm(
+                        @Param("userId") UUID userId,
+                        @Param("status") RecycleStatus status,
+                        @Param("searchTerm") String searchTerm);
+
+        // Legacy methods used by PartnerManagementService
+        Long countByRecyclingFacility(com.elocate.elocate.model.RecyclingFacility recyclingFacility);
+
+        Long countByRecyclingFacilityAndStatus(com.elocate.elocate.model.RecyclingFacility recyclingFacility,
+                        String status);
 }
