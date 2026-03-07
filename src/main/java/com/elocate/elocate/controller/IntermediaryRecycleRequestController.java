@@ -13,9 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import com.elocate.elocate.context.UserContextHolder;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -95,12 +94,11 @@ public class IntermediaryRecycleRequestController {
         @PostMapping("/{id}/approve")
         public ResponseEntity<Map<String, String>> approveRequest(
                         @PathVariable UUID id,
-                        @Valid @RequestBody IntermediaryApprovalRequest request,
-                        @AuthenticationPrincipal UserDetails userDetails) {
+                        @Valid @RequestBody IntermediaryApprovalRequest request) {
 
                 log.info("Intermediary approving request: {}", id);
 
-                UUID facilityOwnerId = UUID.fromString(userDetails.getUsername());
+                UUID facilityOwnerId = UserContextHolder.getContext().getUserId();
                 intermediaryService.approveRequest(id, request, facilityOwnerId);
 
                 return ResponseEntity.ok(Map.of(
@@ -114,12 +112,11 @@ public class IntermediaryRecycleRequestController {
         @PostMapping("/{id}/reject")
         public ResponseEntity<Map<String, String>> rejectRequest(
                         @PathVariable UUID id,
-                        @RequestBody Map<String, String> body,
-                        @AuthenticationPrincipal UserDetails userDetails) {
+                        @RequestBody Map<String, String> body) {
 
                 log.info("Intermediary rejecting request: {}", id);
 
-                UUID facilityOwnerId = UUID.fromString(userDetails.getUsername());
+                UUID facilityOwnerId = UserContextHolder.getContext().getUserId();
                 String reason = body.get("reason");
 
                 if (reason == null || reason.isBlank()) {
@@ -139,12 +136,11 @@ public class IntermediaryRecycleRequestController {
         @PostMapping("/{id}/update-pricing")
         public ResponseEntity<Map<String, String>> updatePricing(
                         @PathVariable UUID id,
-                        @Valid @RequestBody IntermediaryPriceChangeRequest request,
-                        @AuthenticationPrincipal UserDetails userDetails) {
+                        @Valid @RequestBody IntermediaryPriceChangeRequest request) {
 
                 log.info("Intermediary updating pricing for request: {}", id);
 
-                UUID facilityOwnerId = UUID.fromString(userDetails.getUsername());
+                UUID facilityOwnerId = UserContextHolder.getContext().getUserId();
                 intermediaryService.updatePricingAfterReceipt(id, request, facilityOwnerId);
 
                 return ResponseEntity.ok(Map.of(
@@ -158,12 +154,11 @@ public class IntermediaryRecycleRequestController {
         @PostMapping("/{id}/verify-condition")
         public ResponseEntity<Map<String, String>> verifyCondition(
                         @PathVariable UUID id,
-                        @Valid @RequestBody ConditionVerificationRequest request,
-                        @AuthenticationPrincipal UserDetails userDetails) {
+                        @Valid @RequestBody ConditionVerificationRequest request) {
 
                 log.info("Intermediary verifying condition for request: {}", id);
 
-                UUID facilityOwnerId = UUID.fromString(userDetails.getUsername());
+                UUID facilityOwnerId = UserContextHolder.getContext().getUserId();
                 intermediaryService.verifyCondition(id, request, facilityOwnerId);
 
                 return ResponseEntity.ok(Map.of(
@@ -176,12 +171,11 @@ public class IntermediaryRecycleRequestController {
          */
         @PostMapping("/{id}/mark-recycled")
         public ResponseEntity<Map<String, String>> markAsRecycled(
-                        @PathVariable UUID id,
-                        @AuthenticationPrincipal UserDetails userDetails) {
+                        @PathVariable UUID id) {
 
                 log.info("Intermediary marking request as recycled: {}", id);
 
-                UUID facilityOwnerId = UUID.fromString(userDetails.getUsername());
+                UUID facilityOwnerId = UserContextHolder.getContext().getUserId();
                 intermediaryService.markAsRecycled(id, facilityOwnerId);
 
                 return ResponseEntity.ok(Map.of(
@@ -194,12 +188,11 @@ public class IntermediaryRecycleRequestController {
          */
         @PostMapping("/{id}/mark-dropped")
         public ResponseEntity<Map<String, String>> markAsDropped(
-                        @PathVariable UUID id,
-                        @AuthenticationPrincipal UserDetails userDetails) {
+                        @PathVariable UUID id) {
 
                 log.info("Intermediary marking request as dropped: {}", id);
 
-                UUID facilityOwnerId = UUID.fromString(userDetails.getUsername());
+                UUID facilityOwnerId = UserContextHolder.getContext().getUserId();
                 intermediaryService.markAsDropped(id, facilityOwnerId);
 
                 return ResponseEntity.ok(Map.of(
@@ -212,12 +205,11 @@ public class IntermediaryRecycleRequestController {
          */
         @PostMapping("/{id}/verify-drop")
         public ResponseEntity<Map<String, String>> verifyDropOff(
-                        @PathVariable UUID id,
-                        @AuthenticationPrincipal UserDetails userDetails) {
+                        @PathVariable UUID id) {
 
                 log.info("Intermediary verifying drop-off for request: {}", id);
 
-                UUID facilityOwnerId = UUID.fromString(userDetails.getUsername());
+                UUID facilityOwnerId = UserContextHolder.getContext().getUserId();
                 intermediaryService.verifyDropOff(id, facilityOwnerId);
 
                 return ResponseEntity.ok(Map.of(
