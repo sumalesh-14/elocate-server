@@ -41,9 +41,6 @@ public class AdminManagementService {
                 RecyclingFacility facility = facilityRepository.findById(facilityId)
                                 .orElseThrow(() -> new IllegalArgumentException("Facility not found: " + facilityId));
 
-                String oldStatus = facility.getIsVerified() != null && facility.getIsVerified() ? "APPROVED"
-                                : "PENDING";
-
                 facility.setIsVerified(true);
                 facility.setIsActive(true);
                 facilityRepository.save(facility);
@@ -70,9 +67,6 @@ public class AdminManagementService {
 
                 RecyclingFacility facility = facilityRepository.findById(facilityId)
                                 .orElseThrow(() -> new IllegalArgumentException("Facility not found: " + facilityId));
-
-                String oldStatus = facility.getIsVerified() != null && facility.getIsVerified() ? "APPROVED"
-                                : "PENDING";
 
                 facility.setIsVerified(false);
                 facility.setIsActive(false);
@@ -243,7 +237,6 @@ public class AdminManagementService {
                 User citizen = userRepository.findById(citizenId)
                                 .orElseThrow(() -> new IllegalArgumentException("Citizen not found: " + citizenId));
 
-                String oldValue = citizen.getIsActive() != null && citizen.getIsActive() ? "ACTIVE" : "INACTIVE";
                 String newValue = active ? "ACTIVE" : "INACTIVE";
 
                 citizen.setIsActive(active);

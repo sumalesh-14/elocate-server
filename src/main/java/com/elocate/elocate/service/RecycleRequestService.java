@@ -17,11 +17,15 @@ import com.elocate.elocate.repository.DeviceConditionFactorRepository;
 import com.elocate.elocate.repository.DeviceModelRepository;
 import com.elocate.elocate.repository.RecycleRequestRepository;
 import com.elocate.elocate.repository.RecyclingFacilityRepository;
+import com.elocate.elocate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import com.elocate.elocate.dto.FacilityWithDistanceProjection;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +48,8 @@ public class RecycleRequestService {
         private final RecyclingFacilityRepository recyclingFacilityRepository;
         private final FulfillmentStatusValidator fulfillmentStatusValidator;
         private final RecycleStatusHistoryService statusHistoryService;
+        private final EmailService emailService;
+        private final UserRepository userRepository;
 
         /**
          * Create recycle request with estimated points and fulfillment tracking
@@ -73,6 +79,43 @@ public class RecycleRequestService {
                 if (request.getFulfillmentType() == FulfillmentType.PICKUP) {
                         pickupAddress = fulfillmentStatusValidator.validateAndGetPickupAddress(request, userId);
                         log.info("Pickup address resolved: {}", pickupAddress.getId());
+
+                        // Handle facility assignment for PICKUP
+                        if (request.getFacilityId() != null) {
+                                facility = recyclingFacilityRepository.findById(request.getFacilityId())
+                                                .orElseThrow(() -> new IllegalArgumentException(
+                                                                "Facility not found: " + request.getFacilityId()));
+                        } else if (pickupAddress.getLatitude() != null && pickupAddress.getLongitude() != null) {
+                                // Find nearest facility within 100km
+                                Page<FacilityWithDistanceProjection> nearest = recyclingFacilityRepository
+                                                .findNearestFacilities(
+                                                                pickupAddress.getLatitude().doubleValue(),
+                                                                pickupAddress.getLongitude().doubleValue(),
+                                                                100.0,
+                                                                PageRequest.of(0, 1));
+                                if (nearest.hasContent()) {
+                                        UUID facilityId = nearest.getContent().get(0).getId();
+                                        facility = recyclingFacilityRepository.findById(facilityId).orElse(null);
+                                        log.info("Auto-assigned nearest facility by coordinates: {}",
+                                                        facility != null ? facility.getName() : "None");
+                                }
+                        }
+
+                        // Fallback if still no facility (either coordinates missing or none nearby)
+                        if (facility == null) {
+                                String searchTerm = pickupAddress.getCity() != null ? pickupAddress.getCity()
+                                                : pickupAddress.getPincode();
+                                if (searchTerm != null) {
+                                        Page<RecyclingFacility> byLocality = recyclingFacilityRepository
+                                                        .findByNameContainingIgnoreCaseOrAddressContainingIgnoreCase(
+                                                                        searchTerm, searchTerm, PageRequest.of(0, 1));
+                                        if (byLocality.hasContent()) {
+                                                facility = byLocality.getContent().get(0);
+                                                log.info("Auto-assigned facility by locality ({}): {}", searchTerm,
+                                                                facility.getName());
+                                        }
+                                }
+                        }
                 } else if (request.getFulfillmentType() == FulfillmentType.DROP_OFF) {
                         fulfillmentStatusValidator.validateDropOffRequirements(request);
                         facility = recyclingFacilityRepository.findById(request.getFacilityId())
@@ -140,6 +183,30 @@ public class RecycleRequestService {
 
                 // Step 10: Record initial status in history
                 statusHistoryService.recordStatusChange(saved, null, initialStatus, userId);
+
+                // Step 11: Send email notifications
+                try {
+                        // Notify Citizen
+                        User citizen = userRepository.findById(userId).orElse(null);
+                        if (citizen != null && citizen.getEmail() != null) {
+                                emailService.sendRequestCreatedEmail(
+                                                citizen.getEmail(),
+                                                saved.getId().toString(),
+                                                deviceModel.getModelName(),
+                                                estimatedAmount);
+                        }
+
+                        // Notify Facility
+                        if (facility != null && facility.getEmail() != null) {
+                                emailService.sendRequestAssignedToFacilityEmail(
+                                                facility.getEmail(),
+                                                saved.getId().toString(),
+                                                deviceModel.getModelName());
+                        }
+                } catch (Exception e) {
+                        log.error("Failed to send notification emails for request {}: {}", saved.getId(),
+                                        e.getMessage());
+                }
 
                 return mapToResponse(saved);
         }
