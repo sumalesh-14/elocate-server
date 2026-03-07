@@ -19,10 +19,10 @@ import java.math.BigDecimal;
 public class AdminPriceChangeRequest {
     
     @Positive(message = "Estimated points must be positive")
-    private BigDecimal estimatedPoints;
+    private BigDecimal estimatedAmount;
     
     @Positive(message = "Final points must be positive")
-    private BigDecimal finalPoints;
+    private BigDecimal finalAmount;
     
     @NotBlank(message = "Reason for price change is required")
     private String reason;

@@ -47,12 +47,17 @@ public class IntermediaryService {
         }
 
         // Update estimated points if adjusted
-        if (request.getAdjustedEstimatedPoints() != null) {
-            BigDecimal oldPoints = recycleRequest.getEstimatedPoints();
-            recycleRequest.setEstimatedPoints(request.getAdjustedEstimatedPoints());
+        if (request.getAdjustedEstimatedAmount() != null) {
+            BigDecimal oldPoints = recycleRequest.getEstimatedAmount();
+            recycleRequest.setEstimatedAmount(request.getAdjustedEstimatedAmount());
 
             log.info("Pricing adjusted from {} to {} for request {}",
-                    oldPoints, request.getAdjustedEstimatedPoints(), requestId);
+                    oldPoints, request.getAdjustedEstimatedAmount(), requestId);
+        }
+
+        // Save AI analysis payload
+        if (request.getAiPricingResponse() != null) {
+            recycleRequest.setAiPricingResponse(request.getAiPricingResponse());
         }
 
         // Update status to APPROVED
@@ -69,12 +74,10 @@ public class IntermediaryService {
         // Send email notification to citizen
         User citizen = userRepository.findById(recycleRequest.getUserId()).orElse(null);
         if (citizen != null && citizen.getEmail() != null) {
-            BigDecimal monetaryAmount = pricingService.convertPointsToMoney(
-                    recycleRequest.getEstimatedPoints());
             emailService.sendRequestApprovedEmail(
                     citizen.getEmail(),
                     requestId.toString(),
-                    monetaryAmount);
+                    recycleRequest.getEstimatedAmount());
         }
 
         log.info("Request {} approved successfully", requestId);
@@ -96,7 +99,6 @@ public class IntermediaryService {
         }
 
         // Update status to REJECTED
-        RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.REJECTED);
         recycleRequest.setFulfillmentStatus(com.elocate.elocate.model.enums.FulfillmentStatus.REJECTED);
         recycleRequestRepository.save(recycleRequest);
@@ -135,12 +137,12 @@ public class IntermediaryService {
             throw new IllegalStateException("Can only change price after product is received");
         }
 
-        BigDecimal oldPoints = recycleRequest.getFinalPoints();
-        recycleRequest.setFinalPoints(request.getNewFinalPoints());
+        BigDecimal oldPoints = recycleRequest.getFinalAmount();
+        recycleRequest.setFinalAmount(request.getNewFinalAmount());
         recycleRequestRepository.save(recycleRequest);
 
         log.info("Final points updated from {} to {} for request {}",
-                oldPoints, request.getNewFinalPoints(), requestId);
+                oldPoints, request.getNewFinalAmount(), requestId);
 
         // Send email notification to citizen
         User citizen = userRepository.findById(recycleRequest.getUserId()).orElse(null);
@@ -202,11 +204,11 @@ public class IntermediaryService {
             throw new IllegalStateException("Can only mark as recycled after condition verification");
         }
 
-        // Determine final points (use final_points if set, otherwise estimated_points)
-        BigDecimal finalPoints = recycleRequest.getFinalPoints() != null ? recycleRequest.getFinalPoints()
-                : recycleRequest.getEstimatedPoints();
+        // Determine final points (use final_amount if set, otherwise estimated_amount)
+        BigDecimal finalAmount = recycleRequest.getFinalAmount() != null ? recycleRequest.getFinalAmount()
+                : recycleRequest.getEstimatedAmount();
 
-        if (finalPoints == null || finalPoints.compareTo(BigDecimal.ZERO) <= 0) {
+        if (finalAmount == null || finalAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalStateException("Final points must be set and positive");
         }
 
@@ -215,8 +217,8 @@ public class IntermediaryService {
         recycleRequest.setStatus(RecycleStatus.RECYCLED);
 
         // Ensure final points is set
-        if (recycleRequest.getFinalPoints() == null) {
-            recycleRequest.setFinalPoints(finalPoints);
+        if (recycleRequest.getFinalAmount() == null) {
+            recycleRequest.setFinalAmount(finalAmount);
         }
 
         recycleRequestRepository.save(recycleRequest);
@@ -228,20 +230,20 @@ public class IntermediaryService {
         walletService.creditWallet(
                 recycleRequest.getUserId(),
                 recycleRequest,
-                finalPoints,
+                finalAmount,
                 "Recycling reward for request " + requestId);
 
         // Send email notification to citizen
         User citizen = userRepository.findById(recycleRequest.getUserId()).orElse(null);
         if (citizen != null && citizen.getEmail() != null) {
-            BigDecimal monetaryAmount = pricingService.convertPointsToMoney(finalPoints);
+            BigDecimal monetaryAmount = pricingService.convertPointsToMoney(finalAmount);
             emailService.sendRecyclingCompletedEmail(
                     citizen.getEmail(),
                     requestId.toString(),
                     monetaryAmount);
         }
 
-        log.info("Request {} marked as recycled, wallet credited with {} points", requestId, finalPoints);
+        log.info("Request {} marked as recycled, wallet credited with {} points", requestId, finalAmount);
     }
 
     /**

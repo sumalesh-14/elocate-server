@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.Map;
 
 @Entity
 @Table(name = "recycle_request")
@@ -57,11 +58,11 @@ public class RecycleRequest {
     @Column(name = "driver_failure_reason")
     private String driverFailureReason;
 
-    @Column(name = "estimated_points", precision = 10, scale = 2)
-    private BigDecimal estimatedPoints;
+    @Column(name = "estimated_amount", precision = 10, scale = 2)
+    private BigDecimal estimatedAmount;
 
-    @Column(name = "final_points", precision = 10, scale = 2)
-    private BigDecimal finalPoints;
+    @Column(name = "final_amount", precision = 10, scale = 2)
+    private BigDecimal finalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -72,7 +73,7 @@ public class RecycleRequest {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "ai_pricing_response", columnDefinition = "jsonb")
-    private String aiPricingResponse;
+    private Map<String, Object> aiPricingResponse;
 
     @CreationTimestamp
     @Column(name = "created_at")

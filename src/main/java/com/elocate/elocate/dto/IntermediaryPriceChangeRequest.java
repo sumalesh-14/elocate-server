@@ -18,11 +18,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IntermediaryPriceChangeRequest {
-    
-    @NotNull(message = "New final points is required")
-    @Positive(message = "Final points must be positive")
-    private BigDecimal newFinalPoints;
-    
+
+    @NotNull(message = "New final amount is required")
+    @Positive(message = "Final amount must be positive")
+    private BigDecimal newFinalAmount;
+
     @NotBlank(message = "Reason for price change is required")
     private String reason;
 }

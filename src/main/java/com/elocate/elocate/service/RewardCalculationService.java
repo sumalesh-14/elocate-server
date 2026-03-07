@@ -118,9 +118,9 @@ public class RewardCalculationService {
     public BigDecimal applyConditionMultiplier(BigDecimal basePoints, BigDecimal multiplier) {
         log.info("Applying condition multiplier: {} × {}", basePoints, multiplier);
         
-        BigDecimal finalPoints = basePoints.multiply(multiplier);
-        log.info("Final points after multiplier: {}", finalPoints);
+        BigDecimal finalAmount = basePoints.multiply(multiplier);
+        log.info("Final points after multiplier: {}", finalAmount);
         
-        return finalPoints.setScale(2, RoundingMode.HALF_UP);
+        return finalAmount.setScale(2, RoundingMode.HALF_UP);
     }
 }

@@ -24,8 +24,8 @@ public class RecycleRequestResponse {
     private String brandName;
     private String categoryName;
     private String conditionCode;
-    private BigDecimal estimatedPoints;
-    private BigDecimal finalPoints;
+    private BigDecimal estimatedAmount;
+    private BigDecimal finalAmount;
     private String status;
 
     // Fulfillment tracking fields

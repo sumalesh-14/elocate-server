@@ -178,43 +178,43 @@ public class AdminManagementService {
                 RecycleRequest recycleRequest = recycleRequestRepository.findById(requestId)
                                 .orElseThrow(() -> new RecycleRequestNotFoundException(requestId));
 
-                String oldEstimated = recycleRequest.getEstimatedPoints() != null
-                                ? recycleRequest.getEstimatedPoints().toString()
+                String oldEstimated = recycleRequest.getEstimatedAmount() != null
+                                ? recycleRequest.getEstimatedAmount().toString()
                                 : "null";
-                String oldFinal = recycleRequest.getFinalPoints() != null ? recycleRequest.getFinalPoints().toString()
+                String oldFinal = recycleRequest.getFinalAmount() != null ? recycleRequest.getFinalAmount().toString()
                                 : "null";
 
-                // Update estimated points if provided
-                if (request.getEstimatedPoints() != null) {
-                        recycleRequest.setEstimatedPoints(request.getEstimatedPoints());
+                // Update estimated amount if provided
+                if (request.getEstimatedAmount() != null) {
+                        recycleRequest.setEstimatedAmount(request.getEstimatedAmount());
 
                         auditLogService.logAction(
                                         "PRICE_CHANGE",
-                                        "Updated estimated points on request " + requestId + " from " + oldEstimated
-                                                        + " to " + request.getEstimatedPoints() + ". Reason: "
+                                        "Updated estimated amount on request " + requestId + " from " + oldEstimated
+                                                        + " to " + request.getEstimatedAmount() + ". Reason: "
                                                         + request.getReason());
                 }
 
-                // Update final points if provided
-                if (request.getFinalPoints() != null) {
+                // Update final amount if provided
+                if (request.getFinalAmount() != null) {
                         // If request is already recycled and wallet was credited, adjust wallet
                         if (recycleRequest.getStatus() == RecycleStatus.RECYCLED &&
-                                        recycleRequest.getFinalPoints() != null) {
+                                        recycleRequest.getFinalAmount() != null) {
 
                                 walletService.adjustWalletForPriceChange(
                                                 recycleRequest.getUserId(),
                                                 recycleRequest,
-                                                recycleRequest.getFinalPoints(),
-                                                request.getFinalPoints(),
+                                                recycleRequest.getFinalAmount(),
+                                                request.getFinalAmount(),
                                                 request.getReason());
                         }
 
-                        recycleRequest.setFinalPoints(request.getFinalPoints());
+                        recycleRequest.setFinalAmount(request.getFinalAmount());
 
                         auditLogService.logAction(
                                         "PRICE_CHANGE",
-                                        "Updated final points on request " + requestId + " from " + oldFinal + " to "
-                                                        + request.getFinalPoints() + ". Reason: "
+                                        "Updated final amount on request " + requestId + " from " + oldFinal + " to "
+                                                        + request.getFinalAmount() + ". Reason: "
                                                         + request.getReason());
                 }
 

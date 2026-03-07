@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * Request DTO for intermediary to approve recycle request
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IntermediaryApprovalRequest {
-    private BigDecimal adjustedEstimatedPoints;
+    private BigDecimal adjustedEstimatedAmount;
     private String adjustmentReason;
+    private Map<String, Object> aiPricingResponse;
 }

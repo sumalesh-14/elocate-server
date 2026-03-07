@@ -97,7 +97,7 @@ public class RecycleRequestService {
                                 .orElseThrow(() -> new ConditionFactorNotFoundException(request.getConditionCode()));
 
                 // Step 6: Apply multiplier
-                BigDecimal estimatedPoints = rewardCalculationService.applyConditionMultiplier(
+                BigDecimal estimatedAmount = rewardCalculationService.applyConditionMultiplier(
                                 basePoints, conditionFactor.getMultiplier());
 
                 // Step 7: Determine initial fulfillment status
@@ -109,7 +109,7 @@ public class RecycleRequestService {
                                 .userId(userId)
                                 .deviceModel(deviceModel)
                                 .conditionCode(request.getConditionCode())
-                                .estimatedPoints(estimatedPoints)
+                                .estimatedAmount(estimatedAmount)
                                 .status(RecycleStatus.CREATED)
                                 .fulfillmentType(request.getFulfillmentType())
                                 .fulfillmentStatus(initialStatus);
@@ -127,7 +127,7 @@ public class RecycleRequestService {
                 RecycleRequest recycleRequest = builder.build();
                 RecycleRequest saved = recycleRequestRepository.save(recycleRequest);
                 log.info("Recycle request created with id: {}, estimated points: {}, fulfillment: {}/{}",
-                                saved.getId(), estimatedPoints, saved.getFulfillmentType(),
+                                saved.getId(), estimatedAmount, saved.getFulfillmentType(),
                                 saved.getFulfillmentStatus());
 
                 // Step 9: Create reward snapshot (freeze rates at this moment)
@@ -136,7 +136,7 @@ public class RecycleRequestService {
                                 deviceModel,
                                 metalRates,
                                 conditionFactor.getMultiplier(),
-                                estimatedPoints);
+                                estimatedAmount);
 
                 // Step 10: Record initial status in history
                 statusHistoryService.recordStatusChange(saved, null, initialStatus, userId);
@@ -247,22 +247,22 @@ public class RecycleRequestService {
 
                 // Use snapshot metal composition (frozen at creation time)
                 BigDecimal basePoints = calculateBasePointsFromSnapshot(snapshot);
-                BigDecimal finalPoints = rewardCalculationService.applyConditionMultiplier(
+                BigDecimal finalAmount = rewardCalculationService.applyConditionMultiplier(
                                 basePoints, verifiedCondition.getMultiplier());
 
                 // Step 4 & 5: Update recycle request
-                recycleRequest.setFinalPoints(finalPoints);
+                recycleRequest.setFinalAmount(finalAmount);
                 recycleRequest.setStatus(RecycleStatus.VERIFIED);
                 recycleRequest.setConditionCode(request.getVerifiedConditionCode());
 
                 RecycleRequest updated = recycleRequestRepository.save(recycleRequest);
-                log.info("Recycle request verified with final points: {}", finalPoints);
+                log.info("Recycle request verified with final points: {}", finalAmount);
 
                 // Step 6: Credit wallet
                 walletService.creditWallet(
                                 recycleRequest.getUserId(),
                                 updated,
-                                finalPoints,
+                                finalAmount,
                                 "Recycle reward credited");
 
                 return mapToResponse(updated);
@@ -458,8 +458,8 @@ public class RecycleRequestService {
                                 .brandName(request.getDeviceModel().getBrand().getName())
                                 .categoryName(request.getDeviceModel().getCategory().getName())
                                 .conditionCode(request.getConditionCode())
-                                .estimatedPoints(request.getEstimatedPoints())
-                                .finalPoints(request.getFinalPoints())
+                                .estimatedAmount(request.getEstimatedAmount())
+                                .finalAmount(request.getFinalAmount())
                                 .status(String.valueOf(request.getStatus()))
                                 .fulfillmentType(request.getFulfillmentType())
                                 .fulfillmentStatus(request.getFulfillmentStatus())
