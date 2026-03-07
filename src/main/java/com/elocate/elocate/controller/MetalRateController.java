@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,9 +20,9 @@ import java.util.UUID;
 @RequestMapping("/api/v1/metal-rates")
 @RequiredArgsConstructor
 public class MetalRateController {
-    
+
     private final MetalRateService metalRateService;
-    
+
     /**
      * Get all metal rates with optional filters
      * Query params:
@@ -36,7 +37,7 @@ public class MetalRateController {
         List<MetalRateResponse> rates = metalRateService.getAllMetalRates(metalType, isActive);
         return ResponseEntity.ok(rates);
     }
-    
+
     /**
      * Get metal rate by ID
      */
@@ -46,10 +47,11 @@ public class MetalRateController {
         MetalRateResponse rate = metalRateService.getMetalRateById(id);
         return ResponseEntity.ok(rate);
     }
-    
+
     /**
      * Create new metal rate
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<MetalRateResponse> createMetalRate(
             @Valid @RequestBody MetalRateRequest request) {
@@ -57,10 +59,11 @@ public class MetalRateController {
         MetalRateResponse created = metalRateService.createMetalRate(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-    
+
     /**
      * Update existing metal rate
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<MetalRateResponse> updateMetalRate(
             @PathVariable UUID id,

@@ -27,43 +27,52 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    
+
     private final JwtUtil jwtUtil;
-    
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                    HttpServletResponse response, 
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = extractJwtFromRequest(request);
-            
+
             if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
                 // Extract user info from JWT
                 UUID userId = jwtUtil.extractUserId(jwt);
                 String fullName = jwtUtil.extractUserName(jwt);
                 String email = jwtUtil.extractUserEmail(jwt);
-                
+                String role = jwtUtil.extractRole(jwt);
+
                 // Create UserContext and store in ThreadLocal
                 UserContext userContext = UserContext.builder()
                         .userId(userId)
                         .fullName(fullName)
                         .email(email)
+                        .role(role)
                         .build();
                 UserContextHolder.setContext(userContext);
-                
+
                 // Set up Spring Security authentication
-                UsernamePasswordAuthenticationToken authentication = 
-                        new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+                java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = java.util.Collections
+                        .emptyList();
+                if (role != null) {
+                    authorities = java.util.Collections.singletonList(
+                            new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role));
+                }
+
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId,
+                        null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                
+
                 log.debug("Authenticated user: {} ({})", fullName, userId);
             }
         } catch (Exception e) {
             log.error("Cannot set user authentication: {}", e.getMessage());
         }
-        
+
         try {
             filterChain.doFilter(request, response);
         } finally {
@@ -71,7 +80,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UserContextHolder.clear();
         }
     }
-    
+
     /**
      * Extract JWT token from Authorization header
      */

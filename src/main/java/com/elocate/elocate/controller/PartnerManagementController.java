@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -17,12 +18,13 @@ import java.util.UUID;
 @RequestMapping("/api/v1/partners")
 @RequiredArgsConstructor
 public class PartnerManagementController {
-    
+
     private final PartnerManagementService partnerManagementService;
-    
+
     /**
      * Admin creates partner account directly with credentials
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/create")
     public ResponseEntity<PartnerResponse> adminCreatePartner(
             @Valid @RequestBody AdminCreatePartnerRequest request) {
@@ -30,10 +32,11 @@ public class PartnerManagementController {
         PartnerResponse response = partnerManagementService.adminCreatePartner(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
+
     /**
      * Admin approves or rejects partner registration
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/approve")
     public ResponseEntity<PartnerResponse> approvePartner(
             @PathVariable UUID id,
@@ -42,10 +45,11 @@ public class PartnerManagementController {
         PartnerResponse response = partnerManagementService.approvePartner(id, request);
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * List partners by approval status
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/by-status/{status}")
     public ResponseEntity<Page<PartnerResponse>> listPartnersByStatus(
             @PathVariable String status,
@@ -55,7 +59,7 @@ public class PartnerManagementController {
         Page<PartnerResponse> partners = partnerManagementService.listPartnersByStatus(status, page, size);
         return ResponseEntity.ok(partners);
     }
-    
+
     @PostMapping("/onboard")
     public ResponseEntity<PartnerResponse> onboardPartner(
             @Valid @RequestBody PartnerOnboardingRequest request) {
@@ -63,26 +67,27 @@ public class PartnerManagementController {
         PartnerResponse response = partnerManagementService.onboardPartner(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<PartnerResponse>> listPartners(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Boolean isVerified) {
-        log.info("Listing partners - page: {}, size: {}, search: {}, isVerified: {}", 
+        log.info("Listing partners - page: {}, size: {}, search: {}, isVerified: {}",
                 page, size, search, isVerified);
         Page<PartnerResponse> partners = partnerManagementService.listPartners(page, size, search, isVerified);
         return ResponseEntity.ok(partners);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<PartnerResponse> getPartnerById(@PathVariable UUID id) {
         log.info("Fetching partner by ID: {}", id);
         PartnerResponse partner = partnerManagementService.getPartnerById(id);
         return ResponseEntity.ok(partner);
     }
-    
+
     @GetMapping("/registration/{registrationNumber}")
     public ResponseEntity<PartnerResponse> getPartnerByRegistrationNumber(
             @PathVariable String registrationNumber) {
@@ -90,7 +95,8 @@ public class PartnerManagementController {
         PartnerResponse partner = partnerManagementService.getPartnerByRegistrationNumber(registrationNumber);
         return ResponseEntity.ok(partner);
     }
-    
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/verify")
     public ResponseEntity<PartnerResponse> verifyPartner(
             @PathVariable UUID id,
@@ -99,7 +105,7 @@ public class PartnerManagementController {
         PartnerResponse partner = partnerManagementService.verifyPartner(id, request);
         return ResponseEntity.ok(partner);
     }
-    
+
     @PutMapping("/{id}")
     public ResponseEntity<PartnerResponse> updatePartner(
             @PathVariable UUID id,
@@ -108,7 +114,8 @@ public class PartnerManagementController {
         PartnerResponse partner = partnerManagementService.updatePartner(id, request);
         return ResponseEntity.ok(partner);
     }
-    
+
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePartner(@PathVariable UUID id) {
         log.info("Deleting partner: {}", id);

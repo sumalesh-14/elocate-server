@@ -21,28 +21,28 @@ import java.util.UUID;
 @Slf4j
 @Component
 public class JwtUtil {
-    
+
     @Value("${app.jwt.secret}")
     private String jwtSecret;
-    
+
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
     public long getExpirationTime() {
         return jwtExpirationMs;
     }
-    
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
-    
+
     /**
      * Generate JWT token with user claims
      */
     public String generateToken(UUID userId, String fullName, String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
-        
+
         return Jwts.builder()
                 .setSubject(userId.toString())
                 .claim("userId", userId.toString())
@@ -54,7 +54,7 @@ public class JwtUtil {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-    
+
     /**
      * Validate JWT token
      */
@@ -70,7 +70,7 @@ public class JwtUtil {
             return false;
         }
     }
-    
+
     /**
      * Extract all claims from token
      */
@@ -81,7 +81,7 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
-    
+
     /**
      * Extract user ID from token
      */
@@ -89,7 +89,7 @@ public class JwtUtil {
         Claims claims = extractAllClaims(token);
         return UUID.fromString(claims.get("userId", String.class));
     }
-    
+
     /**
      * Extract user name from token
      */
@@ -97,7 +97,7 @@ public class JwtUtil {
         Claims claims = extractAllClaims(token);
         return claims.get("fullName", String.class);
     }
-    
+
     /**
      * Extract user email from token
      */
@@ -105,12 +105,20 @@ public class JwtUtil {
         Claims claims = extractAllClaims(token);
         return claims.get("email", String.class);
     }
-    
+
     /**
      * Check if token is expired
      */
     public boolean isTokenExpired(String token) {
         Claims claims = extractAllClaims(token);
         return claims.getExpiration().before(new Date());
+    }
+
+    /**
+     * Extract role from token
+     */
+    public String extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("role", String.class);
     }
 }
