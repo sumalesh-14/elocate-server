@@ -22,19 +22,19 @@ spring:
         format_sql: false
   mail:
     host: ${EMAIL_HOST:smtp.gmail.com}
-    port: ${EMAIL_PORT:465}
+    port: ${EMAIL_PORT:587}
     username: ${EMAIL_USERNAME:kasumalesh@gmail.com}
     password: ${EMAIL_PASSWORD:dwqx mclv bkkf soxt}
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
             required: true
-          socketFactory:
-            class: javax.net.ssl.SSLSocketFactory
-            fallback: false
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 server:
   port: ${SERVER_PORT:8080}
