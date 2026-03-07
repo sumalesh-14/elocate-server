@@ -79,6 +79,8 @@ public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFaci
 
     Optional<RecyclingFacility> findByUser(User user);
 
+    Optional<RecyclingFacility> findByUserId(UUID userId);
+
     Page<RecyclingFacility> findByApprovalStatus(String approvalStatus, Pageable pageable);
 
 }
