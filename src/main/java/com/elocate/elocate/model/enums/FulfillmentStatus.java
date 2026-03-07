@@ -51,7 +51,9 @@ public enum FulfillmentStatus {
     /**
      * Facility has verified the drop-off
      */
-    DROP_VERIFIED;
+    DROP_VERIFIED,
+
+    REJECTED;
     
     /**
      * Check if this is a pickup-related status

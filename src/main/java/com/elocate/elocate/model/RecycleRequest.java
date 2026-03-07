@@ -5,7 +5,9 @@ import com.elocate.elocate.model.enums.FulfillmentType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -68,6 +70,7 @@ public class RecycleRequest {
     @Column(name = "pickup_date")
     private LocalDate pickupDate;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "ai_pricing_response", columnDefinition = "jsonb")
     private String aiPricingResponse;
 

@@ -148,10 +148,6 @@ public class AdminManagementService {
                         throw new IllegalStateException("New facility must be approved and active");
                 }
 
-                UUID oldFacilityId = recycleRequest.getRecyclingFacility() != null
-                                ? recycleRequest.getRecyclingFacility().getId()
-                                : null;
-
                 recycleRequest.setRecyclingFacility(newFacility);
                 recycleRequestRepository.save(recycleRequest);
 

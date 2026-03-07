@@ -56,7 +56,6 @@ public class IntermediaryService {
         }
 
         // Update status to APPROVED
-        RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.APPROVED);
         recycleRequestRepository.save(recycleRequest);
 
@@ -99,6 +98,7 @@ public class IntermediaryService {
         // Update status to REJECTED
         RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.REJECTED);
+        recycleRequest.setFulfillmentStatus(com.elocate.elocate.model.enums.FulfillmentStatus.REJECTED);
         recycleRequestRepository.save(recycleRequest);
 
         // Record status change
