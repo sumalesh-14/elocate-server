@@ -6,5 +6,6 @@ public enum RecycleStatus {
     VERIFIED,
     LOCKED,
     RECYCLED,
-    REJECTED
+    REJECTED,
+    CANCELLED
 }

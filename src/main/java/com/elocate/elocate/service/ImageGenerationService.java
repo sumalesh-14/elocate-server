@@ -1,7 +1,6 @@
 package com.elocate.elocate.service;
 
 import com.elocate.elocate.dto.CertificateRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,8 +8,6 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -22,7 +19,6 @@ import java.util.Optional;
 public class ImageGenerationService {
 
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
 
     @Value("${image.generation.api.url:}")
     private String imageGenerationApiUrl;
@@ -54,11 +50,10 @@ public class ImageGenerationService {
 
             // Make API call
             ResponseEntity<byte[]> response = restTemplate.exchange(
-                imageGenerationApiUrl + "/certificate/generate",
-                HttpMethod.POST,
-                requestEntity,
-                byte[].class
-            );
+                    imageGenerationApiUrl + "/certificate/generate",
+                    HttpMethod.POST,
+                    requestEntity,
+                    byte[].class);
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 log.info("Certificate generated successfully for request: {}", request.getRequestId());

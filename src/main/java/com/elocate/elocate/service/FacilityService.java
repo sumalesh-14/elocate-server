@@ -5,7 +5,6 @@ import com.elocate.elocate.dto.FacilityWithDistanceProjection;
 import com.elocate.elocate.dto.GetFacilities;
 import com.elocate.elocate.model.RecyclingFacility;
 import com.elocate.elocate.repository.RecyclingFacilityRepository;
-import com.elocate.elocate.utils.DistanceUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

@@ -180,4 +180,16 @@ public class RecycleRequestController {
         log.info("PUT /api/v1/recycle-requests/{}/verify-failure - newStatus: {}", id, newStatus);
         return ResponseEntity.ok(recycleRequestService.verifyFailureAndLock(id, newStatus));
     }
+
+    /**
+     * Cancel recycle request (by user)
+     */
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<RecycleRequestResponse> cancelRecycleRequest(
+            @PathVariable UUID id,
+            @RequestParam UUID userId) {
+        log.info("PUT /api/v1/recycle-requests/{}/cancel - userId: {}", id, userId);
+        RecycleRequestResponse response = recycleRequestService.cancelRequest(id, userId);
+        return ResponseEntity.ok(response);
+    }
 }

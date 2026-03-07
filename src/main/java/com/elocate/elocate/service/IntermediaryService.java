@@ -178,7 +178,6 @@ public class IntermediaryService {
         }
 
         // Update status to VERIFIED
-        RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.VERIFIED);
         recycleRequestRepository.save(recycleRequest);
 
@@ -213,7 +212,6 @@ public class IntermediaryService {
         }
 
         // Update status to RECYCLED
-        RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.RECYCLED);
 
         // Ensure final points is set

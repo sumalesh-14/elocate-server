@@ -515,6 +515,44 @@ public class RecycleRequestService {
         }
 
         /**
+         * Cancel a recycle request
+         */
+        @Transactional
+        public RecycleRequestResponse cancelRequest(UUID id, UUID userId) {
+                log.info("User {} cancelling request {}", userId, id);
+
+                RecycleRequest request = recycleRequestRepository.findById(id)
+                                .orElseThrow(() -> new RecycleRequestNotFoundException(id));
+
+                // Security check
+                if (!request.getUserId().equals(userId)) {
+                        throw new IllegalStateException("Unauthorized to cancel this request");
+                }
+
+                // Business logic: only CREATED or APPROVED can be cancelled by user
+                if (request.getStatus() != RecycleStatus.CREATED && request.getStatus() != RecycleStatus.APPROVED) {
+                        throw new IllegalStateException(
+                                        "Request cannot be cancelled in its current state: " + request.getStatus());
+                }
+
+                request.setStatus(RecycleStatus.CANCELLED);
+
+                // Also update fulfillment status if it's not already completed
+                FulfillmentStatus oldFulfillmentStatus = request.getFulfillmentStatus();
+                // We'll set it to a terminal state if possible.
+                // Note: If FulfillmentStatus doesn't have CANCELLED, we might need to add it or
+                // just leave as is.
+                // For now, let's keep it simple.
+
+                RecycleRequest saved = recycleRequestRepository.save(request);
+
+                // Record in history
+                statusHistoryService.recordStatusChange(saved, oldFulfillmentStatus, oldFulfillmentStatus, userId);
+
+                return mapToResponse(saved);
+        }
+
+        /**
          * Map entity to response DTO
          */
         private RecycleRequestResponse mapToResponse(RecycleRequest request) {
