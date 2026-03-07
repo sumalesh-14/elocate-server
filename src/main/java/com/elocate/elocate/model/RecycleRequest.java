@@ -68,6 +68,9 @@ public class RecycleRequest {
     @Column(name = "pickup_date")
     private LocalDate pickupDate;
 
+    @Column(name = "ai_pricing_response", columnDefinition = "jsonb")
+    private String aiPricingResponse;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;

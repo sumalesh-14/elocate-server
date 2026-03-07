@@ -3,6 +3,8 @@ package com.elocate.elocate.repository;
 import com.elocate.elocate.model.MetalRate;
 import com.elocate.elocate.model.enums.MetalType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -28,4 +30,10 @@ public interface MetalRateRepository extends JpaRepository<MetalRate, UUID> {
     
     // Find all rates for a specific metal type
     List<MetalRate> findByMetalTypeOrderByEffectiveFromDesc(MetalType metalType);
+    
+    // Find active rates for a specific date
+    @Query("SELECT mr FROM MetalRate mr WHERE mr.isActive = true " +
+           "AND mr.effectiveFrom <= :date " +
+           "AND (mr.effectiveTo IS NULL OR mr.effectiveTo >= :date)")
+    List<MetalRate> findActiveRatesForDate(@Param("date") LocalDate date);
 }

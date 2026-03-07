@@ -185,6 +185,33 @@ public class RecycleRequestService {
                 return mapToResponse(request);
         }
 
+        @Transactional(readOnly = true)
+        public List<RecycleRequestResponse> getRecycleRequestsByFacility(UUID facilityId, RecycleStatus status,
+                        String searchTerm) {
+                log.info("Fetching recycle requests for facility: {}", facilityId);
+                // Simple implementation that doesn't yet filter by status/searchTerm
+                List<RecycleRequest> results = recycleRequestRepository.findByFacilityId(facilityId);
+
+                if (status != null) {
+                        results = results.stream().filter(r -> r.getStatus() == status).toList();
+                }
+                if (searchTerm != null && !searchTerm.isBlank()) {
+                        String lowerSearchTerm = searchTerm.toLowerCase();
+                        results = results.stream().filter(r -> (r.getDeviceModel() != null
+                                        && r.getDeviceModel().getModelName() != null
+                                        && r.getDeviceModel().getModelName().toLowerCase().contains(lowerSearchTerm)) ||
+                                        (r.getDeviceModel() != null && r.getDeviceModel().getBrand() != null
+                                                        && r.getDeviceModel().getBrand().getName() != null
+                                                        && r.getDeviceModel().getBrand().getName().toLowerCase()
+                                                                        .contains(lowerSearchTerm)))
+                                        .toList();
+                }
+
+                return results.stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
         /**
          * Verify recycle request and recalculate final points
          *

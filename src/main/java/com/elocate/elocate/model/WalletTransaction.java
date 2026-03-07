@@ -31,6 +31,12 @@ public class WalletTransaction {
 
     private BigDecimal points;
 
+    @Column(name = "conversion_rate", precision = 10, scale = 4)
+    private BigDecimal conversionRate;
+
+    @Column(name = "monetary_amount", precision = 10, scale = 2)
+    private BigDecimal monetaryAmount;
+
     private String description;
 
     @CreationTimestamp

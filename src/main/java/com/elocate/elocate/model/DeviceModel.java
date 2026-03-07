@@ -37,6 +37,21 @@ public class DeviceModel {
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Column(name = "ai_base_price", precision = 10, scale = 2)
+    private java.math.BigDecimal aiBasePrice;
+
+    @Column(name = "manual_price_override", precision = 10, scale = 2)
+    private java.math.BigDecimal manualPriceOverride;
+
+    @Column(name = "price_override_reason")
+    private String priceOverrideReason;
+
+    @Column(name = "price_override_by")
+    private UUID priceOverrideBy;
+
+    @Column(name = "price_override_at")
+    private LocalDateTime priceOverrideAt;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;

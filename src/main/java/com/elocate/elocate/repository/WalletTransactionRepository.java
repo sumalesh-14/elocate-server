@@ -9,7 +9,13 @@ import java.util.UUID;
 
 @Repository
 public interface WalletTransactionRepository extends JpaRepository<WalletTransaction, UUID> {
-    
+
     // Find transactions by user ID
     List<WalletTransaction> findByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    org.springframework.data.domain.Page<WalletTransaction> findByUserIdOrderByCreatedAtDesc(UUID userId,
+            org.springframework.data.domain.Pageable pageable);
+
+    List<WalletTransaction> findByUserIdAndCreatedAtBetween(UUID userId, java.time.LocalDateTime start,
+            java.time.LocalDateTime end);
 }

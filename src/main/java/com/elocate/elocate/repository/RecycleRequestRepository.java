@@ -66,6 +66,15 @@ public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, 
                         @Param("status") RecycleStatus status,
                         @Param("searchTerm") String searchTerm);
 
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "WHERE r.recyclingFacility.id = :facilityId " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findByFacilityId(@Param("facilityId") UUID facilityId);
+
         // Legacy methods used by PartnerManagementService
         Long countByRecyclingFacility(com.elocate.elocate.model.RecyclingFacility recyclingFacility);
 

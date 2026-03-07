@@ -43,6 +43,7 @@ public class SecurityConfig {
             "/api/v1/ping",
             "/api/v1/facility",
             "/api/v1/facility/**",
+            "/api/v1/recycle-requests/driver-action/**",
             "/actuator/health",
             "/actuator/health/**",
             "/actuator/info",

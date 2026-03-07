@@ -22,6 +22,14 @@ public class UserWallet {
     @Column(name = "points_balance")
     private BigDecimal pointsBalance = BigDecimal.valueOf(0L);
 
+    @Builder.Default
+    @Column(name = "currency_code", length = 3)
+    private String currencyCode = "USD";
+
+    @Builder.Default
+    @Column(name = "points_to_money_rate", precision = 10, scale = 4)
+    private BigDecimal pointsToMoneyRate = BigDecimal.valueOf(0.01);
+
     @Column(name = "last_updated_at")
     private LocalDateTime lastUpdatedAt;
 }
