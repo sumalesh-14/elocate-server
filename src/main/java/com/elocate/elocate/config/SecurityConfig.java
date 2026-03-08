@@ -44,6 +44,7 @@ public class SecurityConfig {
             "/api/v1/facility",
             "/api/v1/facility/**",
             "/api/v1/recycle-requests/driver-action/**",
+            "/api/v1/driver/pickup/**", // Driver pickup actions via email links
             "/actuator/health",
             "/actuator/health/**",
             "/actuator/info",

@@ -1,5 +1,6 @@
 package com.elocate.elocate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,7 @@ public class RecycleStatusHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recycle_request_id", nullable = false)
+    @JsonIgnore  // Prevent serialization of the lazy-loaded relationship
     private RecycleRequest recycleRequest;
 
     @Column(name = "old_status")
@@ -32,4 +34,7 @@ public class RecycleStatusHistory {
 
     @Column(name = "changed_at")
     private LocalDateTime changedAt;
+
+    @Column(name = "comments", length = 1000)
+    private String comments;
 }
