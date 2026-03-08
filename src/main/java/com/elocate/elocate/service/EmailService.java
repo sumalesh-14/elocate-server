@@ -342,6 +342,19 @@ public class EmailService {
     }
 
     /**
+     * Send test email (for testing email configuration)
+     *
+     * @param toEmail Recipient email
+     * @param subject Email subject
+     * @param body Email body
+     */
+    public void sendTestEmail(String toEmail, String subject, String body) {
+        log.info("Sending test email to: {}", toEmail);
+        sendEmail(toEmail, subject, body);
+    }
+
+
+    /**
      * Send simple email
      */
     private void sendEmail(String to, String subject, String body) {
