@@ -61,14 +61,15 @@ public class IntermediaryService {
         }
 
         // Update status to APPROVED
+        RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.APPROVED);
         recycleRequestRepository.save(recycleRequest);
 
-        // Record status change (using FulfillmentStatus for history tracking)
-        statusHistoryService.recordStatusChange(
+        // Record RecycleStatus change in history
+        statusHistoryService.recordRecycleStatusChange(
                 recycleRequest,
-                recycleRequest.getFulfillmentStatus(),
-                recycleRequest.getFulfillmentStatus(),
+                oldStatus,
+                RecycleStatus.APPROVED,
                 facilityOwnerId);
 
         // Send email notification to citizen
@@ -178,12 +179,16 @@ public class IntermediaryService {
         }
 
         // Update status to VERIFIED
+        RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.VERIFIED);
         recycleRequestRepository.save(recycleRequest);
 
-        // Record status change (FulfillmentStatus hasn't changed here, just verifying
-        // condition)
-        // Skip calling statusHistoryService for non-fulfillment changes.
+        // Record RecycleStatus change in history
+        statusHistoryService.recordRecycleStatusChange(
+                recycleRequest,
+                oldStatus,
+                RecycleStatus.VERIFIED,
+                facilityOwnerId);
 
         log.info("Condition verified for request {}", requestId);
     }
@@ -212,6 +217,7 @@ public class IntermediaryService {
         }
 
         // Update status to RECYCLED
+        RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.RECYCLED);
 
         // Ensure final points is set
@@ -221,8 +227,12 @@ public class IntermediaryService {
 
         recycleRequestRepository.save(recycleRequest);
 
-        // Record status change (skip for RecycleStatus change)
-        // statusHistoryService.recordStatusChange(...)
+        // Record RecycleStatus change in history
+        statusHistoryService.recordRecycleStatusChange(
+                recycleRequest,
+                oldStatus,
+                RecycleStatus.RECYCLED,
+                facilityOwnerId);
 
         // Credit wallet
         walletService.creditWallet(

@@ -181,7 +181,8 @@ public class RecycleRequestService {
                                 conditionFactor.getMultiplier(),
                                 estimatedAmount);
 
-                // Step 10: Record initial status in history
+                // Step 10: Record initial status in history (both RecycleStatus and FulfillmentStatus)
+                statusHistoryService.recordRecycleStatusChange(saved, null, RecycleStatus.CREATED, userId);
                 statusHistoryService.recordStatusChange(saved, null, initialStatus, userId);
 
                 // Step 11: Send email notifications
