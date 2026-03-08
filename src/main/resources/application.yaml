@@ -35,7 +35,14 @@ spring:
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
-
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+      exclude: static/**,public/**
+    livereload:
+      enabled: true
+      
 server:
   port: ${SERVER_PORT:8080}
   # Context path removed to match frontend API calls
@@ -50,13 +57,6 @@ management:
       base-path: /actuator
   endpoint:
     health:
-      show-details: always
-      probes:
-        enabled: true
-  health:
-    mail:
-      enabled: false  # Disable mail health check
-
 app:
   jwt:
     secret: ${JWT_SECRET:elocate-super-secret-key-change-in-production-minimum-256-bits-required}
@@ -64,6 +64,80 @@ app:
   otp:
     expiry-minutes: ${OTP_EXPIRY_MINUTES:10}
     max-attempts: ${OTP_MAX_ATTEMPTS:3}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+  driver:
+    sla-hours: ${DRIVER_SLA_HOURS:24}
+    sla-monitoring-enabled: ${DRIVER_SLA_MONITORING_ENABLED:true}
+  base:
+    url: ${APP_BASE_URL:http://localhost:3000}
+  email:
+    provider: ${EMAIL_PROVIDER:smtp}
+    notifications:
+      enabled: ${EMAIL_NOTIFICATIONS_ENABLED:true}
+      request-created: ${EMAIL_REQUEST_CREATED:true}
+      request-approved: ${EMAIL_REQUEST_APPROVED:true}
+      driver-assignment: ${EMAIL_DRIVER_ASSIGNMENT:true}
+      pickup-scheduled: ${EMAIL_PICKUP_SCHEDULED:true}
+      pickup-completed: ${EMAIL_PICKUP_COMPLETED:true}
+      pickup-failed: ${EMAIL_PICKUP_FAILED:true}
+      device-received: ${EMAIL_DEVICE_RECEIVED:true}
+      recycling-completed: ${EMAIL_RECYCLING_COMPLETED:true}
+      facility-assignment: ${EMAIL_FACILITY_ASSIGNMENT:true}
+      reminder: ${EMAIL_REMINDER:true}
+    use-html-templates: ${EMAIL_USE_HTML_TEMPLATES:true}
+  driver:
+    sla-hours: ${DRIVER_SLA_HOURS:24}
+    sla-monitoring-enabled: ${DRIVER_SLA_MONITORING_ENABLED:true}
+  email:
+    provider: smtp
+    notifications:
+      enabled: true
+      request-created: true
+      request-approved: true
+      driver-assignment: true
+      pickup-scheduled: true
+      pickup-completed: true
+      pickup-failed: true
+      device-received: true
+      recycling-completed: true
+      facility-assignment: true
+    use-html-templates: true
+  base:
+    url: ${APP_BASE_URL:http://localhost:3000}
+  email:
+    # Email provider: smtp or sendgrid
+    provider: ${EMAIL_PROVIDER:smtp}
+    # Enable/disable email notifications for recycling workflow
+    notifications:
+      enabled: ${EMAIL_NOTIFICATIONS_ENABLED:true}
+      # Individual email type controls
+      request-created: ${EMAIL_REQUEST_CREATED:true}
+      request-approved: ${EMAIL_REQUEST_APPROVED:true}
+      driver-assignment: ${EMAIL_DRIVER_ASSIGNMENT:true}
+      pickup-scheduled: ${EMAIL_PICKUP_SCHEDULED:true}
+      pickup-completed: ${EMAIL_PICKUP_COMPLETED:true}
+      pickup-failed: ${EMAIL_PICKUP_FAILED:true}
+      device-received: ${EMAIL_DEVICE_RECEIVED:true}
+      recycling-completed: ${EMAIL_RECYCLING_COMPLETED:true}
+      facility-assignment: ${EMAIL_FACILITY_ASSIGNMENT:true}
+    # Use HTML templates (true) or plain text (false)
+    use-html-templates: ${EMAIL_USE_HTML_TEMPLATES:true}
+    secret: ${JWT_SECRET:elocate-super-secret-key-change-in-production-minimum-256-bits-required}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  otp:
+    expiry-minutes: ${OTP_EXPIRY_MINUTES:10}
+    max-attempts: ${OTP_MAX_ATTEMPTS:3}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+
+# AWS S3 Configuration
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID:your-access-key-here}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:your-secret-key-here}
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:elocate-pickup-photos}
+    region: ${AWS_S3_REGION:eu-north-1}
 
 auth0:
   domain: ${AUTH0_DOMAIN:elocate-dev.us.auth0.com}

@@ -1,0 +1,17 @@
+package com.elocate.elocate.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class PresignedUrlResponse {
+    private String uploadUrl;
+    private String photoKey;
+    private String publicUrl;
+    private Integer expiresInMinutes;
+}

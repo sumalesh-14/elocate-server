@@ -41,7 +41,7 @@ public class UserRegistrationService {
      */
     @Transactional
     public String register(UserRegistrationDto dto) {
-        log.info("Registering new user with email: {}", dto.getEmail());
+        log.info("test effort Registering new user with email: {}", dto.getEmail());
 
         // Check email uniqueness in our database
         if (userRepository.existsByEmail(dto.getEmail())) {

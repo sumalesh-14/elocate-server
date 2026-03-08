@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * Request DTO for intermediary to verify device condition
  */
@@ -14,5 +16,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ConditionVerificationRequest {
     private String verifiedConditionCode;
-    private String notes;
+    private String notes; // Comments for history
+    private BigDecimal finalAmount; // Final amount to be paid
 }

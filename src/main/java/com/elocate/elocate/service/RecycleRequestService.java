@@ -6,6 +6,7 @@ import com.elocate.elocate.dto.UpdateFulfillmentStatusDto;
 import com.elocate.elocate.dto.VerifyRecycleRequestDto;
 import com.elocate.elocate.dto.AssignDriverDto;
 import com.elocate.elocate.dto.DriverActionReasonDto;
+import com.elocate.elocate.dto.SendReminderDto;
 import com.elocate.elocate.exception.ConditionFactorNotFoundException;
 import com.elocate.elocate.exception.ModelNotFoundException;
 import com.elocate.elocate.exception.RecycleRequestNotFoundException;
@@ -15,6 +16,7 @@ import com.elocate.elocate.model.enums.FulfillmentType;
 import com.elocate.elocate.model.enums.MetalType;
 import com.elocate.elocate.repository.DeviceConditionFactorRepository;
 import com.elocate.elocate.repository.DeviceModelRepository;
+import com.elocate.elocate.repository.DriverRepository;
 import com.elocate.elocate.repository.RecycleRequestRepository;
 import com.elocate.elocate.repository.RecyclingFacilityRepository;
 import com.elocate.elocate.repository.UserRepository;
@@ -50,6 +52,9 @@ public class RecycleRequestService {
         private final RecycleStatusHistoryService statusHistoryService;
         private final EmailService emailService;
         private final UserRepository userRepository;
+        private final DriverRepository driverRepository;
+        private final DriverPickupService driverPickupService;
+        private final RequestNumberGenerator requestNumberGenerator;
 
         /**
          * Create recycle request with estimated points and fulfillment tracking
@@ -147,8 +152,13 @@ public class RecycleRequestService {
                 FulfillmentStatus initialStatus = fulfillmentStatusValidator
                                 .getInitialStatus(request.getFulfillmentType());
 
-                // Step 8: Save recycle request
+                // Step 8: Generate unique request number
+                String requestNumber = requestNumberGenerator.generateUniqueRequestNumber();
+                log.info("Generated request number: {}", requestNumber);
+
+                // Step 9: Save recycle request
                 RecycleRequest.RecycleRequestBuilder builder = RecycleRequest.builder()
+                                .requestNumber(requestNumber)
                                 .userId(userId)
                                 .deviceModel(deviceModel)
                                 .conditionCode(request.getConditionCode())
@@ -169,11 +179,11 @@ public class RecycleRequestService {
 
                 RecycleRequest recycleRequest = builder.build();
                 RecycleRequest saved = recycleRequestRepository.save(recycleRequest);
-                log.info("Recycle request created with id: {}, estimated points: {}, fulfillment: {}/{}",
-                                saved.getId(), estimatedAmount, saved.getFulfillmentType(),
+                log.info("Recycle request created with id: {}, requestNumber: {}, estimated points: {}, fulfillment: {}/{}",
+                                saved.getId(), saved.getRequestNumber(), estimatedAmount, saved.getFulfillmentType(),
                                 saved.getFulfillmentStatus());
 
-                // Step 9: Create reward snapshot (freeze rates at this moment)
+                // Step 10: Create reward snapshot (freeze rates at this moment)
                 rewardSnapshotService.createSnapshot(
                                 saved,
                                 deviceModel,
@@ -181,18 +191,18 @@ public class RecycleRequestService {
                                 conditionFactor.getMultiplier(),
                                 estimatedAmount);
 
-                // Step 10: Record initial status in history (both RecycleStatus and FulfillmentStatus)
+                // Step 11: Record initial status in history (both RecycleStatus and FulfillmentStatus)
                 statusHistoryService.recordRecycleStatusChange(saved, null, RecycleStatus.CREATED, userId);
                 statusHistoryService.recordStatusChange(saved, null, initialStatus, userId);
 
-                // Step 11: Send email notifications
+                // Step 12: Send email notifications
                 try {
                         // Notify Citizen
                         User citizen = userRepository.findById(userId).orElse(null);
                         if (citizen != null && citizen.getEmail() != null) {
                                 emailService.sendRequestCreatedEmail(
                                                 citizen.getEmail(),
-                                                saved.getId().toString(),
+                                                saved.getRequestNumber(),
                                                 deviceModel.getModelName(),
                                                 estimatedAmount);
                         }
@@ -201,7 +211,7 @@ public class RecycleRequestService {
                         if (facility != null && facility.getEmail() != null) {
                                 emailService.sendRequestAssignedToFacilityEmail(
                                                 facility.getEmail(),
-                                                saved.getId().toString(),
+                                                saved.getRequestNumber(),
                                                 deviceModel.getModelName());
                         }
                 } catch (Exception e) {
@@ -434,20 +444,28 @@ public class RecycleRequestService {
                 RecycleRequest request = recycleRequestRepository.findById(id)
                                 .orElseThrow(() -> new RecycleRequestNotFoundException(id));
 
+                // Get driver details
+                Driver driver = driverRepository.findById(dto.getDriverId())
+                                .orElseThrow(() -> new IllegalArgumentException("Driver not found with id: " + dto.getDriverId()));
+
                 request.setAssignedDriverId(dto.getDriverId());
                 FulfillmentStatus oldStatus = request.getFulfillmentStatus();
                 request.setFulfillmentStatus(FulfillmentStatus.PICKUP_ASSIGNED);
 
                 RecycleRequest saved = recycleRequestRepository.save(request);
-                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_ASSIGNED, null);
+                
+                // Record status change with comments
+                String historyComment = dto.getComments() != null && !dto.getComments().isBlank()
+                        ? "Driver assigned with instructions: " + dto.getComments()
+                        : "Driver assigned for pickup";
+                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_ASSIGNED, 
+                        null, historyComment);
 
-                // MOCK EMAIL SENDING
-                String token = UUID.randomUUID().toString(); // In real app, generate secure expiring JWT or DB token
-                log.info("📧 MOCK EMAIL TO DRIVER: You have been assigned to pickup request {}.", id);
-                log.info("🔗 Link 1 (Pickup Done): GET /api/v1/recycle-requests/driver-action/{}/pickup-done?token={}",
-                                id, token);
-                log.info("🔗 Link 2 (Pickup Not Done): POST /api/v1/recycle-requests/driver-action/{}/pickup-failed",
-                                id);
+                // Generate tokens and send email with frontend links and assignment comments
+                driverPickupService.generateTokensAndSendEmail(id, dto.getDriverId(), dto.getComments());
+
+                log.info("✅ Driver {} assigned to pickup request {} - Email sent with action links", 
+                        driver.getName(), id);
 
                 return mapToResponse(saved);
         }
@@ -554,11 +572,131 @@ public class RecycleRequestService {
         }
 
         /**
+         * Reassign driver for a pickup request
+         * Invalidates old driver's tokens and sends new email to new driver
+         */
+        @Transactional
+        public RecycleRequestResponse reassignDriver(UUID id, AssignDriverDto dto) {
+                RecycleRequest request = recycleRequestRepository.findById(id)
+                                .orElseThrow(() -> new RecycleRequestNotFoundException(id));
+
+                // Validate current status
+                if (request.getFulfillmentStatus() != FulfillmentStatus.PICKUP_ASSIGNED) {
+                        throw new IllegalStateException("Cannot reassign driver. Current status: " + request.getFulfillmentStatus());
+                }
+
+                UUID oldDriverId = request.getAssignedDriverId();
+                
+                // Get new driver details
+                Driver newDriver = driverRepository.findById(dto.getDriverId())
+                                .orElseThrow(() -> new IllegalArgumentException("Driver not found with id: " + dto.getDriverId()));
+
+                // Invalidate old driver's tokens
+                int invalidatedCount = driverPickupService.invalidateTokensForRequest(id);
+                log.info("Invalidated {} tokens for request {} during driver reassignment", invalidatedCount, id);
+
+                // Update driver assignment
+                request.setAssignedDriverId(dto.getDriverId());
+                FulfillmentStatus oldStatus = request.getFulfillmentStatus();
+                request.setFulfillmentStatus(FulfillmentStatus.PICKUP_ASSIGNED);
+
+                RecycleRequest saved = recycleRequestRepository.save(request);
+                
+                // Record status change with reassignment reason
+                String historyComment = String.format("Driver reassigned from %s to %s", 
+                                oldDriverId, dto.getDriverId());
+                if (dto.getComments() != null && !dto.getComments().isBlank()) {
+                        historyComment += ". Reason: " + dto.getComments();
+                }
+                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_ASSIGNED, 
+                                null, historyComment);
+
+                // Generate new tokens and send email to new driver
+                driverPickupService.generateTokensAndSendEmail(id, dto.getDriverId(), dto.getComments());
+
+                log.info("✅ Driver reassigned for request {}. Old: {}, New: {} - Email sent with action links", 
+                                id, oldDriverId, newDriver.getName());
+
+                return mapToResponse(saved);
+        }
+
+        /**
+         * Send reminder to intermediary/facility owner about pending request
+         */
+        @Transactional
+        public RecycleRequestResponse sendReminderToIntermediary(UUID requestId, UUID userId, String comment) {
+                log.info("Sending reminder for request {} from user {}", requestId, userId);
+
+                RecycleRequest request = recycleRequestRepository.findById(requestId)
+                                .orElseThrow(() -> new RecycleRequestNotFoundException(requestId));
+
+                // Security check - only request owner can send reminder
+                if (!request.getUserId().equals(userId)) {
+                        throw new IllegalStateException("Unauthorized to send reminder for this request");
+                }
+
+                // Get facility details
+                RecyclingFacility facility = request.getRecyclingFacility();
+                if (facility == null) {
+                        throw new IllegalStateException("No facility assigned to this request");
+                }
+
+                if (facility.getEmail() == null || facility.getEmail().isBlank()) {
+                        throw new IllegalStateException("Facility does not have an email address configured");
+                }
+
+                // Get citizen details
+                User citizen = userRepository.findById(userId).orElse(null);
+                String citizenName = citizen != null ? citizen.getFullName() : "Citizen";
+                String citizenEmail = citizen != null ? citizen.getEmail() : "N/A";
+
+                // Record in status history
+                String historyComment = "Reminder sent to facility";
+                if (comment != null && !comment.isBlank()) {
+                        historyComment += ": " + comment;
+                }
+                statusHistoryService.recordStatusChange(
+                                request,
+                                request.getFulfillmentStatus(),
+                                request.getFulfillmentStatus(),
+                                userId,
+                                historyComment);
+
+                // Send email to facility
+                try {
+                        String dashboardUrl = "http://localhost:3000/intermediary/collections/" + requestId;
+                        String deviceName = request.getDeviceModel().getBrand().getName() + " "
+                                        + request.getDeviceModel().getModelName();
+                        String currentStatus = request.getFulfillmentStatus().getDisplayText();
+                        String submittedDate = request.getCreatedAt().toString();
+
+                        emailService.sendReminderToIntermediaryEmail(
+                                        facility.getEmail(),
+                                        request.getRequestNumber(),
+                                        deviceName,
+                                        citizenName,
+                                        citizenEmail,
+                                        currentStatus,
+                                        submittedDate,
+                                        comment,
+                                        dashboardUrl);
+
+                        log.info("✅ Reminder email sent to facility {} for request {}", facility.getName(), requestId);
+                } catch (Exception e) {
+                        log.error("Failed to send reminder email for request {}: {}", requestId, e.getMessage());
+                        throw new RuntimeException("Failed to send reminder email: " + e.getMessage());
+                }
+
+                return mapToResponse(request);
+        }
+
+        /**
          * Map entity to response DTO
          */
         private RecycleRequestResponse mapToResponse(RecycleRequest request) {
                 RecycleRequestResponse.RecycleRequestResponseBuilder builder = RecycleRequestResponse.builder()
                                 .id(request.getId())
+                                .requestNumber(request.getRequestNumber())
                                 .deviceModelId(request.getDeviceModel().getId())
                                 .deviceModelName(request.getDeviceModel().getModelName())
                                 .brandName(request.getDeviceModel().getBrand().getName())
@@ -573,6 +711,7 @@ public class RecycleRequestService {
                                 .assignedDriverId(request.getAssignedDriverId())
                                 .driverFailureReason(request.getDriverFailureReason())
                                 .pickupDate(request.getPickupDate())
+                                .certificateUrl(request.getCertificateUrl())
                                 .createdAt(request.getCreatedAt())
                                 .updatedAt(request.getUpdatedAt());
 

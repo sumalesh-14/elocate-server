@@ -26,6 +26,9 @@ public class RecycleRequest {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "request_number", unique = true, length = 50)
+    private String requestNumber;
+
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
@@ -57,12 +60,21 @@ public class RecycleRequest {
 
     @Column(name = "driver_failure_reason")
     private String driverFailureReason;
+    
+    @Column(name = "pickup_photo_url", length = 500)
+    private String pickupPhotoUrl;
+    
+    @Column(name = "driver_comments", columnDefinition = "TEXT")
+    private String driverComments;
 
     @Column(name = "estimated_amount", precision = 10, scale = 2)
     private BigDecimal estimatedAmount;
 
     @Column(name = "final_amount", precision = 10, scale = 2)
     private BigDecimal finalAmount;
+    
+    @Column(name = "certificate_url", length = 500)
+    private String certificateUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

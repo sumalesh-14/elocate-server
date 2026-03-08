@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .info-box strong { color: #667eea; }
+        .button-group { margin: 25px 0; }
+        .button { display: inline-block; padding: 12px 24px; margin: 10px 5px; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center; }
+        .btn-success { background: #28a745; color: #fff; }
+        .btn-danger { background: #dc3545; color: #fff; }
+        .comments-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚚 New Pickup Assignment</h1>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{{driverName}}</strong>,</p>
+            <p>You have been assigned a new pickup request. Please review the details below:</p>
+            
+            <div class="info-box">
+                <p><strong>Request ID:</strong> {{requestId}}</p>
+                <p><strong>Pickup Address:</strong> {{pickupAddress}}</p>
+                <p><strong>Device:</strong> {{deviceName}}</p>
+                <p><strong>Scheduled Date:</strong> {{pickupDate}}</p>
+            </div>
+
+            {{#if comments}}
+            <div class="comments-box">
+                <p><strong>📝 Special Instructions:</strong></p>
+                <p>{{comments}}</p>
+            </div>
+            {{/if}}
+
+            <p><strong>Action Required:</strong></p>
+            <p>After completing the pickup, please use one of the links below to update the status:</p>
+
+            <div class="button-group" style="text-align: center;">
+                <a href="{{acceptUrl}}" class="button btn-success">✅ Pickup Completed</a>
+                <a href="{{rejectUrl}}" class="button btn-danger">❌ Pickup Failed</a>
+            </div>
+
+            <p style="font-size: 14px; color: #666; margin-top: 20px;">
+                <strong>Note:</strong> Please ensure you collect the device and take a photo for verification.
+            </p>
+        </div>
+        <div class="footer">
+            <p>ELocate - E-Waste Recycling Platform</p>
+            <p>Making the world cleaner, one device at a time 🌍</p>
+        </div>
+    </div>
+</body>
+</html>

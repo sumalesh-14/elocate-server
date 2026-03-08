@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .success-icon { text-align: center; font-size: 64px; margin: 20px 0; }
+        .info-box { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .info-box p { margin: 8px 0; }
+        .highlight { background: #fff3cd; padding: 15px; border-radius: 4px; margin: 20px 0; text-align: center; }
+        .highlight .amount { font-size: 32px; font-weight: bold; color: #4caf50; }
+        .button { display: inline-block; padding: 12px 24px; margin: 20px 0; text-decoration: none; border-radius: 5px; font-weight: bold; background: #4caf50; color: #fff; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎊 Request Approved!</h1>
+        </div>
+        <div class="content">
+            <div class="success-icon">✅</div>
+            
+            <p>Great news! Your recycle request has been approved by the facility.</p>
+            
+            <div class="info-box">
+                <p><strong>Request ID:</strong> {{requestId}}</p>
+                <p><strong>Device:</strong> {{deviceName}}</p>
+                <p><strong>Status:</strong> ✅ Approved</p>
+            </div>
+
+            <div class="highlight">
+                <p style="margin: 0; font-size: 14px; color: #666;">Approved Payment</p>
+                <div class="amount">${{approvedAmount}}</div>
+            </div>
+
+            <h3>What Happens Next?</h3>
+            <p>The facility will schedule a pickup for your device. You'll receive another email with:</p>
+            <ul>
+                <li>Pickup date and time</li>
+                <li>Driver contact information</li>
+                <li>Preparation instructions</li>
+            </ul>
+
+            <div style="text-align: center;">
+                <a href="{{trackUrl}}" class="button">Track Your Request</a>
+            </div>
+
+            <p style="font-size: 14px; color: #666; margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                <strong>Preparation Tips:</strong><br>
+                • Backup your data<br>
+                • Factory reset the device<br>
+                • Remove SIM and memory cards
+            </p>
+        </div>
+        <div class="footer">
+            <p>ELocate - E-Waste Recycling Platform</p>
+            <p>Making the world cleaner, one device at a time 🌍</p>
+        </div>
+    </div>
+</body>
+</html>

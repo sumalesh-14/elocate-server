@@ -6,6 +6,7 @@ import com.elocate.elocate.dto.UpdateFulfillmentStatusDto;
 import com.elocate.elocate.dto.VerifyRecycleRequestDto;
 import com.elocate.elocate.dto.AssignDriverDto;
 import com.elocate.elocate.dto.DriverActionReasonDto;
+import com.elocate.elocate.dto.SendReminderDto;
 import com.elocate.elocate.model.RecycleStatus;
 import com.elocate.elocate.model.RecycleStatusHistory;
 import com.elocate.elocate.service.RecycleRequestService;
@@ -149,6 +150,18 @@ public class RecycleRequestController {
     }
 
     /**
+     * Reassign driver for a pickup request
+     * Invalidates old driver's tokens and sends new email to new driver
+     */
+    @PostMapping("/{id}/reassign-driver")
+    public ResponseEntity<RecycleRequestResponse> reassignDriver(
+            @PathVariable UUID id,
+            @Valid @RequestBody AssignDriverDto request) {
+        log.info("POST /api/v1/recycle-requests/{}/reassign-driver - newDriverId: {}", id, request.getDriverId());
+        return ResponseEntity.ok(recycleRequestService.reassignDriver(id, request));
+    }
+
+    /**
      * Driver webhook: Link 1 clicked from email. Direct pickup done.
      */
     @GetMapping("/driver-action/{id}/pickup-done")
@@ -190,6 +203,22 @@ public class RecycleRequestController {
             @RequestParam UUID userId) {
         log.info("PUT /api/v1/recycle-requests/{}/cancel - userId: {}", id, userId);
         RecycleRequestResponse response = recycleRequestService.cancelRequest(id, userId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Send reminder to intermediary/facility owner about pending request
+     * Citizen can include optional comment that gets stored in history and sent in email
+     */
+    @PostMapping("/{id}/send-reminder")
+    public ResponseEntity<RecycleRequestResponse> sendReminderToIntermediary(
+            @PathVariable UUID id,
+            @RequestParam UUID userId,
+            @Valid @RequestBody SendReminderDto request) {
+        log.info("POST /api/v1/recycle-requests/{}/send-reminder - userId: {}, hasComment: {}", 
+                id, userId, request.getComment() != null && !request.getComment().isBlank());
+        RecycleRequestResponse response = recycleRequestService.sendReminderToIntermediary(
+                id, userId, request.getComment());
         return ResponseEntity.ok(response);
     }
 }

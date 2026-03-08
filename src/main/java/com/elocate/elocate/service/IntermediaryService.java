@@ -30,6 +30,7 @@ public class IntermediaryService {
     private final EmailService emailService;
     private final EnhancedPricingService pricingService;
     private final RecycleStatusHistoryService statusHistoryService;
+    private final CertificateService certificateService;
 
     /**
      * Approve recycle request with pricing confirmation
@@ -177,18 +178,27 @@ public class IntermediaryService {
         if (request.getVerifiedConditionCode() != null) {
             recycleRequest.setConditionCode(request.getVerifiedConditionCode());
         }
+        
+        // Update final amount if provided
+        if (request.getFinalAmount() != null) {
+            recycleRequest.setFinalAmount(request.getFinalAmount());
+        }
 
         // Update status to VERIFIED
         RecycleStatus oldStatus = recycleRequest.getStatus();
         recycleRequest.setStatus(RecycleStatus.VERIFIED);
         recycleRequestRepository.save(recycleRequest);
 
-        // Record RecycleStatus change in history
+        // Record RecycleStatus change in history with comments
+        String comments = request.getNotes() != null && !request.getNotes().isBlank() 
+            ? request.getNotes() 
+            : "Device condition verified";
         statusHistoryService.recordRecycleStatusChange(
                 recycleRequest,
                 oldStatus,
                 RecycleStatus.VERIFIED,
-                facilityOwnerId);
+                facilityOwnerId,
+                comments);
 
         log.info("Condition verified for request {}", requestId);
     }
@@ -224,6 +234,14 @@ public class IntermediaryService {
         if (recycleRequest.getFinalAmount() == null) {
             recycleRequest.setFinalAmount(finalAmount);
         }
+        
+        // Get citizen for certificate generation
+        User citizen = userRepository.findById(recycleRequest.getUserId())
+                .orElseThrow(() -> new IllegalStateException("Citizen not found"));
+        
+        // Generate certificate and upload to S3
+        String certificateUrl = certificateService.generateAndUploadCertificate(recycleRequest, citizen);
+        recycleRequest.setCertificateUrl(certificateUrl);
 
         recycleRequestRepository.save(recycleRequest);
 
@@ -241,17 +259,18 @@ public class IntermediaryService {
                 finalAmount,
                 "Recycling reward for request " + requestId);
 
-        // Send email notification to citizen
-        User citizen = userRepository.findById(recycleRequest.getUserId()).orElse(null);
-        if (citizen != null && citizen.getEmail() != null) {
+        // Send email notification to citizen with certificate link
+        if (citizen.getEmail() != null) {
             BigDecimal monetaryAmount = pricingService.convertPointsToMoney(finalAmount);
-            emailService.sendRecyclingCompletedEmail(
+            emailService.sendRecyclingCompletedWithCertificateEmail(
                     citizen.getEmail(),
                     requestId.toString(),
-                    monetaryAmount);
+                    monetaryAmount,
+                    certificateUrl);
         }
 
-        log.info("Request {} marked as recycled, wallet credited with {} points", requestId, finalAmount);
+        log.info("Request {} marked as recycled, wallet credited with {} points, certificate generated", 
+                requestId, finalAmount);
     }
 
     /**

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .success-icon { text-align: center; font-size: 64px; margin: 20px 0; }
+        .info-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .info-box p { margin: 8px 0; }
+        .button { display: inline-block; padding: 12px 24px; margin: 20px 0; text-decoration: none; border-radius: 5px; font-weight: bold; background: #667eea; color: #fff; text-align: center; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Request Created Successfully</h1>
+        </div>
+        <div class="content">
+            <div class="success-icon">🎉</div>
+            
+            <p>Thank you for choosing ELocate for your e-waste recycling!</p>
+            
+            <div class="info-box">
+                <p><strong>Request ID:</strong> {{requestId}}</p>
+                <p><strong>Device:</strong> {{deviceName}}</p>
+                <p><strong>Estimated Payment:</strong> ${{estimatedAmount}}</p>
+                <p><strong>Status:</strong> Pending Approval</p>
+            </div>
+
+            <h3>What's Next?</h3>
+            <p>Your request has been sent to the recycling facility for review. You will receive an email notification once it's approved.</p>
+
+            <div style="text-align: center;">
+                <a href="{{trackUrl}}" class="button">Track Your Request</a>
+            </div>
+
+            <p style="font-size: 14px; color: #666; margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                <strong>Timeline:</strong><br>
+                • Facility Review: 1-2 business days<br>
+                • Pickup Scheduling: After approval<br>
+                • Payment: After recycling completion
+            </p>
+        </div>
+        <div class="footer">
+            <p>ELocate - E-Waste Recycling Platform</p>
+            <p>Making the world cleaner, one device at a time 🌍</p>
+        </div>
+    </div>
+</body>
+</html>

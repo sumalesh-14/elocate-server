@@ -71,10 +71,20 @@ app:
     provider: ${EMAIL_PROVIDER:sendgrid}
     from: ${EMAIL_FROM:noreply@elocate.com}
     from.name: ${EMAIL_FROM_NAME:ELocate}
+  frontend:
+    url: ${FRONTEND_URL:https://elocate-frontend.vercel.app}
 
 sendgrid:
   api:
     key: ${SENDGRID_API_KEY:}
+
+# AWS S3 Configuration
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:elocate-pickup-photos}
+    region: ${AWS_S3_REGION:eu-north-1}
 
 auth0:
   domain: ${AUTH0_DOMAIN}

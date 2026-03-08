@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .icon { text-align: center; font-size: 64px; margin: 20px 0; }
+        .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .reason-box { background: #ffebee; border-left: 4px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .action-box { background: #e3f2fd; padding: 20px; margin: 20px 0; border-radius: 4px; text-align: center; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚠️ Pickup Attempt Failed</h1>
+        </div>
+        <div class="content">
+            <div class="icon">😔</div>
+            
+            <p>Unfortunately, the driver was unable to complete the pickup for your request.</p>
+            
+            <div class="info-box">
+                <p><strong>Request ID:</strong> {{requestId}}</p>
+                <p><strong>Status:</strong> Pickup Failed - Rescheduling Required</p>
+            </div>
+
+            <div class="reason-box">
+                <p><strong>Reason:</strong></p>
+                <p>{{reason}}</p>
+            </div>
+
+            <div class="action-box">
+                <h3 style="margin-top: 0; color: #2196f3;">What Happens Next?</h3>
+                <p>Our team will contact you shortly to reschedule the pickup at a convenient time.</p>
+                <p style="font-size: 14px; color: #666; margin-top: 15px;">
+                    You can also reach out to us if you'd like to schedule immediately.
+                </p>
+            </div>
+
+            <p style="font-size: 14px; color: #666; margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                <strong>Common Reasons & Solutions:</strong><br>
+                • <strong>No one available:</strong> Ensure someone is present during pickup window<br>
+                • <strong>Device not ready:</strong> Have device backed up and ready for collection<br>
+                • <strong>Address issue:</strong> Verify your pickup address is correct<br>
+                • <strong>Access problem:</strong> Provide clear access instructions
+            </p>
+
+            <p style="text-align: center; margin-top: 25px;">
+                <strong>Need Help?</strong><br>
+                Contact our support team for immediate assistance.
+            </p>
+        </div>
+        <div class="footer">
+            <p>ELocate - E-Waste Recycling Platform</p>
+            <p>We're here to help! 💚</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -80,4 +80,13 @@ public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, 
 
         Long countByRecyclingFacilityAndStatus(com.elocate.elocate.model.RecyclingFacility recyclingFacility,
                         String status);
+
+        // Find requests with SLA breach (driver assigned but not picked up within time limit)
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "WHERE r.fulfillmentStatus IN :statuses " +
+                        "AND r.updatedAt < :deadline " +
+                        "AND r.assignedDriverId IS NOT NULL")
+        List<RecycleRequest> findByFulfillmentStatusInAndUpdatedAtBefore(
+                        @Param("statuses") List<com.elocate.elocate.model.enums.FulfillmentStatus> statuses,
+                        @Param("deadline") java.time.LocalDateTime deadline);
 }

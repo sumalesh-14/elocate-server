@@ -6,14 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import jakarta.mail.internet.MimeMessage;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Service for sending emails
- * Supports both SMTP and SendGrid HTTP API
+ * Supports both SMTP and SendGrid HTTP API with HTML templates
  */
 @Service
 @Slf4j
@@ -21,6 +25,7 @@ import java.math.BigDecimal;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final EmailTemplateService templateService;
 
     @Autowired(required = false)
     private SendGridEmailService sendGridEmailService;
@@ -34,8 +39,52 @@ public class EmailService {
     @Value("${app.email.provider:smtp}")
     private String emailProvider;
 
-    public EmailService(JavaMailSender mailSender) {
+    @Value("${app.email.notifications.enabled:true}")
+    private boolean notificationsEnabled;
+
+    @Value("${app.email.notifications.request-created:true}")
+    private boolean requestCreatedEnabled;
+
+    @Value("${app.email.notifications.request-approved:true}")
+    private boolean requestApprovedEnabled;
+
+    @Value("${app.email.notifications.driver-assignment:true}")
+    private boolean driverAssignmentEnabled;
+
+    @Value("${app.email.notifications.pickup-scheduled:true}")
+    private boolean pickupScheduledEnabled;
+
+    @Value("${app.email.notifications.pickup-completed:true}")
+    private boolean pickupCompletedEnabled;
+
+    @Value("${app.email.notifications.pickup-failed:true}")
+    private boolean pickupFailedEnabled;
+
+    @Value("${app.email.notifications.device-received:true}")
+    private boolean deviceReceivedEnabled;
+
+    @Value("${app.email.notifications.recycling-completed:true}")
+    private boolean recyclingCompletedEnabled;
+
+    @Value("${app.email.notifications.facility-assignment:true}")
+    private boolean facilityAssignmentEnabled;
+
+    @Value("${app.email.notifications.reminder:true}")
+    private boolean reminderEnabled;
+
+    @Value("${app.email.use-html-templates:true}")
+    private boolean useHtmlTemplates;
+
+    public EmailService(JavaMailSender mailSender, EmailTemplateService templateService) {
         this.mailSender = mailSender;
+        this.templateService = templateService;
+    }
+
+    /**
+     * Check if email notifications are enabled globally
+     */
+    private boolean isEmailEnabled() {
+        return notificationsEnabled;
     }
 
     /**
@@ -119,58 +168,105 @@ public class EmailService {
      */
     public void sendRequestCreatedEmail(String toEmail, String requestId, String deviceName,
             BigDecimal estimatedAmount) {
+        if (!isEmailEnabled() || !requestCreatedEnabled) {
+            log.info("Request created email disabled, skipping");
+            return;
+        }
+        
         log.info("Sending request created email to: {}", toEmail);
 
         String subject = "Recycle Request Created - ELocate";
-        String body = "Your Recycle Request Has Been Created\n\n" +
-                "Thank you for choosing ELocate for your e-waste recycling!\n\n" +
-                "Request ID: " + requestId + "\n" +
-                "Device: " + deviceName + "\n" +
-                "Estimated Payment: $" + estimatedAmount + "\n\n" +
-                "Your request has been sent to the recycling facility for approval.\n" +
-                "You will receive an email once it's approved.\n\n" +
-                "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
-                "Best regards,\n" +
-                "ELocate Team";
-
-        sendEmail(toEmail, subject, body);
+        
+        if (useHtmlTemplates && templateService.templateExists("request-created")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("requestId", requestId);
+            variables.put("deviceName", deviceName);
+            variables.put("estimatedAmount", estimatedAmount.toString());
+            variables.put("trackUrl", appBaseUrl + "/citizen/recycle");
+            
+            String htmlBody = templateService.processTemplate("request-created", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Your Recycle Request Has Been Created\n\n" +
+                    "Thank you for choosing ELocate for your e-waste recycling!\n\n" +
+                    "Request ID: " + requestId + "\n" +
+                    "Device: " + deviceName + "\n" +
+                    "Estimated Payment: $" + estimatedAmount + "\n\n" +
+                    "Your request has been sent to the recycling facility for approval.\n" +
+                    "You will receive an email once it's approved.\n\n" +
+                    "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
      * Send request assigned notification to intermediary
      */
     public void sendRequestAssignedToFacilityEmail(String toEmail, String requestId, String deviceName) {
+        if (!isEmailEnabled() || !facilityAssignmentEnabled) {
+            log.info("Facility assignment email disabled, skipping");
+            return;
+        }
+        
         log.info("Sending request assigned email to facility: {}", toEmail);
 
         String subject = "New Recycle Request Assigned - ELocate";
-        String body = "New Recycle Request Assigned to Your Facility\n\n" +
-                "Request ID: " + requestId + "\n" +
-                "Device: " + deviceName + "\n\n" +
-                "Please review and approve this request in your dashboard.\n\n" +
-                "View request: " + appBaseUrl + "/intermediary/collections\n\n" +
-                "Best regards,\n" +
-                "ELocate Team";
-
-        sendEmail(toEmail, subject, body);
+        
+        if (useHtmlTemplates && templateService.templateExists("facility-assignment")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("requestId", requestId);
+            variables.put("deviceName", deviceName);
+            variables.put("dashboardUrl", appBaseUrl + "/intermediary/collections");
+            
+            String htmlBody = templateService.processTemplate("facility-assignment", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "New Recycle Request Assigned to Your Facility\n\n" +
+                    "Request ID: " + requestId + "\n" +
+                    "Device: " + deviceName + "\n\n" +
+                    "Please review and approve this request in your dashboard.\n\n" +
+                    "View request: " + appBaseUrl + "/intermediary/collections\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
      * Send request approved notification to citizen
      */
     public void sendRequestApprovedEmail(String toEmail, String requestId, BigDecimal approvedAmount) {
+        if (!isEmailEnabled() || !requestApprovedEnabled) {
+            log.info("Request approved email disabled, skipping");
+            return;
+        }
+        
         log.info("Sending request approved email to: {}", toEmail);
 
         String subject = "Recycle Request Approved - ELocate";
-        String body = "Your Recycle Request Has Been Approved!\n\n" +
-                "Request ID: " + requestId + "\n" +
-                "Approved Payment: $" + approvedAmount + "\n\n" +
-                "Your request has been approved. The facility will schedule a pickup or " +
-                "you can drop off your device at the facility.\n\n" +
-                "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
-                "Best regards,\n" +
-                "ELocate Team";
-
-        sendEmail(toEmail, subject, body);
+        
+        if (useHtmlTemplates && templateService.templateExists("request-approved")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("requestId", requestId);
+            variables.put("deviceName", "Your Device");
+            variables.put("approvedAmount", approvedAmount.toString());
+            variables.put("trackUrl", appBaseUrl + "/citizen/recycle");
+            
+            String htmlBody = templateService.processTemplate("request-approved", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Your Recycle Request Has Been Approved!\n\n" +
+                    "Request ID: " + requestId + "\n" +
+                    "Approved Payment: $" + approvedAmount + "\n\n" +
+                    "Your request has been approved. The facility will schedule a pickup or " +
+                    "you can drop off your device at the facility.\n\n" +
+                    "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
@@ -178,22 +274,89 @@ public class EmailService {
      */
     public void sendDriverAssignmentEmail(String toEmail, String driverName, String requestId,
             String citizenAddress, String pickupToken) {
+        if (!isEmailEnabled() || !driverAssignmentEnabled) {
+            log.info("Driver assignment email disabled, skipping");
+            return;
+        }
+        
         log.info("Sending driver assignment email to: {}", toEmail);
 
         String subject = "Pickup Assignment - ELocate";
-        String body = "Hello " + driverName + ",\n\n" +
-                "You have been assigned a new pickup:\n\n" +
-                "Request ID: " + requestId + "\n" +
-                "Pickup Address: " + citizenAddress + "\n\n" +
-                "After completing the pickup, please use one of these links:\n\n" +
-                "✅ Pickup Completed:\n" +
-                appBaseUrl + "/api/v1/driver/pickup/" + requestId + "/complete?token=" + pickupToken + "\n\n" +
-                "❌ Pickup Failed:\n" +
-                appBaseUrl + "/api/v1/driver/pickup/" + requestId + "/fail?token=" + pickupToken + "\n\n" +
-                "Best regards,\n" +
-                "ELocate Team";
+        
+        if (useHtmlTemplates && templateService.templateExists("driver-assignment")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("driverName", driverName);
+            variables.put("requestId", requestId);
+            variables.put("pickupAddress", citizenAddress);
+            variables.put("deviceName", "E-Waste Device");
+            variables.put("pickupDate", "As scheduled");
+            variables.put("acceptUrl", appBaseUrl + "/driver/pickup/accept/" + pickupToken);
+            variables.put("rejectUrl", appBaseUrl + "/driver/pickup/reject/" + pickupToken);
+            variables.put("comments", ""); // Will be populated if comments exist
+            
+            String htmlBody = templateService.processTemplate("driver-assignment", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Hello " + driverName + ",\n\n" +
+                    "You have been assigned a new pickup:\n\n" +
+                    "Request ID: " + requestId + "\n" +
+                    "Pickup Address: " + citizenAddress + "\n\n" +
+                    "After completing the pickup, please use one of these links:\n\n" +
+                    "✅ Pickup Completed:\n" +
+                    appBaseUrl + "/driver/pickup/accept/" + pickupToken + "\n\n" +
+                    "❌ Pickup Failed:\n" +
+                    appBaseUrl + "/driver/pickup/reject/" + pickupToken + "\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
+    }
 
-        sendEmail(toEmail, subject, body);
+    /**
+     * Send driver assignment notification with comments
+     */
+    public void sendDriverAssignmentEmailWithComments(String toEmail, String driverName, String requestId,
+            String citizenAddress, String pickupToken, String comments, String deviceName, String pickupDate) {
+        if (!isEmailEnabled() || !driverAssignmentEnabled) {
+            log.info("Driver assignment email disabled, skipping");
+            return;
+        }
+        
+        log.info("Sending driver assignment email with comments to: {}", toEmail);
+
+        String subject = "Pickup Assignment - ELocate";
+        
+        if (useHtmlTemplates && templateService.templateExists("driver-assignment")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("driverName", driverName);
+            variables.put("requestId", requestId);
+            variables.put("pickupAddress", citizenAddress);
+            variables.put("deviceName", deviceName != null ? deviceName : "E-Waste Device");
+            variables.put("pickupDate", pickupDate != null ? pickupDate : "As scheduled");
+            variables.put("acceptUrl", appBaseUrl + "/driver/pickup/accept/" + pickupToken);
+            variables.put("rejectUrl", appBaseUrl + "/driver/pickup/reject/" + pickupToken);
+            variables.put("comments", comments);
+            
+            String htmlBody = templateService.processTemplate("driver-assignment", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Hello " + driverName + ",\n\n" +
+                    "You have been assigned a new pickup:\n\n" +
+                    "Request ID: " + requestId + "\n" +
+                    "Pickup Address: " + citizenAddress + "\n" +
+                    "Device: " + (deviceName != null ? deviceName : "E-Waste Device") + "\n" +
+                    "Pickup Date: " + (pickupDate != null ? pickupDate : "As scheduled") + "\n\n" +
+                    (comments != null && !comments.isBlank() ? 
+                        "📝 Special Instructions:\n" + comments + "\n\n" : "") +
+                    "After completing the pickup, please use one of these links:\n\n" +
+                    "✅ Pickup Completed:\n" +
+                    appBaseUrl + "/driver/pickup/accept/" + pickupToken + "\n\n" +
+                    "❌ Pickup Failed:\n" +
+                    appBaseUrl + "/driver/pickup/reject/" + pickupToken + "\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
@@ -201,75 +364,133 @@ public class EmailService {
      */
     public void sendPickupScheduledEmail(String toEmail, String requestId, String pickupDate,
             String driverName, String driverPhone) {
+        if (!isEmailEnabled() || !pickupScheduledEnabled) {
+            log.info("Pickup scheduled email disabled, skipping");
+            return;
+        }
+        
         log.info("Sending pickup scheduled email to: {}", toEmail);
 
         String subject = "Pickup Scheduled - ELocate";
-        String body = "Your Pickup Has Been Scheduled\n\n" +
-                "Request ID: " + requestId + "\n" +
-                "Pickup Date: " + pickupDate + "\n" +
-                "Driver: " + driverName + "\n" +
-                "Driver Phone: " + driverPhone + "\n\n" +
-                "Please ensure someone is available at the pickup address.\n\n" +
-                "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
-                "Best regards,\n" +
-                "ELocate Team";
-
-        sendEmail(toEmail, subject, body);
+        
+        if (useHtmlTemplates && templateService.templateExists("pickup-scheduled")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("requestId", requestId);
+            variables.put("deviceName", "Your E-Waste Device");
+            variables.put("pickupDate", pickupDate);
+            variables.put("pickupAddress", "Your registered address");
+            variables.put("driverName", driverName);
+            variables.put("driverPhone", driverPhone);
+            
+            String htmlBody = templateService.processTemplate("pickup-scheduled", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Your Pickup Has Been Scheduled\n\n" +
+                    "Request ID: " + requestId + "\n" +
+                    "Pickup Date: " + pickupDate + "\n" +
+                    "Driver: " + driverName + "\n" +
+                    "Driver Phone: " + driverPhone + "\n\n" +
+                    "Please ensure someone is available at the pickup address.\n\n" +
+                    "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
      * Send pickup completed notification
      */
     public void sendPickupCompletedEmail(String toEmail, String requestId) {
+        if (!isEmailEnabled() || !pickupCompletedEnabled) {
+            log.info("Pickup completed email disabled, skipping");
+            return;
+        }
+        
         log.info("Sending pickup completed email to: {}", toEmail);
 
         String subject = "Pickup Completed - ELocate";
-        String body = "Your Device Has Been Picked Up\n\n" +
-                "Request ID: " + requestId + "\n\n" +
-                "Your device has been successfully picked up and is on its way to the recycling facility.\n" +
-                "You will receive another email once the recycling is complete and payment is processed.\n\n" +
-                "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
-                "Best regards,\n" +
-                "ELocate Team";
-
-        sendEmail(toEmail, subject, body);
+        
+        if (useHtmlTemplates && templateService.templateExists("pickup-completed")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("requestId", requestId);
+            
+            String htmlBody = templateService.processTemplate("pickup-completed", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Your Device Has Been Picked Up\n\n" +
+                    "Request ID: " + requestId + "\n\n" +
+                    "Your device has been successfully picked up and is on its way to the recycling facility.\n" +
+                    "You will receive another email once the recycling is complete and payment is processed.\n\n" +
+                    "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
      * Send pickup failed notification
      */
     public void sendPickupFailedEmail(String toEmail, String requestId, String reason) {
+        if (!isEmailEnabled() || !pickupFailedEnabled) {
+            log.info("Pickup failed email disabled, skipping");
+            return;
+        }
+        
         log.info("Sending pickup failed email to: {}", toEmail);
 
         String subject = "Pickup Failed - ELocate";
-        String body = "Pickup Attempt Failed\n\n" +
-                "Request ID: " + requestId + "\n" +
-                "Reason: " + reason + "\n\n" +
-                "Unfortunately, the driver was unable to complete the pickup. " +
-                "Our team will contact you to reschedule.\n\n" +
-                "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
-                "Best regards,\n" +
-                "ELocate Team";
-
-        sendEmail(toEmail, subject, body);
+        
+        if (useHtmlTemplates && templateService.templateExists("pickup-failed")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("requestId", requestId);
+            variables.put("reason", reason != null ? reason : "Not specified");
+            
+            String htmlBody = templateService.processTemplate("pickup-failed", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Pickup Attempt Failed\n\n" +
+                    "Request ID: " + requestId + "\n" +
+                    "Reason: " + reason + "\n\n" +
+                    "Unfortunately, the driver was unable to complete the pickup. " +
+                    "Our team will contact you to reschedule.\n\n" +
+                    "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
      * Send device received at facility notification
      */
     public void sendDeviceReceivedEmail(String toEmail, String requestId) {
+        if (!isEmailEnabled() || !deviceReceivedEnabled) {
+            log.info("Device received email disabled, skipping");
+            return;
+        }
+        
         log.info("Sending device received email to: {}", toEmail);
 
         String subject = "Device Received - ELocate";
-        String body = "Your Device Has Been Received\n\n" +
-                "Request ID: " + requestId + "\n\n" +
-                "The recycling facility has received your device and will begin processing it.\n" +
-                "You will receive payment confirmation once recycling is complete.\n\n" +
-                "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
-                "Best regards,\n" +
-                "ELocate Team";
-
-        sendEmail(toEmail, subject, body);
+        
+        if (useHtmlTemplates && templateService.templateExists("device-received")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("requestId", requestId);
+            
+            String htmlBody = templateService.processTemplate("device-received", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Your Device Has Been Received\n\n" +
+                    "Request ID: " + requestId + "\n\n" +
+                    "The recycling facility has received your device and will begin processing it.\n" +
+                    "You will receive payment confirmation once recycling is complete.\n\n" +
+                    "Track your request: " + appBaseUrl + "/citizen/recycle\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
@@ -291,6 +512,47 @@ public class EmailService {
                 "ELocate Team";
 
         sendEmail(toEmail, subject, body);
+    }
+
+    /**
+     * Send recycling completed with certificate notification
+     */
+    public void sendRecyclingCompletedWithCertificateEmail(String toEmail, String requestId, 
+            BigDecimal finalAmount, String certificateUrl) {
+        if (!isEmailEnabled() || !recyclingCompletedEnabled) {
+            log.info("Recycling completed email disabled, skipping");
+            return;
+        }
+        
+        log.info("Sending recycling completed with certificate email to: {}", toEmail);
+
+        String subject = "🎉 Recycling Complete - Certificate & Payment - ELocate";
+        
+        if (useHtmlTemplates && templateService.templateExists("recycling-completed")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("requestId", requestId);
+            variables.put("deviceName", "Your E-Waste Device");
+            variables.put("finalAmount", finalAmount.toString());
+            variables.put("certificateUrl", certificateUrl);
+            
+            String htmlBody = templateService.processTemplate("recycling-completed", variables);
+            sendHtmlEmail(toEmail, subject, htmlBody);
+        } else {
+            String body = "Your Device Has Been Recycled!\n\n" +
+                    "Request ID: " + requestId + "\n" +
+                    "Payment Amount: $" + finalAmount + "\n\n" +
+                    "Congratulations! Your device has been successfully recycled.\n" +
+                    "The payment has been credited to your wallet.\n\n" +
+                    "🏆 YOUR CERTIFICATE OF APPRECIATION:\n" +
+                    certificateUrl + "\n\n" +
+                    "View your wallet: " + appBaseUrl + "/citizen/profile\n" +
+                    "View all certificates: " + appBaseUrl + "/citizen/recycle\n\n" +
+                    "Thank you for being an environmental champion and contributing to a cleaner planet!\n" +
+                    "Your action makes a real difference. 🌍💚\n\n" +
+                    "Best regards,\n" +
+                    "ELocate Team";
+            sendEmail(toEmail, subject, body);
+        }
     }
 
     /**
@@ -389,6 +651,94 @@ public class EmailService {
             log.error("Failed to send email to: {}, error: {}", to, e.getMessage());
             // Don't throw exception - operations should still succeed even if email fails
             // In production, you might want to queue this for retry
+        }
+    }
+
+    /**
+     * Send reminder email to intermediary/facility owner
+     */
+    public void sendReminderToIntermediaryEmail(String toEmail, String requestId, String deviceName,
+                                                 String citizenName, String citizenEmail, String currentStatus,
+                                                 String submittedDate, String comment, String dashboardUrl) {
+        if (!isEmailEnabled() || !reminderEnabled) {
+            log.info("Reminder email disabled, skipping");
+            return;
+        }
+
+        log.info("Sending reminder email to intermediary: {}", toEmail);
+
+        String subject = "⏰ Reminder: Pending Recycle Request #" + requestId;
+
+        if (useHtmlTemplates) {
+            try {
+                Map<String, Object> variables = new HashMap<>();
+                variables.put("requestId", requestId);
+                variables.put("deviceName", deviceName);
+                variables.put("citizenName", citizenName);
+                variables.put("citizenEmail", citizenEmail);
+                variables.put("currentStatus", currentStatus);
+                variables.put("submittedDate", submittedDate);
+                variables.put("comment", comment);
+                variables.put("dashboardUrl", dashboardUrl);
+
+                String htmlBody = templateService.processTemplate("citizen-reminder.html", variables);
+                sendHtmlEmail(toEmail, subject, htmlBody);
+                return;
+            } catch (Exception e) {
+                log.warn("Failed to send HTML reminder email, falling back to plain text: {}", e.getMessage());
+            }
+        }
+
+        // Fallback to plain text
+        StringBuilder body = new StringBuilder();
+        body.append("REMINDER: Pending Recycle Request\n\n");
+        body.append("A citizen has sent you a reminder about their pending recycle request.\n\n");
+        body.append("Request Details:\n");
+        body.append("- Request ID: ").append(requestId).append("\n");
+        body.append("- Device: ").append(deviceName).append("\n");
+        body.append("- Citizen: ").append(citizenName).append(" (").append(citizenEmail).append(")\n");
+        body.append("- Current Status: ").append(currentStatus).append("\n");
+        body.append("- Submitted On: ").append(submittedDate).append("\n\n");
+
+        if (comment != null && !comment.isBlank()) {
+            body.append("Message from Citizen:\n");
+            body.append("\"").append(comment).append("\"\n\n");
+        }
+
+        body.append("Please review this request and take the necessary action.\n\n");
+        body.append("View Request: ").append(dashboardUrl).append("\n\n");
+        body.append("Best regards,\n");
+        body.append("ELocate Team");
+
+        sendEmail(toEmail, subject, body.toString());
+    }
+
+    /**
+     * Send HTML email
+     */
+    private void sendHtmlEmail(String to, String subject, String htmlBody) {
+        // Use SendGrid if configured
+        if ("sendgrid".equalsIgnoreCase(emailProvider) && sendGridEmailService != null) {
+            log.info("Using SendGrid HTTP API to send HTML email");
+            sendGridEmailService.sendHtmlEmail(to, subject, htmlBody);
+            return;
+        }
+
+        // Fall back to SMTP with HTML support
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlBody, true); // true = HTML
+
+            mailSender.send(message);
+            log.info("HTML email sent successfully to: {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send HTML email to: {}, error: {}", to, e.getMessage());
+            // Don't throw exception - operations should still succeed even if email fails
         }
     }
 }
