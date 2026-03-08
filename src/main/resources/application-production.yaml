@@ -67,12 +67,34 @@ app:
   otp:
     expiry-minutes: ${OTP_EXPIRY_MINUTES:10}
     max-attempts: ${OTP_MAX_ATTEMPTS:3}
-  email:
-    provider: ${EMAIL_PROVIDER:sendgrid}
-    from: ${EMAIL_FROM:noreply@elocate.com}
-    from.name: ${EMAIL_FROM_NAME:ELocate}
   frontend:
     url: ${FRONTEND_URL:https://elocate-frontend.vercel.app}
+  driver:
+    sla-hours: ${DRIVER_SLA_HOURS:24}
+    sla-monitoring-enabled: ${DRIVER_SLA_MONITORING_ENABLED:true}
+  base:
+    url: ${APP_BASE_URL:https://elocate-frontend.vercel.app}
+  email:
+    # Email provider: smtp or sendgrid
+    provider: ${EMAIL_PROVIDER:sendgrid}
+    from: ${EMAIL_FROM:noreply@elocate.com}
+    from-name: ${EMAIL_FROM_NAME:ELocate}
+    # Enable/disable email notifications for recycling workflow
+    notifications:
+      enabled: ${EMAIL_NOTIFICATIONS_ENABLED:true}
+      # Individual email type controls
+      request-created: ${EMAIL_REQUEST_CREATED:true}
+      request-approved: ${EMAIL_REQUEST_APPROVED:true}
+      driver-assignment: ${EMAIL_DRIVER_ASSIGNMENT:true}
+      pickup-scheduled: ${EMAIL_PICKUP_SCHEDULED:true}
+      pickup-completed: ${EMAIL_PICKUP_COMPLETED:true}
+      pickup-failed: ${EMAIL_PICKUP_FAILED:true}
+      device-received: ${EMAIL_DEVICE_RECEIVED:true}
+      recycling-completed: ${EMAIL_RECYCLING_COMPLETED:true}
+      facility-assignment: ${EMAIL_FACILITY_ASSIGNMENT:true}
+      reminder: ${EMAIL_REMINDER:true}
+    # Use HTML templates (true) or plain text (false)
+    use-html-templates: ${EMAIL_USE_HTML_TEMPLATES:true}
 
 sendgrid:
   api:
