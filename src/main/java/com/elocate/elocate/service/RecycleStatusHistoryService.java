@@ -59,7 +59,7 @@ public class RecycleStatusHistoryService {
             comments = generateFulfillmentComment(oldStatus, newStatus, changedBy);
         }
         
-        recordStatusChangeInternal(request, oldStatusStr, newStatusStr, changedBy, comments);
+        recordStatusChangeInternal(request, oldStatusStr, newStatusStr, changedBy, comments, "FULFILLMENT_STATUS");
     }
     
     /**
@@ -93,7 +93,7 @@ public class RecycleStatusHistoryService {
             comments = generateRecycleStatusComment(oldStatus, newStatus, changedBy);
         }
         
-        recordStatusChangeInternal(request, oldStatusStr, newStatusStr, changedBy, comments);
+        recordStatusChangeInternal(request, oldStatusStr, newStatusStr, changedBy, comments, "RECYCLE_STATUS");
     }
     
     /**
@@ -104,20 +104,22 @@ public class RecycleStatusHistoryService {
             String oldStatus,
             String newStatus,
             UUID changedBy,
-            String comments) {
+            String comments,
+            String statusType) {
         
         RecycleStatusHistory history = RecycleStatusHistory.builder()
                 .recycleRequest(request)
                 .oldStatus(oldStatus)
                 .newStatus(newStatus)
+                .statusType(statusType)
                 .changedBy(changedBy)
                 .changedAt(LocalDateTime.now())
                 .comments(comments)
                 .build();
         
         statusHistoryRepository.save(history);
-        log.info("Recorded status change for request {}: {} -> {} by {} - {}", 
-                request.getId(), oldStatus, newStatus, changedBy, comments);
+        log.info("Recorded {} change for request {}: {} -> {} by {} - {}", 
+                statusType, request.getId(), oldStatus, newStatus, changedBy, comments);
     }
     
     /**

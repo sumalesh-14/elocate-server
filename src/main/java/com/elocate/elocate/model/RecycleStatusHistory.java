@@ -28,6 +28,9 @@ public class RecycleStatusHistory {
 
     @Column(name = "new_status")
     private String newStatus;
+    
+    @Column(name = "status_type")
+    private String statusType;  // "RECYCLE_STATUS" or "FULFILLMENT_STATUS"
 
     @Column(name = "changed_by")
     private UUID changedBy;
