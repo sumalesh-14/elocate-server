@@ -113,6 +113,13 @@
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
+		<!-- SendGrid for Railway (HTTP API - no SMTP ports needed) -->
+		<dependency>
+			<groupId>com.sendgrid</groupId>
+			<artifactId>sendgrid-java</artifactId>
+			<version>4.10.2</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.auth0</groupId>
 			<artifactId>auth0</artifactId>

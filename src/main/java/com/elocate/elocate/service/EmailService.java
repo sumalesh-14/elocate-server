@@ -1,8 +1,8 @@
 package com.elocate.elocate.service;
 
 import com.elocate.elocate.model.enums.OtpType;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,20 +13,30 @@ import java.math.BigDecimal;
 
 /**
  * Service for sending emails
+ * Supports both SMTP and SendGrid HTTP API
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor
 @Async
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    @Autowired(required = false)
+    private SendGridEmailService sendGridEmailService;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
 
     @Value("${app.base.url:http://localhost:3000}")
     private String appBaseUrl;
+
+    @Value("${app.email.provider:smtp}")
+    private String emailProvider;
+
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     /**
      * Send OTP email
@@ -358,6 +368,14 @@ public class EmailService {
      * Send simple email
      */
     private void sendEmail(String to, String subject, String body) {
+        // Use SendGrid if configured, otherwise fall back to SMTP
+        if ("sendgrid".equalsIgnoreCase(emailProvider) && sendGridEmailService != null) {
+            log.info("Using SendGrid HTTP API to send email");
+            sendGridEmailService.sendEmail(to, subject, body);
+            return;
+        }
+
+        // Fall back to SMTP
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);

@@ -24,7 +24,7 @@ public class EmailTestController {
 
     private final EmailService emailService;
 
-    private static final String TEST_EMAIL = "sumaleshka@gmail.com";
+    private static final String TEST_EMAIL = "kasumalesh@gmail.com";
 
     @PostMapping("/send-email")
     @Operation(summary = "Send test email", description = "Send a test email to verify email configuration")
