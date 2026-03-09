@@ -11,44 +11,42 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class DeviceBrandService {
-    
+
     private final DeviceBrandRepository brandRepository;
-    
+
     /**
      * Get all brands with optional search and filter
      */
     @Transactional(readOnly = true)
-    public List<DeviceBrandResponse> getAllBrands(String search, Boolean isActive) {
-        log.info("Fetching brands with search: {}, isActive: {}", search, isActive);
-        
-        List<DeviceBrand> brands;
-        
+    public Page<DeviceBrandResponse> getAllBrands(String search, Boolean isActive, Pageable pageable) {
+        log.info("Fetching brands with search: {}, isActive: {}, pageable: {}", search, isActive, pageable);
+
+        Page<DeviceBrand> brands;
+
         if (search != null && !search.trim().isEmpty()) {
             if (isActive != null) {
-                brands = brandRepository.searchBrandsWithActiveFilter(search, isActive);
+                brands = brandRepository.searchBrandsWithActiveFilter(search, isActive, pageable);
             } else {
-                brands = brandRepository.searchBrands(search);
+                brands = brandRepository.searchBrands(search, pageable);
             }
         } else if (isActive != null) {
-            brands = brandRepository.findByIsActiveOrderByNameAsc(isActive);
+            brands = brandRepository.findByIsActiveOrderByNameAsc(isActive, pageable);
         } else {
-            brands = brandRepository.findAll();
+            brands = brandRepository.findAllByOrderByNameAsc(pageable);
         }
-        
-        return brands.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+
+        return brands.map(this::mapToResponse);
     }
-    
+
     /**
      * Get brand by ID
      */
@@ -59,43 +57,43 @@ public class DeviceBrandService {
                 .orElseThrow(() -> new BrandNotFoundException(id));
         return mapToResponse(brand);
     }
-    
+
     /**
      * Create new brand
      */
     @Transactional
     public DeviceBrandResponse createBrand(DeviceBrandRequest request) {
         log.info("Creating new brand with code: {}", request.getCode());
-        
+
         // Check if code already exists
         Optional<DeviceBrand> existing = brandRepository.findByCodeIgnoreCase(request.getCode());
         if (existing.isPresent()) {
             throw new DuplicateBrandCodeException(request.getCode());
         }
-        
+
         DeviceBrand brand = DeviceBrand.builder()
                 .code(request.getCode().toUpperCase())
                 .name(request.getName())
                 .description(request.getDescription())
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
-        
+
         DeviceBrand saved = brandRepository.save(brand);
         log.info("Brand created successfully with id: {}", saved.getId());
-        
+
         return mapToResponse(saved);
     }
-    
+
     /**
      * Update existing brand
      */
     @Transactional
     public DeviceBrandResponse updateBrand(UUID id, DeviceBrandRequest request) {
         log.info("Updating brand with id: {}", id);
-        
+
         DeviceBrand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new BrandNotFoundException(id));
-        
+
         // Check if code is being changed and if new code already exists
         if (!brand.getCode().equalsIgnoreCase(request.getCode())) {
             Optional<DeviceBrand> existing = brandRepository.findByCodeIgnoreCase(request.getCode());
@@ -104,65 +102,63 @@ public class DeviceBrandService {
             }
             brand.setCode(request.getCode().toUpperCase());
         }
-        
+
         brand.setName(request.getName());
         brand.setDescription(request.getDescription());
         brand.setIsActive(request.getIsActive() != null ? request.getIsActive() : brand.getIsActive());
-        
+
         DeviceBrand updated = brandRepository.save(brand);
         log.info("Brand updated successfully");
-        
+
         return mapToResponse(updated);
     }
-    
+
     /**
      * Soft delete brand (set isActive to false)
      */
     @Transactional
     public void deleteBrand(UUID id) {
         log.info("Deleting brand with id: {}", id);
-        
+
         DeviceBrand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new BrandNotFoundException(id));
-        
+
         brand.setIsActive(false);
         brandRepository.save(brand);
-        
+
         log.info("Brand soft deleted successfully");
     }
-    
+
     /**
      * Hard delete brand (permanent deletion)
      */
     @Transactional
     public void hardDeleteBrand(UUID id) {
         log.info("Hard deleting brand with id: {}", id);
-        
+
         if (!brandRepository.existsById(id)) {
             throw new BrandNotFoundException(id);
         }
-        
+
         brandRepository.deleteById(id);
         log.info("Brand hard deleted successfully");
     }
-    
+
     /**
      * Search brands
      */
     @Transactional(readOnly = true)
-    public List<DeviceBrandResponse> searchBrands(String search) {
-        log.info("Searching brands with term: {}", search);
-        
+    public Page<DeviceBrandResponse> searchBrands(String search, Pageable pageable) {
+        log.info("Searching brands with term: {}, pageable: {}", search, pageable);
+
         if (search == null || search.trim().isEmpty()) {
-            return getAllBrands(null, null);
+            return getAllBrands(null, null, pageable);
         }
-        
-        List<DeviceBrand> brands = brandRepository.searchBrands(search);
-        return brands.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+
+        Page<DeviceBrand> brands = brandRepository.searchBrands(search, pageable);
+        return brands.map(this::mapToResponse);
     }
-    
+
     /**
      * Map entity to response DTO
      */

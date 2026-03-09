@@ -48,6 +48,10 @@ public interface DeviceCategoryRepository extends JpaRepository<DeviceCategory, 
        // Find by active status with sorting by name
        Page<DeviceCategory> findByIsActiveOrderByNameAsc(Boolean isActive, Pageable pageable);
 
+       // All categories sorted by name
+       @Query("SELECT dc FROM DeviceCategory dc ORDER BY dc.name ASC")
+       Page<DeviceCategory> findAllByOrderByNameAsc(Pageable pageable);
+
        // All categories with pagination
        Page<DeviceCategory> findAll(Pageable pageable);
 }

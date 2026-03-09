@@ -64,7 +64,7 @@ public class DeviceModelService {
         } else if (isActive != null) {
             models = modelRepository.findByIsActiveOrderByModelNameAsc(isActive, pageable);
         } else {
-            models = modelRepository.findAll(pageable);
+            models = modelRepository.findAllByOrderByModelNameAsc(pageable);
         }
 
         return models.map(this::mapToResponse);
@@ -107,7 +107,7 @@ public class DeviceModelService {
                 // .copperG(request.getCopperG())
                 // .palladiumMg(request.getPalladiumMg())
                 // .recyclabilityScore(request.getRecyclabilityScore())
-                //.basePoints(request.getBasePoints())
+                // .basePoints(request.getBasePoints())
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
 

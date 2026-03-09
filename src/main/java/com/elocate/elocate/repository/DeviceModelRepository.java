@@ -69,4 +69,8 @@ public interface DeviceModelRepository extends JpaRepository<DeviceModel, UUID> 
                         @Param("brandId") UUID brandId,
                         @Param("search") String search,
                         Pageable pageable);
+
+        // All models sorted by name
+        @Query("SELECT dm FROM DeviceModel dm ORDER BY dm.modelName ASC")
+        Page<DeviceModel> findAllByOrderByModelNameAsc(Pageable pageable);
 }

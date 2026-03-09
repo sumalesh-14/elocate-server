@@ -41,7 +41,7 @@ public class DeviceCategoryService {
         } else if (isActive != null) {
             categories = categoryRepository.findByIsActiveOrderByNameAsc(isActive, pageable);
         } else {
-            categories = categoryRepository.findAll(pageable);
+            categories = categoryRepository.findAllByOrderByNameAsc(pageable);
         }
 
         return categories.map(this::mapToResponse);

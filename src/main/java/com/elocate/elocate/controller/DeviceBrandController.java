@@ -10,6 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,24 +21,30 @@ import java.util.UUID;
 @RequestMapping("/api/v1/device-brands")
 @RequiredArgsConstructor
 public class DeviceBrandController {
-    
+
     private final DeviceBrandService brandService;
-    
+
     /**
      * Get all brands with optional search and filter
      * Query params:
      * - search: Search term for name, code, or description
      * - isActive: Filter by active status (true/false)
+     * - page: Page number (default: 0)
+     * - size: Page size (default: 10)
      */
     @GetMapping
-    public ResponseEntity<List<DeviceBrandResponse>> getAllBrands(
+    public ResponseEntity<Page<DeviceBrandResponse>> getAllBrands(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) Boolean isActive) {
-        log.info("GET /api/v1/device-brands - search: {}, isActive: {}", search, isActive);
-        List<DeviceBrandResponse> brands = brandService.getAllBrands(search, isActive);
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /api/v1/device-brands - search: {}, isActive: {}, page: {}, size: {}", search, isActive, page,
+                size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DeviceBrandResponse> brands = brandService.getAllBrands(search, isActive, pageable);
         return ResponseEntity.ok(brands);
     }
-    
+
     /**
      * Get brand by ID
      */
@@ -45,7 +54,7 @@ public class DeviceBrandController {
         DeviceBrandResponse brand = brandService.getBrandById(id);
         return ResponseEntity.ok(brand);
     }
-    
+
     /**
      * Create new brand
      */
@@ -56,7 +65,7 @@ public class DeviceBrandController {
         DeviceBrandResponse created = brandService.createBrand(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
-    
+
     /**
      * Update existing brand
      */
@@ -68,7 +77,7 @@ public class DeviceBrandController {
         DeviceBrandResponse updated = brandService.updateBrand(id, request);
         return ResponseEntity.ok(updated);
     }
-    
+
     /**
      * Soft delete brand (set isActive to false)
      */
@@ -78,7 +87,7 @@ public class DeviceBrandController {
         brandService.deleteBrand(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     /**
      * Hard delete brand (permanent deletion)
      */
@@ -88,15 +97,18 @@ public class DeviceBrandController {
         brandService.hardDeleteBrand(id);
         return ResponseEntity.noContent().build();
     }
-    
+
     /**
      * Search brands
      */
     @GetMapping("/search")
-    public ResponseEntity<List<DeviceBrandResponse>> searchBrands(
-            @RequestParam String q) {
-        log.info("GET /api/v1/device-brands/search?q={}", q);
-        List<DeviceBrandResponse> results = brandService.searchBrands(q);
+    public ResponseEntity<Page<DeviceBrandResponse>> searchBrands(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        log.info("GET /api/v1/device-brands/search?q={}&page={}&size={}", q, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DeviceBrandResponse> results = brandService.searchBrands(q, pageable);
         return ResponseEntity.ok(results);
     }
 }
