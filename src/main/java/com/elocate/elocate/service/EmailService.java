@@ -614,6 +614,114 @@ public class EmailService {
     }
 
     /**
+     * Send partner approval notification email (HTML)
+     */
+    public void sendPartnerApprovedEmail(String toEmail, String partnerName, String facilityName,
+                                         String registrationNumber, String remarks) {
+        log.info("Sending partner approval email to: {}", toEmail);
+
+        String subject = "🎉 Partner Application Approved - ELocate";
+
+        if (useHtmlTemplates) {
+            try {
+                Map<String, Object> variables = Map.of(
+                    "partnerName", partnerName,
+                    "facilityName", facilityName,
+                    "registrationNumber", registrationNumber,
+                    "remarks", remarks != null ? remarks : "",
+                    "loginUrl", appBaseUrl + "/sign-in"
+                );
+
+                String htmlBody = templateService.processTemplate("partner-approved", variables);
+                sendHtmlEmail(toEmail, subject, htmlBody);
+                return;
+            } catch (Exception e) {
+                log.error("Failed to send HTML partner approval email, falling back to plain text", e);
+            }
+        }
+
+        // Fallback to plain text
+        StringBuilder body = new StringBuilder();
+        body.append("Congratulations! Your partner application has been approved.\n\n");
+        body.append("Partner Details:\n");
+        body.append("- Name: ").append(partnerName).append("\n");
+        body.append("- Facility: ").append(facilityName).append("\n");
+        body.append("- Registration Number: ").append(registrationNumber).append("\n");
+        body.append("- Status: APPROVED & ACTIVE\n\n");
+
+        if (remarks != null && !remarks.isBlank()) {
+            body.append("Admin Notes: ").append(remarks).append("\n\n");
+        }
+
+        body.append("Next Steps:\n");
+        body.append("1. Login to your account using your registered email and password\n");
+        body.append("2. Complete your facility profile\n");
+        body.append("3. Start receiving recycle requests from citizens\n");
+        body.append("4. Manage pickups and drivers through your dashboard\n\n");
+        body.append("Login here: ").append(appBaseUrl).append("/sign-in\n\n");
+        body.append("Welcome to the ELocate partner network!\n\n");
+        body.append("Best regards,\n");
+        body.append("ELocate Team");
+
+        sendEmail(toEmail, subject, body.toString());
+    }
+
+    /**
+     * Send partner rejection notification email (HTML)
+     */
+    public void sendPartnerRejectedEmail(String toEmail, String partnerName, String facilityName,
+                                         String registrationNumber, String remarks) {
+        log.info("Sending partner rejection email to: {}", toEmail);
+
+        String subject = "Partner Application Update - ELocate";
+
+        if (useHtmlTemplates) {
+            try {
+                Map<String, Object> variables = Map.of(
+                    "partnerName", partnerName,
+                    "facilityName", facilityName,
+                    "registrationNumber", registrationNumber,
+                    "remarks", remarks != null ? remarks : "",
+                    "supportUrl", appBaseUrl + "/citizen/support"
+                );
+
+                String htmlBody = templateService.processTemplate("partner-rejected", variables);
+                sendHtmlEmail(toEmail, subject, htmlBody);
+                return;
+            } catch (Exception e) {
+                log.error("Failed to send HTML partner rejection email, falling back to plain text", e);
+            }
+        }
+
+        // Fallback to plain text
+        StringBuilder body = new StringBuilder();
+        body.append("Thank you for your interest in becoming an ELocate partner.\n\n");
+        body.append("After careful review, we regret to inform you that your application has not been approved at this time.\n\n");
+        body.append("Application Details:\n");
+        body.append("- Name: ").append(partnerName).append("\n");
+        body.append("- Facility: ").append(facilityName).append("\n");
+        body.append("- Registration Number: ").append(registrationNumber).append("\n");
+        body.append("- Status: NOT APPROVED\n\n");
+
+        if (remarks != null && !remarks.isBlank()) {
+            body.append("Reason for Rejection:\n").append(remarks).append("\n\n");
+        }
+
+        body.append("What You Can Do:\n");
+        body.append("- Review the feedback provided above\n");
+        body.append("- Address any issues mentioned\n");
+        body.append("- Reapply once you've met the requirements\n");
+        body.append("- Contact support if you need clarification\n\n");
+        body.append("Support: ").append(appBaseUrl).append("/citizen/support\n\n");
+        body.append("We appreciate your interest in joining the ELocate network.\n\n");
+        body.append("Best regards,\n");
+        body.append("ELocate Team");
+
+        sendEmail(toEmail, subject, body.toString());
+    }
+
+
+    /**
      * Send test email (for testing email configuration)
      *
      * @param toEmail Recipient email

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .icon { text-align: center; font-size: 64px; margin: 20px 0; }
+        .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .info-box p { margin: 8px 0; }
+        .highlight { background: #ffebee; padding: 20px; border-radius: 4px; margin: 20px 0; border-left: 4px solid #f44336; }
+        .button { display: inline-block; padding: 12px 24px; margin: 20px 0; text-decoration: none; border-radius: 5px; font-weight: bold; background: #2196f3; color: #fff; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        .next-steps { background: #e3f2fd; padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .next-steps h3 { margin-top: 0; color: #1565c0; }
+        .next-steps ul { margin: 10px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Partner Application Update</h1>
+        </div>
+        <div class="content">
+            <div class="icon">⚠️</div>
+            
+            <p>Thank you for your interest in becoming an ELocate partner. After careful review, we regret to inform you that your application has not been approved at this time.</p>
+            
+            <div class="info-box">
+                <p><strong>Applicant Name:</strong> {{partnerName}}</p>
+                <p><strong>Facility Name:</strong> {{facilityName}}</p>
+                <p><strong>Registration Number:</strong> {{registrationNumber}}</p>
+                <p><strong>Status:</strong> ❌ Not Approved</p>
+            </div>
+
+            {{#if remarks}}
+            <div class="highlight">
+                <p style="margin: 0; font-size: 14px; color: #666; font-weight: bold;">Reason for Rejection:</p>
+                <p style="margin: 10px 0 0 0;">{{remarks}}</p>
+            </div>
+            {{/if}}
+
+            <div class="next-steps">
+                <h3>📝 What You Can Do</h3>
+                <ul>
+                    <li><strong>Review the feedback</strong> provided above carefully</li>
+                    <li><strong>Address any issues</strong> mentioned in the rejection reason</li>
+                    <li><strong>Reapply</strong> once you've met the requirements</li>
+                    <li><strong>Contact support</strong> if you need clarification or assistance</li>
+                </ul>
+            </div>
+
+            <p style="font-size: 14px; color: #666; margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                <strong>📋 Common Requirements:</strong><br>
+                • Valid recycling facility registration<br>
+                • Proper licensing and certifications<br>
+                • Adequate facility capacity and infrastructure<br>
+                • Compliance with environmental regulations
+            </p>
+
+            <div style="text-align: center;">
+                <a href="{{supportUrl}}" class="button">Contact Support</a>
+            </div>
+
+            <p style="margin-top: 20px;">We appreciate your interest in joining the ELocate network. If you have any questions or would like to discuss your application, please don't hesitate to reach out to our support team.</p>
+        </div>
+        <div class="footer">
+            <p><strong>ELocate - E-Waste Recycling Platform</strong></p>
+            <p>Making the world cleaner, one device at a time 🌍</p>
+            <p style="margin-top: 10px;">Support: support@elocate.com | Phone: +1-XXX-XXX-XXXX</p>
+        </div>
+    </div>
+</body>
+</html>

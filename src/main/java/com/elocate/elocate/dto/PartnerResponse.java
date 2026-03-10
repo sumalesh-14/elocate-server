@@ -28,6 +28,7 @@ public class PartnerResponse {
     private String pincode;
     private Boolean isVerified;
     private Boolean isActive;
+    private String fullName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

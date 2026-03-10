@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,8 @@ public class PartnerManagementService {
     private final PasswordEncoder passwordEncoder;
     private final OtpService otpService;
     private final AdminAuditLogService adminAuditLogService;
+    private final EmailService emailService;
+    private final Auth0Service auth0Service;
 
     @Transactional
     public PartnerResponse onboardPartner(PartnerOnboardingRequest request) {
@@ -68,7 +71,7 @@ public class PartnerManagementService {
     }
 
     public Page<PartnerResponse> listPartners(int page, int size, String search, Boolean isVerified) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<RecyclingFacility> facilities;
 
         if (search != null && !search.trim().isEmpty()) {
@@ -180,6 +183,7 @@ public class PartnerManagementService {
                 .pincode(facility.getPincode())
                 .isVerified(facility.getIsVerified())
                 .isActive(facility.getIsActive())
+                .fullName(facility.getUser() != null ? facility.getUser().getFullName() : "N/A")
                 .createdAt(facility.getCreatedAt())
                 .updatedAt(facility.getUpdatedAt())
                 .build();
@@ -198,17 +202,37 @@ public class PartnerManagementService {
             throw new IllegalArgumentException("Email already registered");
         }
 
+        // Check if mobile number already exists
+        if (userRepository.existsByMobileNumber(request.getMobileNumber())) {
+            throw new IllegalArgumentException("Mobile number already registered");
+        }
+
         // Check if registration number already exists
         if (facilityRepository.findByRegistrationNumber(request.getRegistrationNumber()).isPresent()) {
             throw new IllegalArgumentException("Registration number already exists");
         }
 
-        // Create user account
+        // Create user in Auth0 first
+        String firebaseUid;
+        try {
+            firebaseUid = auth0Service.createUser(request.getEmail(), request.getPassword(), request.getEmail());
+            log.info("Created Auth0 user for partner with ID: {}", firebaseUid);
+        } catch (Exception e) {
+            log.error("Failed to create Auth0 user for partner: {}", e.getMessage());
+            if (e.getMessage().contains("User already exists") || e.getMessage().contains("email_exists")
+                    || e.getMessage().contains("already exists")) {
+                throw new IllegalArgumentException("Email already registered in Auth0");
+            }
+            throw new RuntimeException("Auth0 registration failed: " + e.getMessage());
+        }
+
+        // Create user account in database
         User user = User.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .mobileNumber(request.getMobileNumber())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .passwordHash("AUTH0_MANAGED") // Password managed by Auth0
+                .firebaseUid(firebaseUid)
                 .role("PARTNER")
                 .isEmailVerified(false)
                 .isActive(false) // Inactive until approved
@@ -259,17 +283,37 @@ public class PartnerManagementService {
             throw new IllegalArgumentException("Email already registered");
         }
 
+        // Check if mobile number already exists
+        if (userRepository.existsByMobileNumber(request.getMobileNumber())) {
+            throw new IllegalArgumentException("Mobile number already registered");
+        }
+
         // Check if registration number already exists
         if (facilityRepository.findByRegistrationNumber(request.getRegistrationNumber()).isPresent()) {
             throw new IllegalArgumentException("Registration number already exists");
         }
 
-        // Create user account
+        // Create user in Auth0 first
+        String firebaseUid;
+        try {
+            firebaseUid = auth0Service.createUser(request.getEmail(), request.getTemporaryPassword(), request.getEmail());
+            log.info("Created Auth0 user for admin-created partner with ID: {}", firebaseUid);
+        } catch (Exception e) {
+            log.error("Failed to create Auth0 user for admin-created partner: {}", e.getMessage());
+            if (e.getMessage().contains("User already exists") || e.getMessage().contains("email_exists")
+                    || e.getMessage().contains("already exists")) {
+                throw new IllegalArgumentException("Email already registered in Auth0");
+            }
+            throw new RuntimeException("Auth0 registration failed: " + e.getMessage());
+        }
+
+        // Create user account in database
         User user = User.builder()
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .mobileNumber(request.getMobileNumber())
-                .passwordHash(passwordEncoder.encode(request.getTemporaryPassword()))
+                .passwordHash("AUTH0_MANAGED") // Password managed by Auth0
+                .firebaseUid(firebaseUid)
                 .role("PARTNER")
                 .isEmailVerified(true)
                 .isActive(true) // Active immediately
@@ -326,6 +370,21 @@ public class PartnerManagementService {
             user.setIsEmailVerified(true);
             userRepository.save(user);
             log.info("Partner approved and activated: {}", facilityId);
+            
+            // Send approval email notification
+            try {
+                emailService.sendPartnerApprovedEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    facility.getName(),
+                    facility.getRegistrationNumber(),
+                    request.getRemarks()
+                );
+                log.info("Approval email sent to partner: {}", user.getEmail());
+            } catch (Exception e) {
+                log.error("Failed to send approval email to partner: {}", user.getEmail(), e);
+            }
+            
             try {
                 adminAuditLogService.logAction("APPROVE_PARTNER",
                         "Approved partner registration for facility: " + facility.getName());
@@ -336,6 +395,21 @@ public class PartnerManagementService {
             user.setIsActive(false);
             userRepository.save(user);
             log.info("Partner rejected: {}", facilityId);
+            
+            // Send rejection email notification
+            try {
+                emailService.sendPartnerRejectedEmail(
+                    user.getEmail(),
+                    user.getFullName(),
+                    facility.getName(),
+                    facility.getRegistrationNumber(),
+                    request.getRemarks()
+                );
+                log.info("Rejection email sent to partner: {}", user.getEmail());
+            } catch (Exception e) {
+                log.error("Failed to send rejection email to partner: {}", user.getEmail(), e);
+            }
+            
             try {
                 adminAuditLogService.logAction("REJECT_PARTNER",
                         "Rejected partner registration for facility: " + facility.getName());
@@ -434,7 +508,7 @@ public class PartnerManagementService {
      * List partners by approval status
      */
     public Page<PartnerResponse> listPartnersByStatus(String status, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<RecyclingFacility> facilities = facilityRepository.findByApprovalStatus(status, pageRequest);
         return facilities.map(this::mapToResponse);
     }
