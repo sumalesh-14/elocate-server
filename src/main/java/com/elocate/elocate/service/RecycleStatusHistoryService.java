@@ -18,16 +18,17 @@ import java.util.UUID;
 
 /**
  * Service for managing status history tracking
- * Tracks both RecycleStatus and FulfillmentStatus changes with meaningful comments
+ * Tracks both RecycleStatus and FulfillmentStatus changes with meaningful
+ * comments
  */
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class RecycleStatusHistoryService {
-    
+
     private final RecycleStatusHistoryRepository statusHistoryRepository;
     private final UserRepository userRepository;
-    
+
     /**
      * Record a FulfillmentStatus change in history
      */
@@ -39,7 +40,7 @@ public class RecycleStatusHistoryService {
             UUID changedBy) {
         recordStatusChange(request, oldStatus, newStatus, changedBy, null);
     }
-    
+
     /**
      * Record a FulfillmentStatus change in history with comments
      */
@@ -50,18 +51,18 @@ public class RecycleStatusHistoryService {
             FulfillmentStatus newStatus,
             UUID changedBy,
             String comments) {
-        
+
         String oldStatusStr = oldStatus != null ? oldStatus.name() : null;
         String newStatusStr = newStatus != null ? newStatus.name() : null;
-        
+
         // Generate default comment if not provided
         if (comments == null || comments.isBlank()) {
             comments = generateFulfillmentComment(oldStatus, newStatus, changedBy);
         }
-        
+
         recordStatusChangeInternal(request, oldStatusStr, newStatusStr, changedBy, comments, "FULFILLMENT_STATUS");
     }
-    
+
     /**
      * Record a RecycleStatus change in history
      */
@@ -73,7 +74,7 @@ public class RecycleStatusHistoryService {
             UUID changedBy) {
         recordRecycleStatusChange(request, oldStatus, newStatus, changedBy, null);
     }
-    
+
     /**
      * Record a RecycleStatus change in history with comments
      */
@@ -84,18 +85,18 @@ public class RecycleStatusHistoryService {
             RecycleStatus newStatus,
             UUID changedBy,
             String comments) {
-        
+
         String oldStatusStr = oldStatus != null ? oldStatus.name() : null;
         String newStatusStr = newStatus != null ? newStatus.name() : null;
-        
+
         // Generate default comment if not provided
         if (comments == null || comments.isBlank()) {
             comments = generateRecycleStatusComment(oldStatus, newStatus, changedBy);
         }
-        
+
         recordStatusChangeInternal(request, oldStatusStr, newStatusStr, changedBy, comments, "RECYCLE_STATUS");
     }
-    
+
     /**
      * Internal method to record status change
      */
@@ -106,32 +107,34 @@ public class RecycleStatusHistoryService {
             UUID changedBy,
             String comments,
             String statusType) {
-        
+
         RecycleStatusHistory history = RecycleStatusHistory.builder()
                 .recycleRequest(request)
                 .oldStatus(oldStatus)
                 .newStatus(newStatus)
                 .statusType(statusType)
                 .changedBy(changedBy)
+                .changedByName(getUserName(changedBy))
                 .changedAt(LocalDateTime.now())
                 .comments(comments)
                 .build();
-        
+
         statusHistoryRepository.save(history);
-        log.info("Recorded {} change for request {}: {} -> {} by {} - {}", 
+        log.info("Recorded {} change for request {}: {} -> {} by {} - {}",
                 statusType, request.getId(), oldStatus, newStatus, changedBy, comments);
     }
-    
+
     /**
      * Generate meaningful comment for FulfillmentStatus changes
      */
-    private String generateFulfillmentComment(FulfillmentStatus oldStatus, FulfillmentStatus newStatus, UUID changedBy) {
+    private String generateFulfillmentComment(FulfillmentStatus oldStatus, FulfillmentStatus newStatus,
+            UUID changedBy) {
         if (newStatus == null) {
             return "Status updated";
         }
 
         String userName = getUserName(changedBy);
-        
+
         switch (newStatus) {
             case PICKUP_REQUESTED:
                 return "Pickup request created by " + userName;
@@ -153,7 +156,7 @@ public class RecycleStatusHistoryService {
                 return "Fulfillment status updated to " + newStatus.name() + " by " + userName;
         }
     }
-    
+
     /**
      * Generate meaningful comment for RecycleStatus changes
      */
@@ -163,7 +166,7 @@ public class RecycleStatusHistoryService {
         }
 
         String userName = getUserName(changedBy);
-        
+
         switch (newStatus) {
             case CREATED:
                 return "Recycle request created by citizen " + userName;
@@ -183,7 +186,7 @@ public class RecycleStatusHistoryService {
                 return "Request status updated to " + newStatus.name() + " by " + userName;
         }
     }
-    
+
     /**
      * Get user name for comments
      */
@@ -191,7 +194,7 @@ public class RecycleStatusHistoryService {
         if (userId == null) {
             return "System";
         }
-        
+
         return userRepository.findById(userId)
                 .map(user -> {
                     String name = user.getFullName();
@@ -202,7 +205,7 @@ public class RecycleStatusHistoryService {
                 })
                 .orElse("User-" + userId.toString().substring(0, 8));
     }
-    
+
     /**
      * Get status history for a recycle request
      */

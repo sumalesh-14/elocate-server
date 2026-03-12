@@ -19,7 +19,10 @@ import java.util.UUID;
 public class RecycleRequestResponse {
 
     private UUID id;
-    private String requestNumber;  // Human-readable request ID (e.g., RCY-2024-000001)
+    private String requestNumber; // Human-readable request ID (e.g., RCY-2024-000001)
+    private UUID userId; // The citizen's ID
+    private String citizenName;
+    private String citizenEmail;
     private UUID deviceModelId;
     private String deviceModelName;
     private String brandName;
@@ -36,6 +39,9 @@ public class RecycleRequestResponse {
     private UUID pickupAddressId;
     private UUID facilityId;
     private String facilityName;
+    private String facilityAddress;
+    private String facilityEmail;
+    private String facilityPhone;
 
     // Pickup address details (only present for PICKUP type)
     private String pickupAddress;
@@ -47,7 +53,7 @@ public class RecycleRequestResponse {
 
     // Scheduled pickup date
     private LocalDate pickupDate;
-    
+
     // Certificate URL (available after recycling is complete)
     private String certificateUrl;
 

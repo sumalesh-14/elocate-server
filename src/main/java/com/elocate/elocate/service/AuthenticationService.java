@@ -10,6 +10,8 @@ import com.elocate.elocate.model.UserWallet;
 import com.elocate.elocate.repository.UserAddressRepository;
 import com.elocate.elocate.repository.UserRepository;
 import com.elocate.elocate.repository.UserWalletRepository;
+import com.elocate.elocate.repository.RecyclingFacilityRepository;
+import com.elocate.elocate.model.RecyclingFacility;
 import com.elocate.elocate.security.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ public class AuthenticationService {
     private final EmailService emailService;
     private final Auth0Service auth0Service; // Replace Firebase with Auth0
     private final JwtUtil jwtUtil;
+    private final RecyclingFacilityRepository facilityRepository;
 
     /**
      * Login with email and password using Auth0
@@ -55,6 +58,30 @@ public class AuthenticationService {
         log.info("User found in database - ID: {}, EmailVerified: {}",
                 user.getId(), user.getIsEmailVerified());
 
+        // For partners, check approval status before email verification
+        if ("PARTNER".equals(user.getRole())) {
+            RecyclingFacility facility = facilityRepository.findByUserId(user.getId())
+                    .orElse(null);
+            
+            if (facility != null) {
+                String approvalStatus = facility.getApprovalStatus();
+                log.info("Partner approval status: {}", approvalStatus);
+                
+                // Check approval status first
+                if ("PENDING".equals(approvalStatus)) {
+                    throw new IllegalArgumentException(
+                        "Your partner registration is pending approval. You'll receive an email once approved.");
+                }
+                
+                if ("REJECTED".equals(approvalStatus)) {
+                    throw new IllegalArgumentException(
+                        "Your partner registration was rejected. Please contact support for more information.");
+                }
+                
+                // If approved, continue with normal checks
+            }
+        }
+
         // Check if email is verified
         if (Boolean.FALSE.equals(user.getIsEmailVerified())) {
             log.warn("Login attempt with unverified email: {}", dto.getEmail());
@@ -63,12 +90,30 @@ public class AuthenticationService {
 
         // Check if account is active
         if (Boolean.FALSE.equals(user.getIsActive())) {
-            // Check if this is a partner account pending approval
+            // For partners, check if it's due to approval status
             if ("PARTNER".equals(user.getRole())) {
-                log.warn("Login attempt for pending partner account: {}", dto.getEmail());
+                RecyclingFacility facility = facilityRepository.findByUserId(user.getId())
+                        .orElse(null);
+                
+                if (facility != null) {
+                    String approvalStatus = facility.getApprovalStatus();
+                    
+                    if ("PENDING".equals(approvalStatus)) {
+                        throw new IllegalArgumentException(
+                            "Your partner registration is pending approval. You'll receive an email once approved.");
+                    }
+                    
+                    if ("REJECTED".equals(approvalStatus)) {
+                        throw new IllegalArgumentException(
+                            "Your partner registration was rejected. Please contact support for more information.");
+                    }
+                }
+                
+                // If not related to approval, it's a deactivated account
                 throw new IllegalArgumentException(
-                        "Your partner account is pending approval. You'll receive an email once approved.");
+                    "Your partner account has been deactivated. Please contact support.");
             }
+            
             throw new IllegalArgumentException("Account is inactive. Please contact support.");
         }
 

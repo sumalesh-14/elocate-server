@@ -46,12 +46,17 @@ public class AdminFacilityController {
         log.info("Admin fetching facilities - verified: {}, active: {}, search: {}",
                 isVerified, isActive, search);
 
-        Pageable pageable = PageRequest.of(page, size);
-        // Page<FacilityResponse> facilities =
-        // facilityService.getAllFacilitiesWithFilters(
-        // isVerified, isActive, search, pageable);
+        Page<RecyclingFacility> facilities = facilityService.listFacilities(page, size, search);
+        Page<FacilityResponse> response = facilities.map(f -> FacilityResponse.builder()
+                .id(f.getId())
+                .name(f.getName())
+                .address(f.getAddress())
+                .contact(f.getContactNumber())
+                .time(f.getOperatingHours())
+                .verified(Boolean.TRUE.equals(f.getIsVerified()))
+                .build());
 
-        return ResponseEntity.ok(Page.empty());
+        return ResponseEntity.ok(response);
     }
 
     /**

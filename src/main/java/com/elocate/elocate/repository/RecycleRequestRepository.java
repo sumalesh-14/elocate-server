@@ -81,7 +81,8 @@ public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, 
         Long countByRecyclingFacilityAndStatus(com.elocate.elocate.model.RecyclingFacility recyclingFacility,
                         String status);
 
-        // Find requests with SLA breach (driver assigned but not picked up within time limit)
+        // Find requests with SLA breach (driver assigned but not picked up within time
+        // limit)
         @Query("SELECT r FROM RecycleRequest r " +
                         "WHERE r.fulfillmentStatus IN :statuses " +
                         "AND r.updatedAt < :deadline " +
@@ -89,4 +90,48 @@ public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, 
         List<RecycleRequest> findByFulfillmentStatusInAndUpdatedAtBefore(
                         @Param("statuses") List<com.elocate.elocate.model.enums.FulfillmentStatus> statuses,
                         @Param("deadline") java.time.LocalDateTime deadline);
+
+        // --- Admin/Global Queries ---
+
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findAllWithDetails();
+
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "WHERE r.status = :status " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findByStatusWithDetails(@Param("status") RecycleStatus status);
+
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "WHERE (LOWER(dm.modelName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+                        "OR LOWER(b.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+                        "OR LOWER(r.requestNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findBySearchTermWithDetails(@Param("searchTerm") String searchTerm);
+
+        @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.deviceModel dm " +
+                        "JOIN FETCH dm.brand b " +
+                        "JOIN FETCH dm.category c " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
+                        "WHERE r.status = :status " +
+                        "AND (LOWER(dm.modelName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+                        "OR LOWER(b.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+                        "OR LOWER(r.requestNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%'))) " +
+                        "ORDER BY r.createdAt DESC")
+        List<RecycleRequest> findByStatusAndSearchTermWithDetails(
+                        @Param("status") RecycleStatus status,
+                        @Param("searchTerm") String searchTerm);
 }

@@ -31,6 +31,7 @@ public class AdminRecycleRequestController {
 
     private final AdminManagementService adminManagementService;
     private final RecycleRequestService recycleRequestService;
+    private final com.elocate.elocate.security.JwtUtil jwtUtil;
 
     /**
      * Get all recycle requests with filters
@@ -44,13 +45,10 @@ public class AdminRecycleRequestController {
         log.info("Admin fetching recycle requests - status: {}, search: {}, facility: {}",
                 status, search, facilityId);
 
-        // For now, return all requests - can be enhanced with admin-specific repository
-        // method
-        // List<RecycleRequestResponse> requests =
-        // recycleRequestService.getAllRecycleRequests(
-        // status, search);
+        List<RecycleRequestResponse> requests = recycleRequestService.getAllRecycleRequests(
+                status, search);
 
-        return ResponseEntity.ok(List.of());
+        return ResponseEntity.ok(requests);
     }
 
     /**
@@ -70,11 +68,28 @@ public class AdminRecycleRequestController {
     public ResponseEntity<Map<String, String>> reassignFacility(
             @PathVariable UUID id,
             @Valid @RequestBody FacilityReassignmentRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
 
         log.info("Admin reassigning request {} to facility {}", id, request.getNewFacilityId());
 
-        UUID adminUserId = UUID.fromString(userDetails.getUsername());
+        // Extract JWT token from Authorization header
+        String authHeader = httpRequest.getHeader("Authorization");
+        UUID adminUserId = null;
+        
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            try {
+                adminUserId = jwtUtil.extractUserId(token);
+            } catch (Exception e) {
+                log.error("Failed to extract user ID from token: {}", e.getMessage());
+                throw new IllegalArgumentException("Unable to determine admin user ID from token");
+            }
+        }
+        
+        if (adminUserId == null) {
+            throw new IllegalArgumentException("Unable to determine admin user ID");
+        }
+        
         adminManagementService.reassignFacility(id, request, adminUserId);
 
         return ResponseEntity.ok(Map.of(

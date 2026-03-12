@@ -191,7 +191,8 @@ public class RecycleRequestService {
                                 conditionFactor.getMultiplier(),
                                 estimatedAmount);
 
-                // Step 11: Record initial status in history (both RecycleStatus and FulfillmentStatus)
+                // Step 11: Record initial status in history (both RecycleStatus and
+                // FulfillmentStatus)
                 statusHistoryService.recordRecycleStatusChange(saved, null, RecycleStatus.CREATED, userId);
                 statusHistoryService.recordStatusChange(saved, null, initialStatus, userId);
 
@@ -247,6 +248,32 @@ public class RecycleRequestService {
                         results = recycleRequestRepository.findByUserIdAndSearchTerm(userId, searchTerm);
                 } else {
                         results = recycleRequestRepository.findByUserId(userId);
+                }
+
+                return results.stream()
+                                .map(this::mapToResponse)
+                                .toList();
+        }
+
+        /**
+         * Get all recycle requests for admin view with optional filters.
+         */
+        @Transactional(readOnly = true)
+        public List<RecycleRequestResponse> getAllRecycleRequests(RecycleStatus status, String searchTerm) {
+                log.info("Fetching all recycle requests for admin view. status: {}, search: {}", status, searchTerm);
+
+                boolean hasStatus = status != null;
+                boolean hasSearch = searchTerm != null && !searchTerm.isBlank();
+
+                List<RecycleRequest> results;
+                if (hasStatus && hasSearch) {
+                        results = recycleRequestRepository.findByStatusAndSearchTermWithDetails(status, searchTerm);
+                } else if (hasStatus) {
+                        results = recycleRequestRepository.findByStatusWithDetails(status);
+                } else if (hasSearch) {
+                        results = recycleRequestRepository.findBySearchTermWithDetails(searchTerm);
+                } else {
+                        results = recycleRequestRepository.findAllWithDetails();
                 }
 
                 return results.stream()
@@ -446,26 +473,27 @@ public class RecycleRequestService {
 
                 // Get driver details
                 Driver driver = driverRepository.findById(dto.getDriverId())
-                                .orElseThrow(() -> new IllegalArgumentException("Driver not found with id: " + dto.getDriverId()));
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Driver not found with id: " + dto.getDriverId()));
 
                 request.setAssignedDriverId(dto.getDriverId());
                 FulfillmentStatus oldStatus = request.getFulfillmentStatus();
                 request.setFulfillmentStatus(FulfillmentStatus.PICKUP_ASSIGNED);
 
                 RecycleRequest saved = recycleRequestRepository.save(request);
-                
+
                 // Record status change with comments
                 String historyComment = dto.getComments() != null && !dto.getComments().isBlank()
-                        ? "Driver assigned with instructions: " + dto.getComments()
-                        : "Driver assigned for pickup";
-                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_ASSIGNED, 
-                        null, historyComment);
+                                ? "Driver assigned with instructions: " + dto.getComments()
+                                : "Driver assigned for pickup";
+                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_ASSIGNED,
+                                null, historyComment);
 
                 // Generate tokens and send email with frontend links and assignment comments
                 driverPickupService.generateTokensAndSendEmail(id, dto.getDriverId(), dto.getComments());
 
-                log.info("✅ Driver {} assigned to pickup request {} - Email sent with action links", 
-                        driver.getName(), id);
+                log.info("✅ Driver {} assigned to pickup request {} - Email sent with action links",
+                                driver.getName(), id);
 
                 return mapToResponse(saved);
         }
@@ -582,14 +610,16 @@ public class RecycleRequestService {
 
                 // Validate current status
                 if (request.getFulfillmentStatus() != FulfillmentStatus.PICKUP_ASSIGNED) {
-                        throw new IllegalStateException("Cannot reassign driver. Current status: " + request.getFulfillmentStatus());
+                        throw new IllegalStateException(
+                                        "Cannot reassign driver. Current status: " + request.getFulfillmentStatus());
                 }
 
                 UUID oldDriverId = request.getAssignedDriverId();
-                
+
                 // Get new driver details
                 Driver newDriver = driverRepository.findById(dto.getDriverId())
-                                .orElseThrow(() -> new IllegalArgumentException("Driver not found with id: " + dto.getDriverId()));
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Driver not found with id: " + dto.getDriverId()));
 
                 // Invalidate old driver's tokens
                 int invalidatedCount = driverPickupService.invalidateTokensForRequest(id);
@@ -601,20 +631,20 @@ public class RecycleRequestService {
                 request.setFulfillmentStatus(FulfillmentStatus.PICKUP_ASSIGNED);
 
                 RecycleRequest saved = recycleRequestRepository.save(request);
-                
+
                 // Record status change with reassignment reason
-                String historyComment = String.format("Driver reassigned from %s to %s", 
+                String historyComment = String.format("Driver reassigned from %s to %s",
                                 oldDriverId, dto.getDriverId());
                 if (dto.getComments() != null && !dto.getComments().isBlank()) {
                         historyComment += ". Reason: " + dto.getComments();
                 }
-                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_ASSIGNED, 
+                statusHistoryService.recordStatusChange(saved, oldStatus, FulfillmentStatus.PICKUP_ASSIGNED,
                                 null, historyComment);
 
                 // Generate new tokens and send email to new driver
                 driverPickupService.generateTokensAndSendEmail(id, dto.getDriverId(), dto.getComments());
 
-                log.info("✅ Driver reassigned for request {}. Old: {}, New: {} - Email sent with action links", 
+                log.info("✅ Driver reassigned for request {}. Old: {}, New: {} - Email sent with action links",
                                 id, oldDriverId, newDriver.getName());
 
                 return mapToResponse(saved);
@@ -694,9 +724,17 @@ public class RecycleRequestService {
          * Map entity to response DTO
          */
         private RecycleRequestResponse mapToResponse(RecycleRequest request) {
+                // Fetch citizen details
+                User citizen = userRepository.findById(request.getUserId()).orElse(null);
+                String citizenName = citizen != null ? citizen.getFullName() : "Unknown Citizen";
+                String citizenEmail = citizen != null ? citizen.getEmail() : "N/A";
+
                 RecycleRequestResponse.RecycleRequestResponseBuilder builder = RecycleRequestResponse.builder()
                                 .id(request.getId())
                                 .requestNumber(request.getRequestNumber())
+                                .userId(request.getUserId())
+                                .citizenName(citizenName)
+                                .citizenEmail(citizenEmail)
                                 .deviceModelId(request.getDeviceModel().getId())
                                 .deviceModelName(request.getDeviceModel().getModelName())
                                 .brandName(request.getDeviceModel().getBrand().getName())
@@ -727,8 +765,12 @@ public class RecycleRequestService {
 
                 // Add facility info if present
                 if (request.getRecyclingFacility() != null) {
-                        builder.facilityId(request.getRecyclingFacility().getId())
-                                        .facilityName(request.getRecyclingFacility().getName());
+                        RecyclingFacility fac = request.getRecyclingFacility();
+                        builder.facilityId(fac.getId())
+                                        .facilityName(fac.getName())
+                                        .facilityAddress(fac.getAddress())
+                                        .facilityEmail(fac.getEmail())
+                                        .facilityPhone(fac.getContactNumber());
                 }
 
                 return builder.build();
