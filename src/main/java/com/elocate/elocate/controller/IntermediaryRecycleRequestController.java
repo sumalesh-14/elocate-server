@@ -30,7 +30,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/intermediary/recycle-requests")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('INTERMEDIARY')")
+@PreAuthorize("hasAnyRole('INTERMEDIARY', 'PARTNER')")
 public class IntermediaryRecycleRequestController {
 
         private final IntermediaryService intermediaryService;
