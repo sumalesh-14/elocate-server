@@ -17,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.http.HttpMethod;
 
 /**
  * Spring Security Configuration
@@ -75,6 +76,10 @@ public class SecurityConfig {
                 // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/device-categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/device-brands/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/device-models/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/category-brands/**").permitAll()
                         .anyRequest().authenticated())
 
                 // Add JWT filter before Spring Security's filter
