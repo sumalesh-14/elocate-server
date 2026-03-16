@@ -21,6 +21,8 @@ public class GetFacilities {
     private Integer page = 0;
 
     @Builder.Default
-    private Integer size = 10;
+    private Integer size = 6;
+
+    private Boolean verified;
 
 }

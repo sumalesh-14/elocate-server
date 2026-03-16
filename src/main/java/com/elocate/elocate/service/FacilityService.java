@@ -25,6 +25,17 @@ public class FacilityService {
     public Page<FacilityResponse> getAllFacilities(@Valid GetFacilities request) {
         log.info("Fetching all facilities");
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getSize());
+        
+        if (Boolean.TRUE.equals(request.getVerified())) {
+            return facilityRepository
+                    .findNearestVerifiedFacilities(
+                            request.getUserLatitude(),
+                            request.getUserLongitude(),
+                            request.getDistance(),
+                            pageRequest)
+                    .map(this::mapToResponse);
+        }
+
         return facilityRepository
                 .findNearestFacilities(
                         request.getUserLatitude(),
