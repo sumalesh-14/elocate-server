@@ -361,6 +361,10 @@ public class RecycleRequestService {
                 recycleRequest.setConditionCode(request.getVerifiedConditionCode());
 
                 RecycleRequest updated = recycleRequestRepository.save(recycleRequest);
+                
+                // Record status change in history
+                statusHistoryService.recordRecycleStatusChange(updated, RecycleStatus.CREATED, RecycleStatus.VERIFIED, null, "Device condition verified successfully");
+                
                 log.info("Recycle request verified with final points: {}", finalAmount);
 
                 // Step 6: Credit wallet
@@ -458,9 +462,17 @@ public class RecycleRequestService {
         public RecycleRequestResponse approveRequest(UUID id) {
                 RecycleRequest request = recycleRequestRepository.findById(id)
                                 .orElseThrow(() -> new RecycleRequestNotFoundException(id));
+                
+                RecycleStatus oldStatus = request.getStatus();
                 request.setStatus(RecycleStatus.APPROVED);
+                
+                RecycleRequest saved = recycleRequestRepository.save(request);
+                
+                // Record status change in history
+                statusHistoryService.recordRecycleStatusChange(saved, oldStatus, RecycleStatus.APPROVED, null, "Request approved by facility owner");
+
                 log.info("Request {} approved by facility owner.", id);
-                return mapToResponse(recycleRequestRepository.save(request));
+                return mapToResponse(saved);
         }
 
         /**
@@ -557,8 +569,15 @@ public class RecycleRequestService {
                         throw new IllegalStateException("Request is not LOCKED");
                 }
 
+                RecycleStatus oldStatus = request.getStatus();
                 request.setStatus(newStatus);
-                return mapToResponse(recycleRequestRepository.save(request));
+                
+                RecycleRequest saved = recycleRequestRepository.save(request);
+                
+                // Record status change in history
+                statusHistoryService.recordRecycleStatusChange(saved, oldStatus, newStatus, null, "Officer verified failure and resolved lock");
+
+                return mapToResponse(saved);
         }
 
         /**
@@ -586,15 +605,11 @@ public class RecycleRequestService {
 
                 // Also update fulfillment status if it's not already completed
                 FulfillmentStatus oldFulfillmentStatus = request.getFulfillmentStatus();
-                // We'll set it to a terminal state if possible.
-                // Note: If FulfillmentStatus doesn't have CANCELLED, we might need to add it or
-                // just leave as is.
-                // For now, let's keep it simple.
 
                 RecycleRequest saved = recycleRequestRepository.save(request);
 
-                // Record in history
-                statusHistoryService.recordStatusChange(saved, oldFulfillmentStatus, oldFulfillmentStatus, userId);
+                // Record in history for the Recycle Status specifically canceling
+                statusHistoryService.recordRecycleStatusChange(saved, request.getStatus() == RecycleStatus.CANCELLED ? RecycleStatus.CREATED : request.getStatus(), RecycleStatus.CANCELLED, userId, "Request manually cancelled by user");
 
                 return mapToResponse(saved);
         }
