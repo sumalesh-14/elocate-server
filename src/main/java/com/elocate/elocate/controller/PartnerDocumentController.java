@@ -16,8 +16,13 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+
 import jakarta.annotation.PostConstruct;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,11 +52,16 @@ public class PartnerDocumentController {
     private String region;
 
     private S3Client docsS3Client;
+    private S3Presigner docsS3Presigner;
 
     @PostConstruct
     public void init() {
         AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);
         this.docsS3Client = S3Client.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build();
+        this.docsS3Presigner = S3Presigner.builder()
                 .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
@@ -101,6 +111,42 @@ public class PartnerDocumentController {
             log.error("Failed to upload partner document", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Upload failed: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Generate a short-lived pre-signed GET URL for a partner document.
+     * Extracts the S3 key from the full S3 URL stored in the DB.
+     * Only accessible to authenticated users (admin/partner).
+     */
+    @GetMapping("/document-url")
+    public ResponseEntity<?> getDocumentPresignedUrl(@RequestParam("url") String s3Url) {
+        try {
+            // Extract key from full S3 URL
+            // e.g. https://elocate-partner-documents.s3.eu-north-1.amazonaws.com/partner-documents/xxx/yyy.pdf
+            String prefix = String.format("https://%s.s3.%s.amazonaws.com/", documentsBucket, region);
+            if (!s3Url.startsWith(prefix)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid document URL"));
+            }
+            String key = s3Url.substring(prefix.length());
+
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(documentsBucket)
+                    .key(key)
+                    .build();
+
+            GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                    .signatureDuration(Duration.ofMinutes(15))
+                    .getObjectRequest(getObjectRequest)
+                    .build();
+
+            String presignedUrl = docsS3Presigner.presignGetObject(presignRequest).url().toString();
+            log.info("Generated pre-signed GET URL for key: {}", key);
+            return ResponseEntity.ok(Map.of("presignedUrl", presignedUrl));
+        } catch (Exception e) {
+            log.error("Failed to generate pre-signed URL", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to generate document URL"));
         }
     }
 
