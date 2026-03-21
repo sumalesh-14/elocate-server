@@ -55,9 +55,7 @@ public class PartnerManagementService {
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .capacity(request.getCapacity() != null ? request.getCapacity() : 1000)
-                .contactNumber(request.getContactNumber())
                 .operatingHours(request.getOperatingHours() != null ? request.getOperatingHours() : "9AM-6PM")
-                .email(request.getEmail())
                 .state(request.getState())
                 .pincode(request.getPincode())
                 .isVerified(false)
@@ -143,9 +141,7 @@ public class PartnerManagementService {
         facility.setLatitude(request.getLatitude());
         facility.setLongitude(request.getLongitude());
         facility.setCapacity(request.getCapacity());
-        facility.setContactNumber(request.getContactNumber());
         facility.setOperatingHours(request.getOperatingHours());
-        facility.setEmail(request.getEmail());
         facility.setState(request.getState());
         facility.setPincode(request.getPincode());
 
@@ -168,6 +164,9 @@ public class PartnerManagementService {
     }
 
     private PartnerResponse mapToResponse(RecyclingFacility facility) {
+        String[] urls = facility.getDocumentUrls();
+        java.util.List<String> docList = (urls != null) ? java.util.Arrays.asList(urls) : java.util.Collections.emptyList();
+        User user = facility.getUser();
         return PartnerResponse.builder()
                 .id(facility.getId())
                 .registrationNumber(facility.getRegistrationNumber())
@@ -176,14 +175,17 @@ public class PartnerManagementService {
                 .latitude(facility.getLatitude())
                 .longitude(facility.getLongitude())
                 .capacity(facility.getCapacity())
-                .contactNumber(facility.getContactNumber())
                 .operatingHours(facility.getOperatingHours())
-                .email(facility.getEmail())
                 .state(facility.getState())
                 .pincode(facility.getPincode())
                 .isVerified(facility.getIsVerified())
                 .isActive(facility.getIsActive())
-                .fullName(facility.getUser() != null ? facility.getUser().getFullName() : "N/A")
+                .approvalStatus(facility.getApprovalStatus())
+                .documentUrl(facility.getDocumentUrl())
+                .documentUrls(docList)
+                .fullName(user != null ? user.getFullName() : "N/A")
+                .email(user != null ? user.getEmail() : null)
+                .mobileNumber(user != null ? user.getMobileNumber() : null)
                 .createdAt(facility.getCreatedAt())
                 .updatedAt(facility.getUpdatedAt())
                 .build();
@@ -249,11 +251,11 @@ public class PartnerManagementService {
                 .latitude(BigDecimal.valueOf(request.getLatitude()))
                 .longitude(BigDecimal.valueOf(request.getLongitude()))
                 .capacity(request.getCapacity() != null ? request.getCapacity() : 1000)
-                .contactNumber(request.getContactNumber())
                 .operatingHours(request.getOperatingHours() != null ? request.getOperatingHours() : "9AM-6PM")
-                .email(request.getEmail())
                 .state(request.getState())
                 .pincode(request.getPincode())
+                .documentUrls(request.getDocumentUrls() != null
+                        ? request.getDocumentUrls().toArray(new String[0]) : null)
                 .approvalStatus("PENDING")
                 .isVerified(false)
                 .isActive(false)
@@ -330,9 +332,7 @@ public class PartnerManagementService {
                 .latitude(BigDecimal.valueOf(request.getLatitude()))
                 .longitude(BigDecimal.valueOf(request.getLongitude()))
                 .capacity(request.getCapacity() != null ? request.getCapacity() : 1000)
-                .contactNumber(request.getContactNumber())
                 .operatingHours(request.getOperatingHours() != null ? request.getOperatingHours() : "9AM-6PM")
-                .email(request.getEmail())
                 .state(request.getState())
                 .pincode(request.getPincode())
                 .approvalStatus(request.getAutoApprove() ? "APPROVED" : "PENDING")
@@ -447,9 +447,7 @@ public class PartnerManagementService {
                 .latitude(facility.getLatitude())
                 .longitude(facility.getLongitude())
                 .capacity(facility.getCapacity())
-                .contactNumber(facility.getContactNumber())
                 .operatingHours(facility.getOperatingHours())
-                .email(facility.getEmail())
                 .state(facility.getState())
                 .pincode(facility.getPincode())
                 .approvalStatus(facility.getApprovalStatus())
@@ -492,9 +490,7 @@ public class PartnerManagementService {
         facility.setLatitude(request.getLatitude());
         facility.setLongitude(request.getLongitude());
         facility.setCapacity(request.getCapacity());
-        facility.setContactNumber(request.getContactNumber());
         facility.setOperatingHours(request.getOperatingHours());
-        facility.setEmail(request.getEmail());
         facility.setState(request.getState());
         facility.setPincode(request.getPincode());
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -21,14 +22,17 @@ public class PartnerResponse {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private Integer capacity;
-    private String contactNumber;
     private String operatingHours;
-    private String email;
     private String state;
     private String pincode;
     private Boolean isVerified;
     private Boolean isActive;
-    private String fullName;
+    private String fullName;        // from user.fullName
+    private String email;           // from user.email
+    private String mobileNumber;    // from user.mobileNumber
+    private String approvalStatus;
+    private String documentUrl;          // kept for backward compat
+    private List<String> documentUrls;   // list of up to 3 URLs
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

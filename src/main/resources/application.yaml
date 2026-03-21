@@ -97,6 +97,7 @@ aws:
   secret-access-key: ${AWS_SECRET_ACCESS_KEY:your-secret-key-here}
   s3:
     bucket-name: ${AWS_S3_BUCKET_NAME:elocate-pickup-photos}
+    documents-bucket-name: ${AWS_S3_DOCUMENTS_BUCKET_NAME:elocate-partner-documents}
     region: ${AWS_S3_REGION:eu-north-1}
 
 auth0:

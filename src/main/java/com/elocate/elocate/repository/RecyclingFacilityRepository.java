@@ -25,7 +25,7 @@ public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFaci
                     f.capacity AS capacity,
                     f.latitude AS latitude,
                     f.longitude AS longitude,
-                    f.contact_number AS contactNumber,
+                    u.mobile_number AS contactNumber,
                     f.operating_hours AS operatingHours,
                     f.is_verified AS isVerified,
                     (6371 * acos(
@@ -36,6 +36,7 @@ public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFaci
                         sin(radians(f.latitude))
                     )) AS distance
                 FROM recycling_facility f
+                LEFT JOIN "user" u ON u.id = f.user_id
                 WHERE f.is_active = true
                 AND (6371 * acos(
                     cos(radians(:lat)) *
@@ -71,7 +72,7 @@ public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFaci
                     f.capacity AS capacity,
                     f.latitude AS latitude,
                     f.longitude AS longitude,
-                    f.contact_number AS contactNumber,
+                    u.mobile_number AS contactNumber,
                     f.operating_hours AS operatingHours,
                     f.is_verified AS isVerified,
                     (6371 * acos(
@@ -82,6 +83,7 @@ public interface RecyclingFacilityRepository extends JpaRepository<RecyclingFaci
                         sin(radians(f.latitude))
                     )) AS distance
                 FROM recycling_facility f
+                LEFT JOIN "user" u ON u.id = f.user_id
                 WHERE f.is_active = true
                 AND f.is_verified = true
                 AND (6371 * acos(

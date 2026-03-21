@@ -22,6 +22,7 @@ import com.elocate.elocate.repository.RecyclingFacilityRepository;
 import com.elocate.elocate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +56,9 @@ public class RecycleRequestService {
         private final DriverRepository driverRepository;
         private final DriverPickupService driverPickupService;
         private final RequestNumberGenerator requestNumberGenerator;
+
+        @Value("${app.frontend.url:http://localhost:3000}")
+        private String frontendUrl;
 
         /**
          * Create recycle request with estimated points and fulfillment tracking
@@ -209,9 +213,9 @@ public class RecycleRequestService {
                         }
 
                         // Notify Facility
-                        if (facility != null && facility.getEmail() != null) {
+                        if (facility != null && facility.getUser() != null && facility.getUser().getEmail() != null) {
                                 emailService.sendRequestAssignedToFacilityEmail(
-                                                facility.getEmail(),
+                                                facility.getUser().getEmail(),
                                                 saved.getRequestNumber(),
                                                 deviceModel.getModelName());
                         }
@@ -686,7 +690,7 @@ public class RecycleRequestService {
                         throw new IllegalStateException("No facility assigned to this request");
                 }
 
-                if (facility.getEmail() == null || facility.getEmail().isBlank()) {
+                if (facility.getUser() == null || facility.getUser().getEmail() == null || facility.getUser().getEmail().isBlank()) {
                         throw new IllegalStateException("Facility does not have an email address configured");
                 }
 
@@ -709,14 +713,14 @@ public class RecycleRequestService {
 
                 // Send email to facility
                 try {
-                        String dashboardUrl = "http://localhost:3000/intermediary/collections/" + requestId;
+                        String dashboardUrl = frontendUrl + "/intermediary/collections/" + requestId;
                         String deviceName = request.getDeviceModel().getBrand().getName() + " "
                                         + request.getDeviceModel().getModelName();
                         String currentStatus = request.getFulfillmentStatus().getDisplayText();
                         String submittedDate = request.getCreatedAt().toString();
 
                         emailService.sendReminderToIntermediaryEmail(
-                                        facility.getEmail(),
+                                        facility.getUser().getEmail(),
                                         request.getRequestNumber(),
                                         deviceName,
                                         citizenName,
@@ -784,8 +788,8 @@ public class RecycleRequestService {
                         builder.facilityId(fac.getId())
                                         .facilityName(fac.getName())
                                         .facilityAddress(fac.getAddress())
-                                        .facilityEmail(fac.getEmail())
-                                        .facilityPhone(fac.getContactNumber());
+                                        .facilityEmail(fac.getUser() != null ? fac.getUser().getEmail() : null)
+                                        .facilityPhone(fac.getUser() != null ? fac.getUser().getMobileNumber() : null);
                 }
 
                 return builder.build();

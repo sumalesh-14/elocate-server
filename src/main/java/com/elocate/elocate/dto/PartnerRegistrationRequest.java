@@ -2,6 +2,7 @@ package com.elocate.elocate.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Request DTO for partner self-registration with user credentials
@@ -60,4 +62,9 @@ public class PartnerRegistrationRequest {
     private String state;
     
     private String pincode;
+
+    /** At least 1, max 3 document URLs (uploaded to S3 before registration) */
+    @NotEmpty(message = "At least one verification document is required")
+    @Size(max = 3, message = "Maximum 3 documents allowed")
+    private List<String> documentUrls;
 }

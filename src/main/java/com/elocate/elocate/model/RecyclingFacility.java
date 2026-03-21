@@ -37,9 +37,6 @@ public class RecyclingFacility {
 
     private Integer capacity;
 
-    @Column(name = "contact_number")
-    private String contactNumber;
-
     @Column(name = "operating_hours")
     private String operatingHours;
 
@@ -63,9 +60,6 @@ public class RecyclingFacility {
     @Column(name = "geocode_source", length = 50)
     private String geocodeSource;
 
-    @Column(name = "email", length = Integer.MAX_VALUE)
-    private String email;
-
     @Size(max = 100)
     @Column(name = "state", length = 100)
     private String state;
@@ -85,6 +79,12 @@ public class RecyclingFacility {
     @Builder.Default
     @Column(name = "approval_status", length = 20)
     private String approvalStatus = "PENDING";
+
+    @Column(name = "document_url", columnDefinition = "TEXT")
+    private String documentUrl;
+
+    @Column(name = "document_urls", columnDefinition = "TEXT[]")
+    private String[] documentUrls;
 
     @Builder.Default
     @OneToMany(mappedBy = "facility")

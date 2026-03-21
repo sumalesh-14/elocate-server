@@ -26,9 +26,7 @@ public class PartnerDashboardResponse {
     private BigDecimal latitude;
     private BigDecimal longitude;
     private Integer capacity;
-    private String contactNumber;
     private String operatingHours;
-    private String email;
     private String state;
     private String pincode;
     private String approvalStatus;

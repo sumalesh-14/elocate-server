@@ -36,7 +36,7 @@ public class FacilityController {
                                     .lat(f.getLatitude().doubleValue())
                                     .lon(f.getLongitude().doubleValue())
                                     .capacity(f.getCapacity() != null ? f.getCapacity() : 0)
-                                    .contact(f.getContactNumber())
+                                    .contact(f.getUser() != null ? f.getUser().getMobileNumber() : null)
                                     .time(f.getOperatingHours())
                                     .verified(Boolean.TRUE.equals(f.getIsVerified()))
                                     .build()));

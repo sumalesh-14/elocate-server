@@ -51,8 +51,8 @@ public class AdminManagementService {
                                 "Approved facility " + facilityId + ". Notes: " + notes);
 
                 // Send email notification
-                if (facility.getEmail() != null) {
-                        emailService.sendFacilityApprovalEmail(facility.getEmail(), facility.getName(), true, notes);
+                if (facility.getUser() != null && facility.getUser().getEmail() != null) {
+                        emailService.sendFacilityApprovalEmail(facility.getUser().getEmail(), facility.getName(), true, notes);
                 }
 
                 log.info("Facility {} approved successfully", facilityId);
@@ -78,8 +78,8 @@ public class AdminManagementService {
                                 "Rejected facility " + facilityId + ". Reason: " + reason);
 
                 // Send email notification
-                if (facility.getEmail() != null) {
-                        emailService.sendFacilityApprovalEmail(facility.getEmail(), facility.getName(), false, reason);
+                if (facility.getUser() != null && facility.getUser().getEmail() != null) {
+                        emailService.sendFacilityApprovalEmail(facility.getUser().getEmail(), facility.getName(), false, reason);
                 }
 
                 log.info("Facility {} rejected", facilityId);
@@ -152,9 +152,9 @@ public class AdminManagementService {
                                                 + ". Reason: " + request.getReason());
 
                 // Send email notifications
-                if (newFacility.getEmail() != null) {
+                if (newFacility.getUser() != null && newFacility.getUser().getEmail() != null) {
                         emailService.sendFacilityReassignmentEmail(
-                                        newFacility.getEmail(),
+                                        newFacility.getUser().getEmail(),
                                         recycleRequest.getId().toString(),
                                         true);
                 }
