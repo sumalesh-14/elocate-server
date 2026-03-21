@@ -44,8 +44,12 @@ public class FeedbackController {
             @PathVariable UUID recycleRequestId) {
         log.info("GET /api/v1/feedback/request/{}", recycleRequestId);
 
-        FeedbackResponse response = feedbackService.getFeedbackByRequestId(recycleRequestId);
-        return ResponseEntity.ok(response);
+        try {
+            FeedbackResponse response = feedbackService.getFeedbackByRequestId(recycleRequestId);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 
     /**
