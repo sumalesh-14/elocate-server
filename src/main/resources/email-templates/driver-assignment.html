@@ -15,6 +15,7 @@
         .button { display: inline-block; padding: 12px 24px; margin: 10px 5px; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center; }
         .btn-success { background: #28a745; color: #fff; }
         .btn-danger { background: #dc3545; color: #fff; }
+        .btn-progress { background: #007bff; color: #fff; }
         .comments-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
         .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
     </style>
@@ -43,15 +44,16 @@
             {{/if}}
 
             <p><strong>Action Required:</strong></p>
-            <p>After completing the pickup, please use one of the links below to update the status:</p>
+            <p>Use the links below to update your pickup status:</p>
 
             <div class="button-group" style="text-align: center;">
+                <a href="{{inProgressUrl}}" class="button btn-progress">🚗 On My Way</a>
                 <a href="{{acceptUrl}}" class="button btn-success">✅ Pickup Completed</a>
                 <a href="{{rejectUrl}}" class="button btn-danger">❌ Pickup Failed</a>
             </div>
 
-            <p style="font-size: 14px; color: #666; margin-top: 20px;">
-                <strong>Note:</strong> Please ensure you collect the device and take a photo for verification.
+            <p style="font-size: 13px; color: #666; margin-top: 10px;">
+                Click <strong>On My Way</strong> when you leave for the pickup, then <strong>Pickup Completed</strong> once you have collected the device.
             </p>
         </div>
         <div class="footer">

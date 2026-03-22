@@ -62,6 +62,7 @@ public class DriverPickupService {
         
         String acceptToken = UUID.randomUUID().toString();
         String rejectToken = UUID.randomUUID().toString();
+        String inProgressToken = UUID.randomUUID().toString();
 
         // Save tokens
         DriverPickupToken acceptTokenEntity = DriverPickupToken.builder()
@@ -80,15 +81,25 @@ public class DriverPickupService {
                 .expiresAt(expiresAt)
                 .build();
 
+        DriverPickupToken inProgressTokenEntity = DriverPickupToken.builder()
+                .recycleRequestId(requestId)
+                .driverId(driverId)
+                .token(inProgressToken)
+                .actionType("IN_PROGRESS")
+                .expiresAt(expiresAt)
+                .build();
+
         tokenRepository.save(acceptTokenEntity);
         tokenRepository.save(rejectTokenEntity);
+        tokenRepository.save(inProgressTokenEntity);
 
         // Send email with frontend links and assignment comments
-        String acceptLink = frontendUrl + "/driver/pickup/accept/" + acceptToken;
-        String rejectLink = frontendUrl + "/driver/pickup/reject/" + rejectToken;
+        String acceptLink     = frontendUrl + "/driver/pickup/accept/" + acceptToken;
+        String rejectLink     = frontendUrl + "/driver/pickup/reject/" + rejectToken;
+        String inProgressLink = frontendUrl + "/driver/pickup/on-my-way/" + inProgressToken;
 
         sendDriverPickupEmail(driver.getEmail(), driver.getName(), requestId.toString(), 
-                citizenAddress, deviceName, acceptLink, rejectLink, assignmentComments);
+                citizenAddress, deviceName, acceptLink, rejectLink, inProgressLink, assignmentComments);
 
         log.info("✅ Pickup tokens generated and email sent to driver: {}", driver.getEmail());
     }
@@ -163,8 +174,13 @@ public class DriverPickupService {
         RecycleRequest request = recycleRequestRepository.findById(tokenEntity.getRecycleRequestId())
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
 
-        // Update request
+        // Update request — auto-insert IN_PROGRESS history if driver skipped that step
         FulfillmentStatus oldStatus = request.getFulfillmentStatus();
+        if (oldStatus == FulfillmentStatus.PICKUP_ASSIGNED) {
+            statusHistoryService.recordStatusChange(request, oldStatus,
+                    FulfillmentStatus.PICKUP_IN_PROGRESS, null, "Driver started pickup (auto-recorded)");
+            oldStatus = FulfillmentStatus.PICKUP_IN_PROGRESS;
+        }
         request.setFulfillmentStatus(FulfillmentStatus.PICKUP_COMPLETED);
         request.setPickupPhotoUrl(dto.getPhotoUrl());
         request.setDriverComments(dto.getComments());
@@ -190,6 +206,39 @@ public class DriverPickupService {
     }
 
     /**
+     * Mark pickup as in-progress (driver on the way)
+     */
+    @Transactional
+    public void markInProgress(String token) {
+        DriverPickupToken tokenEntity = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+        if (!tokenEntity.isValid()) {
+            throw new IllegalArgumentException(tokenEntity.getUsed() ? "Token already used" : "Token expired");
+        }
+
+        if (!"IN_PROGRESS".equals(tokenEntity.getActionType())) {
+            throw new IllegalArgumentException("Invalid token type for this action");
+        }
+
+        RecycleRequest request = recycleRequestRepository.findById(tokenEntity.getRecycleRequestId())
+                .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+
+        FulfillmentStatus oldStatus = request.getFulfillmentStatus();
+        request.setFulfillmentStatus(FulfillmentStatus.PICKUP_IN_PROGRESS);
+        recycleRequestRepository.save(request);
+
+        tokenEntity.setUsed(true);
+        tokenEntity.setUsedAt(LocalDateTime.now());
+        tokenRepository.save(tokenEntity);
+
+        statusHistoryService.recordStatusChange(request, oldStatus,
+                FulfillmentStatus.PICKUP_IN_PROGRESS, null, "Driver is on the way to pick up the device");
+
+        log.info("✅ Pickup marked in-progress for request: {}", request.getId());
+    }
+
+    /**
      * Reject pickup with reason
      */
     @Transactional
@@ -208,8 +257,13 @@ public class DriverPickupService {
         RecycleRequest request = recycleRequestRepository.findById(tokenEntity.getRecycleRequestId())
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
 
-        // Update request
+        // Update request — auto-insert IN_PROGRESS history if driver skipped that step
         FulfillmentStatus oldStatus = request.getFulfillmentStatus();
+        if (oldStatus == FulfillmentStatus.PICKUP_ASSIGNED) {
+            statusHistoryService.recordStatusChange(request, oldStatus,
+                    FulfillmentStatus.PICKUP_IN_PROGRESS, null, "Driver started pickup (auto-recorded)");
+            oldStatus = FulfillmentStatus.PICKUP_IN_PROGRESS;
+        }
         request.setFulfillmentStatus(FulfillmentStatus.PICKUP_FAILED);
         request.setDriverComments(dto.getReason());
         
@@ -261,18 +315,20 @@ public class DriverPickupService {
      * Send driver pickup email
      */
     private void sendDriverPickupEmail(String toEmail, String driverName, String requestId,
-                                       String address, String deviceName, String acceptLink, 
-                                       String rejectLink, String assignmentComments) {
-        // Extract token from accept link
-        String pickupToken = acceptLink.substring(acceptLink.lastIndexOf("/") + 1);
-        
-        // Use the new email service method with HTML templates
+                                       String address, String deviceName, String acceptLink,
+                                       String rejectLink, String inProgressLink, String assignmentComments) {
+        String acceptToken     = acceptLink.substring(acceptLink.lastIndexOf("/") + 1);
+        String rejectToken     = rejectLink.substring(rejectLink.lastIndexOf("/") + 1);
+        String inProgressToken = inProgressLink.substring(inProgressLink.lastIndexOf("/") + 1);
+
         emailService.sendDriverAssignmentEmailWithComments(
-            toEmail, 
-            driverName, 
-            requestId, 
-            address, 
-            pickupToken,
+            toEmail,
+            driverName,
+            requestId,
+            address,
+            acceptToken,
+            rejectToken,
+            inProgressToken,
             assignmentComments,
             deviceName,
             "As scheduled"

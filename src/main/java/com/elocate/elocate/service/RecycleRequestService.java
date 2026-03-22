@@ -771,6 +771,10 @@ public class RecycleRequestService {
                                 .fulfillmentStatus(request.getFulfillmentStatus())
                                 .fulfillmentStatusDisplay(request.getFulfillmentStatus().getDisplayText())
                                 .assignedDriverId(request.getAssignedDriverId())
+                                .driverName(request.getAssignedDriverId() != null
+                                                ? driverRepository.findById(request.getAssignedDriverId())
+                                                                .map(Driver::getName).orElse(null)
+                                                : null)
                                 .driverFailureReason(request.getDriverFailureReason())
                                 .pickupDate(request.getPickupDate())
                                 .certificateUrl(request.getCertificateUrl())

@@ -18,12 +18,7 @@ public enum FulfillmentStatus {
     PICKUP_ASSIGNED,
 
     /**
-     * Pickup date and time has been scheduled
-     */
-    PICKUP_SCHEDULED,
-
-    /**
-     * Pickup is currently in progress
+     * Driver is on the way to pick up the device
      */
     PICKUP_IN_PROGRESS,
 
@@ -76,8 +71,7 @@ public enum FulfillmentStatus {
         return switch (this) {
             case PICKUP_REQUESTED -> "Pickup requested";
             case PICKUP_ASSIGNED -> "Pickup agent assigned";
-            case PICKUP_SCHEDULED -> "Pickup scheduled";
-            case PICKUP_IN_PROGRESS -> "Pickup in progress";
+            case PICKUP_IN_PROGRESS -> "Driver on the way";
             case PICKUP_COMPLETED -> "Device picked up";
             case PICKUP_FAILED -> "Pickup failed";
             case DROP_PENDING -> "Drop pending";

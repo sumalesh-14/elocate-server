@@ -166,11 +166,10 @@ public class IntermediaryService {
         RecycleRequest recycleRequest = recycleRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RecycleRequestNotFoundException(requestId));
 
-        // Validate status
+        // Validate status — allow PICKUP_COMPLETED, DROP_VERIFIED, or PICKUP_FAILED (intermediary override)
         if (recycleRequest.getFulfillmentStatus() != com.elocate.elocate.model.enums.FulfillmentStatus.PICKUP_COMPLETED
-                &&
-                recycleRequest
-                        .getFulfillmentStatus() != com.elocate.elocate.model.enums.FulfillmentStatus.DROP_VERIFIED) {
+                && recycleRequest.getFulfillmentStatus() != com.elocate.elocate.model.enums.FulfillmentStatus.DROP_VERIFIED
+                && recycleRequest.getFulfillmentStatus() != com.elocate.elocate.model.enums.FulfillmentStatus.PICKUP_FAILED) {
             throw new IllegalStateException("Can only verify condition after product is received");
         }
 

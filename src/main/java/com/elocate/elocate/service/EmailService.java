@@ -30,7 +30,7 @@ public class EmailService {
     @Autowired(required = false)
     private SendGridEmailService sendGridEmailService;
 
-    @Value("${spring.mail.username}")
+    @Value("${app.email.from:${spring.mail.username}}")
     private String fromEmail;
 
     @Value("${app.base.url:http://localhost:3000}")
@@ -316,16 +316,17 @@ public class EmailService {
      * Send driver assignment notification with comments
      */
     public void sendDriverAssignmentEmailWithComments(String toEmail, String driverName, String requestId,
-            String citizenAddress, String pickupToken, String comments, String deviceName, String pickupDate) {
+            String citizenAddress, String acceptToken, String rejectToken, String inProgressToken,
+            String comments, String deviceName, String pickupDate) {
         if (!isEmailEnabled() || !driverAssignmentEnabled) {
             log.info("Driver assignment email disabled, skipping");
             return;
         }
-        
+
         log.info("Sending driver assignment email with comments to: {}", toEmail);
 
         String subject = "Pickup Assignment - ELocate";
-        
+
         if (useHtmlTemplates && templateService.templateExists("driver-assignment")) {
             Map<String, Object> variables = new HashMap<>();
             variables.put("driverName", driverName);
@@ -333,10 +334,11 @@ public class EmailService {
             variables.put("pickupAddress", citizenAddress);
             variables.put("deviceName", deviceName != null ? deviceName : "E-Waste Device");
             variables.put("pickupDate", pickupDate != null ? pickupDate : "As scheduled");
-            variables.put("acceptUrl", appBaseUrl + "/driver/pickup/accept/" + pickupToken);
-            variables.put("rejectUrl", appBaseUrl + "/driver/pickup/reject/" + pickupToken);
-            variables.put("comments", comments);
-            
+            variables.put("acceptUrl",     appBaseUrl + "/driver/pickup/accept/"    + acceptToken);
+            variables.put("rejectUrl",     appBaseUrl + "/driver/pickup/reject/"    + rejectToken);
+            variables.put("inProgressUrl", appBaseUrl + "/driver/pickup/on-my-way/" + inProgressToken);
+            variables.put("comments", comments != null ? comments : "");
+
             String htmlBody = templateService.processTemplate("driver-assignment", variables);
             sendHtmlEmail(toEmail, subject, htmlBody);
         } else {
@@ -346,15 +348,13 @@ public class EmailService {
                     "Pickup Address: " + citizenAddress + "\n" +
                     "Device: " + (deviceName != null ? deviceName : "E-Waste Device") + "\n" +
                     "Pickup Date: " + (pickupDate != null ? pickupDate : "As scheduled") + "\n\n" +
-                    (comments != null && !comments.isBlank() ? 
+                    (comments != null && !comments.isBlank() ?
                         "📝 Special Instructions:\n" + comments + "\n\n" : "") +
-                    "After completing the pickup, please use one of these links:\n\n" +
-                    "✅ Pickup Completed:\n" +
-                    appBaseUrl + "/driver/pickup/accept/" + pickupToken + "\n\n" +
-                    "❌ Pickup Failed:\n" +
-                    appBaseUrl + "/driver/pickup/reject/" + pickupToken + "\n\n" +
-                    "Best regards,\n" +
-                    "ELocate Team";
+                    "Please use one of these links:\n\n" +
+                    "🚗 On My Way:\n" + appBaseUrl + "/driver/pickup/on-my-way/" + inProgressToken + "\n\n" +
+                    "✅ Pickup Completed:\n" + appBaseUrl + "/driver/pickup/accept/" + acceptToken + "\n\n" +
+                    "❌ Pickup Failed:\n" + appBaseUrl + "/driver/pickup/reject/" + rejectToken + "\n\n" +
+                    "Best regards,\nELocate Team";
             sendEmail(toEmail, subject, body);
         }
     }
@@ -754,11 +754,9 @@ public class EmailService {
             message.setText(body);
 
             mailSender.send(message);
-            log.info("Email sent successfully to: {}", to);
+            log.info("✅ Email sent successfully to: {} | subject: {}", to, subject);
         } catch (Exception e) {
-            log.error("Failed to send email to: {}, error: {}", to, e.getMessage());
-            // Don't throw exception - operations should still succeed even if email fails
-            // In production, you might want to queue this for retry
+            log.error("❌ Failed to send email to: {} | subject: {} | error: {}", to, subject, e.getMessage(), e);
         }
     }
 
@@ -843,9 +841,9 @@ public class EmailService {
             helper.setText(htmlBody, true); // true = HTML
 
             mailSender.send(message);
-            log.info("HTML email sent successfully to: {}", to);
+            log.info("✅ HTML email sent successfully to: {} | subject: {}", to, subject);
         } catch (Exception e) {
-            log.error("Failed to send HTML email to: {}, error: {}", to, e.getMessage());
+            log.error("❌ Failed to send HTML email to: {} | subject: {} | error: {}", to, subject, e.getMessage(), e);
             // Don't throw exception - operations should still succeed even if email fails
         }
     }

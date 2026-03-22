@@ -140,6 +140,8 @@ public class RecycleStatusHistoryService {
                 return "Pickup request created by " + userName;
             case PICKUP_ASSIGNED:
                 return "Driver assigned for pickup by " + userName;
+            case PICKUP_IN_PROGRESS:
+                return "Driver is on the way to pick up the device";
             case PICKUP_COMPLETED:
                 return "Device successfully picked up by driver " + userName;
             case PICKUP_FAILED:

@@ -50,6 +50,25 @@ public class DriverPickupActionController {
     }
 
     /**
+     * Driver marks themselves as on the way (in-progress)
+     */
+    @PostMapping("/on-my-way/{token}")
+    @Operation(summary = "Mark in progress", description = "Driver marks pickup as in-progress (on the way)")
+    public ResponseEntity<?> markInProgress(@PathVariable String token) {
+        log.info("POST /api/v1/driver/pickup/on-my-way/{}", token);
+        try {
+            driverPickupService.markInProgress(token);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Pickup marked as in-progress"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", "Failed to mark in-progress: " + e.getMessage()));
+        }
+    }
+
+    /**
      * Accept pickup with photo and comments
      */
     @PostMapping("/accept/{token}")

@@ -49,6 +49,7 @@ public class RecycleRequestResponse {
     private String pickupState;
     private String pickupPincode;
     private UUID assignedDriverId;
+    private String driverName;
     private String driverFailureReason;
 
     // Scheduled pickup date

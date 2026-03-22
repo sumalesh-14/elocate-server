@@ -59,6 +59,6 @@ public class DriverPickupToken {
     }
 
     public boolean isValid() {
-        return !used && !isExpired() && isActive;
+        return (used == null || !used) && !isExpired() && (isActive == null || isActive);
     }
 }
