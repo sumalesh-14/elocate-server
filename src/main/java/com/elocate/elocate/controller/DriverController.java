@@ -30,13 +30,14 @@ public class DriverController {
 
     @GetMapping
     public ResponseEntity<Page<DriverResponseDto>> getAllDrivers(
+            @RequestParam(required = false) UUID facilityId,
             @RequestParam(required = false) String availability,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size) {
-        log.info("GET /api/v1/drivers - availability: {}, search: {}, page: {}, size: {}", availability, search, page,
-                size);
-        Page<DriverResponseDto> responses = driverService.getAllDrivers(availability, search, page, size);
+        log.info("GET /api/v1/drivers - facilityId: {}, availability: {}, search: {}, page: {}, size: {}",
+                facilityId, availability, search, page, size);
+        Page<DriverResponseDto> responses = driverService.getAllDrivers(facilityId, availability, search, page, size);
         return ResponseEntity.ok(responses);
     }
 

@@ -33,6 +33,7 @@ public class UserProfileResponse {
         private String email;
         private String mobileNumber;
         private String role;
+        private UUID facilityId; // populated for INTERMEDIARY/PARTNER roles
     }
 
     @Data

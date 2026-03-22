@@ -283,6 +283,24 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle IllegalStateException (e.g. business rule violations like daily reminder quota)
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalState(
+            IllegalStateException ex,
+            HttpServletRequest request) {
+        log.warn("Illegal state: {}", ex.getMessage());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Bad Request");
+        response.put("message", ex.getMessage());
+        response.put("path", request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    /**
      * Handle validation errors
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)

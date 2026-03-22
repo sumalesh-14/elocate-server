@@ -258,6 +258,16 @@ public class AuthenticationService {
         UserWallet wallet = userWalletRepository.findById(user.getId())
                 .orElse(null);
 
+        // Fetch facility ID for intermediary/partner users
+        UUID facilityId = null;
+        String role = user.getRole();
+        if (role != null && (role.equalsIgnoreCase("INTERMEDIARY") || role.equalsIgnoreCase("PARTNER")
+                || role.equalsIgnoreCase("ROLE_INTERMEDIARY") || role.equalsIgnoreCase("ROLE_PARTNER"))) {
+            facilityId = facilityRepository.findByUserId(user.getId())
+                    .map(RecyclingFacility::getId)
+                    .orElse(null);
+        }
+
         return UserProfileResponse.builder()
                 .status("success")
                 .message("Authentication successful")
@@ -267,6 +277,7 @@ public class AuthenticationService {
                         .mobileNumber(user.getMobileNumber())
                         .email(user.getEmail())
                         .role(user.getRole())
+                        .facilityId(facilityId)
                         .build())
                 .tokens(UserProfileResponse.TokenData.builder()
                         .accessToken(jwtToken)

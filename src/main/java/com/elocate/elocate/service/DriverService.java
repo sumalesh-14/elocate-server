@@ -37,6 +37,7 @@ public class DriverService {
                 .vehicleNumber(request.getVehicleNumber())
                 .availability(request.getAvailability() != null ? request.getAvailability() : "AVAILABLE")
                 .vehicleType(request.getVehicleType() != null ? request.getVehicleType() : "VAN")
+                .facilityId(request.getFacilityId())
                 .build();
 
         Driver saved = driverRepository.save(driver);
@@ -44,25 +45,38 @@ public class DriverService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DriverResponseDto> getAllDrivers(String availability, String searchTerm, int page, int size) {
-        log.info("Fetching drivers - availability: {}, search: {}, page: {}, size: {}", availability, searchTerm, page,
-                size);
+    public Page<DriverResponseDto> getAllDrivers(UUID facilityId, String availability, String searchTerm, int page, int size) {
+        log.info("Fetching drivers - facilityId: {}, availability: {}, search: {}, page: {}, size: {}",
+                facilityId, availability, searchTerm, page, size);
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Driver> driversPage;
 
+        boolean hasFacility = facilityId != null;
         boolean hasAvailability = availability != null && !availability.isBlank()
                 && !availability.equalsIgnoreCase("All");
         boolean hasSearch = searchTerm != null && !searchTerm.isBlank();
 
-        if (hasAvailability && hasSearch) {
-            driversPage = driverRepository.findByAvailabilityAndSearchTerm(availability, searchTerm, pageable);
-        } else if (hasAvailability) {
-            driversPage = driverRepository.findByAvailabilityIgnoreCase(availability, pageable);
-        } else if (hasSearch) {
-            driversPage = driverRepository.searchDrivers(searchTerm, pageable);
+        if (hasFacility) {
+            if (hasAvailability && hasSearch) {
+                driversPage = driverRepository.findByFacilityIdAndAvailabilityAndSearchTerm(facilityId, availability, searchTerm, pageable);
+            } else if (hasAvailability) {
+                driversPage = driverRepository.findByFacilityIdAndAvailabilityIgnoreCase(facilityId, availability, pageable);
+            } else if (hasSearch) {
+                driversPage = driverRepository.searchDriversByFacility(facilityId, searchTerm, pageable);
+            } else {
+                driversPage = driverRepository.findByFacilityId(facilityId, pageable);
+            }
         } else {
-            driversPage = driverRepository.findAll(pageable);
+            if (hasAvailability && hasSearch) {
+                driversPage = driverRepository.findByAvailabilityAndSearchTerm(availability, searchTerm, pageable);
+            } else if (hasAvailability) {
+                driversPage = driverRepository.findByAvailabilityIgnoreCase(availability, pageable);
+            } else if (hasSearch) {
+                driversPage = driverRepository.searchDrivers(searchTerm, pageable);
+            } else {
+                driversPage = driverRepository.findAll(pageable);
+            }
         }
 
         return driversPage.map(this::mapToResponse);
@@ -98,6 +112,9 @@ public class DriverService {
         if (request.getVehicleType() != null) {
             driver.setVehicleType(request.getVehicleType());
         }
+        if (request.getFacilityId() != null) {
+            driver.setFacilityId(request.getFacilityId());
+        }
 
         Driver updated = driverRepository.save(driver);
         return mapToResponse(updated);
@@ -120,6 +137,7 @@ public class DriverService {
                 .vehicleNumber(driver.getVehicleNumber())
                 .availability(driver.getAvailability())
                 .vehicleType(driver.getVehicleType())
+                .facilityId(driver.getFacilityId())
                 .build();
     }
 }

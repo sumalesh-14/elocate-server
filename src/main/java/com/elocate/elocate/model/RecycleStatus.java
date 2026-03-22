@@ -7,5 +7,6 @@ public enum RecycleStatus {
     LOCKED,
     RECYCLED,
     REJECTED,
-    CANCELLED
+    CANCELLED,
+    REMINDER_SENT
 }

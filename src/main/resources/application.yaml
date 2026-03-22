@@ -21,10 +21,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
   mail:
-    host: ${EMAIL_HOST:smtp.gmail.com}
+    host: ${EMAIL_HOST:smtp-relay.brevo.com}
     port: ${EMAIL_PORT:587}
-    username: ${EMAIL_USERNAME:kasumalesh@gmail.com}
-    password: ${EMAIL_PASSWORD:dwqx mclv bkkf soxt}
+    username: ${EMAIL_USERNAME:your-brevo-account-email}
+    password: ${EMAIL_PASSWORD:your-brevo-smtp-key}
     properties:
       mail:
         smtp:

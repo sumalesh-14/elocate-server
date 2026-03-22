@@ -39,6 +39,19 @@ public class IntermediaryRecycleRequestController {
         private final RecyclingFacilityRepository facilityRepository;
 
         /**
+         * Get facility ID for the authenticated intermediary user
+         */
+        @GetMapping("/facility-id")
+        public ResponseEntity<Map<String, String>> getFacilityId(@RequestParam UUID userId) {
+                log.info("Fetching facilityId for user: {}", userId);
+                Optional<RecyclingFacility> facilityOpt = facilityRepository.findByUserId(userId);
+                if (facilityOpt.isEmpty()) {
+                        return ResponseEntity.ok(Collections.emptyMap());
+                }
+                return ResponseEntity.ok(Map.of("facilityId", facilityOpt.get().getId().toString()));
+        }
+
+        /**
          * Get all recycle requests for intermediary's facility
          */
         @GetMapping

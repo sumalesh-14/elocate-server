@@ -37,6 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = extractJwtFromRequest(request);
 
+            log.info("=== JWT Filter === path: {}, token present: {}", 
+                request.getRequestURI(), jwt != null ? "YES ("+jwt.substring(0, Math.min(20, jwt.length()))+"...)" : "NO");
+
             if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
                 // Extract user info from JWT
                 UUID userId = jwtUtil.extractUserId(jwt);
@@ -57,8 +60,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = java.util.Collections
                         .emptyList();
                 if (role != null) {
+                    // Normalize: strip existing ROLE_ prefix before adding it back
+                    String normalizedRole = role.toUpperCase().startsWith("ROLE_") ? role.toUpperCase() : "ROLE_" + role.toUpperCase();
                     authorities = java.util.Collections.singletonList(
-                            new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+                            new org.springframework.security.core.authority.SimpleGrantedAuthority(normalizedRole));
+                    log.info("=== JWT Filter === userId: {}, rawRole: '{}', grantedAuthority: '{}'", userId, role, normalizedRole);
                 }
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userId,
@@ -67,7 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                log.debug("Authenticated user: {} ({})", fullName, userId);
+                log.info("Authenticated user: {} ({}) with authorities: {}", fullName, userId, authorities);
             }
         } catch (Exception e) {
             log.error("Cannot set user authentication: {}", e.getMessage());

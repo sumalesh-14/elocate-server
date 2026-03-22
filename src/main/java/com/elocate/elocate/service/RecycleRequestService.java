@@ -684,6 +684,12 @@ public class RecycleRequestService {
                         throw new IllegalStateException("Unauthorized to send reminder for this request");
                 }
 
+                // Daily quota check - only 1 reminder per day per request
+                boolean alreadySentToday = statusHistoryService.hasReminderBeenSentToday(requestId, userId);
+                if (alreadySentToday) {
+                        throw new IllegalStateException("Today's reminder quota reached. Please try again tomorrow — the intermediary will respond to you.");
+                }
+
                 // Get facility details
                 RecyclingFacility facility = request.getRecyclingFacility();
                 if (facility == null) {
@@ -699,17 +705,16 @@ public class RecycleRequestService {
                 String citizenName = citizen != null ? citizen.getFullName() : "Citizen";
                 String citizenEmail = citizen != null ? citizen.getEmail() : "N/A";
 
-                // Record in status history
+                // Record REMINDER_SENT status change in history
                 String historyComment = "Reminder sent to facility";
                 if (comment != null && !comment.isBlank()) {
                         historyComment += ": " + comment;
                 }
-                statusHistoryService.recordStatusChange(
-                                request,
-                                request.getFulfillmentStatus(),
-                                request.getFulfillmentStatus(),
-                                userId,
-                                historyComment);
+                RecycleStatus previousStatus = request.getStatus();
+                request.setStatus(RecycleStatus.REMINDER_SENT);
+                RecycleRequest saved = recycleRequestRepository.save(request);
+
+                statusHistoryService.recordRecycleStatusChange(saved, previousStatus, RecycleStatus.REMINDER_SENT, userId, historyComment);
 
                 // Send email to facility
                 try {
@@ -736,7 +741,7 @@ public class RecycleRequestService {
                         throw new RuntimeException("Failed to send reminder email: " + e.getMessage());
                 }
 
-                return mapToResponse(request);
+                return mapToResponse(saved);
         }
 
         /**

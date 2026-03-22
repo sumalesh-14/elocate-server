@@ -40,6 +40,9 @@ public class Driver {
     @Builder.Default
     private String vehicleType = "VAN";
 
+    @Column(name = "facility_id")
+    private UUID facilityId;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

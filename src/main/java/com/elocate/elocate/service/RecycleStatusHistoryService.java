@@ -213,4 +213,13 @@ public class RecycleStatusHistoryService {
     public List<RecycleStatusHistory> getStatusHistory(UUID recycleRequestId) {
         return statusHistoryRepository.findByRecycleRequestIdOrderByChangedAtDesc(recycleRequestId);
     }
+
+    /**
+     * Check if a reminder was already sent today for this request by this user
+     */
+    @Transactional(readOnly = true)
+    public boolean hasReminderBeenSentToday(UUID requestId, UUID userId) {
+        LocalDateTime startOfDay = java.time.LocalDate.now().atStartOfDay();
+        return statusHistoryRepository.existsReminderSentTodayByUser(requestId, userId, startOfDay);
+    }
 }
