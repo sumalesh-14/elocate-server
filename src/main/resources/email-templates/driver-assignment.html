@@ -4,62 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .content { padding: 30px; }
-        .info-box { background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .info-box strong { color: #667eea; }
-        .button-group { margin: 25px 0; }
-        .button { display: inline-block; padding: 12px 24px; margin: 10px 5px; text-decoration: none; border-radius: 5px; font-weight: bold; text-align: center; }
-        .btn-success { background: #28a745; color: #fff; }
-        .btn-danger { background: #dc3545; color: #fff; }
-        .btn-progress { background: #007bff; color: #fff; }
-        .comments-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f7f0; color: #2d2d2d; }
+        .wrapper { padding: 30px 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(34,139,34,0.12); }
+        .header { background: linear-gradient(135deg, #1a7a3c 0%, #2ecc71 100%); padding: 36px 30px; text-align: center; }
+        .header .logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 14px; }
+        .header h1 { color: #ffffff; font-size: 22px; font-weight: 700; }
+        .header .subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-top: 12px; }
+        .content { padding: 36px 30px; }
+        .greeting { font-size: 16px; color: #2d2d2d; margin-bottom: 20px; }
+        .info-card { background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .info-card .card-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a7a3c; margin-bottom: 14px; }
+        .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid #dff0e4; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; font-weight: 500; flex-shrink: 0; }
+        .info-value { color: #1a1a1a; font-weight: 600; text-align: right; max-width: 65%; }
+        .instructions-card { background: #fff8e1; border-left: 3px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 16px 18px; margin: 24px 0; }
+        .instructions-card .inst-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #92400e; margin-bottom: 8px; }
+        .instructions-card p { font-size: 14px; color: #4b5563; line-height: 1.6; }
+        .section-title { font-size: 15px; font-weight: 700; color: #1a7a3c; margin: 28px 0 14px; }
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+        .action-btn { flex: 1; min-width: 140px; display: block; text-align: center; text-decoration: none; padding: 14px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; }
+        .btn-onway { background: #1a7a3c; color: #ffffff; }
+        .btn-done { background: #2ecc71; color: #ffffff; }
+        .btn-failed { background: #f9fafb; color: #dc2626; border: 1px solid #fecaca; }
+        .note-box { background: #f9fafb; border-radius: 8px; padding: 14px 18px; margin-top: 20px; font-size: 13px; color: #6b7280; line-height: 1.7; }
+        .footer { background: #1a7a3c; padding: 24px 30px; text-align: center; }
+        .footer .brand { color: #ffffff; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .footer .tagline { color: rgba(255,255,255,0.7); font-size: 12px; }
+        .footer .links { margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
+<div class="wrapper">
     <div class="container">
         <div class="header">
-            <h1>🚚 New Pickup Assignment</h1>
+            <div class="logo">ELocate</div>
+            <h1>New Pickup Assignment</h1>
+            <div class="subtitle">You have a new pickup request</div>
+            <div class="badge">🚚 Action Required</div>
         </div>
         <div class="content">
-            <p>Hello <strong>{{driverName}}</strong>,</p>
-            <p>You have been assigned a new pickup request. Please review the details below:</p>
-            
-            <div class="info-box">
-                <p><strong>Request ID:</strong> {{requestId}}</p>
-                <p><strong>Pickup Address:</strong> {{pickupAddress}}</p>
-                <p><strong>Device:</strong> {{deviceName}}</p>
-                <p><strong>Scheduled Date:</strong> {{pickupDate}}</p>
+            <p class="greeting">Hello <strong>{{driverName}}</strong>, you have been assigned a new pickup request. Please review the details and update your status using the buttons below.</p>
+
+            <div class="info-card">
+                <div class="card-title">Pickup Details</div>
+                <div class="info-row">
+                    <span class="info-label">Request ID</span>
+                    <span class="info-value">{{requestId}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Device</span>
+                    <span class="info-value">{{deviceName}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Scheduled Date</span>
+                    <span class="info-value">{{pickupDate}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pickup Address</span>
+                    <span class="info-value">{{pickupAddress}}</span>
+                </div>
             </div>
 
             {{#if comments}}
-            <div class="comments-box">
-                <p><strong>📝 Special Instructions:</strong></p>
+            <div class="instructions-card">
+                <div class="inst-title">Special Instructions</div>
                 <p>{{comments}}</p>
             </div>
             {{/if}}
 
-            <p><strong>Action Required:</strong></p>
-            <p>Use the links below to update your pickup status:</p>
-
-            <div class="button-group" style="text-align: center;">
-                <a href="{{inProgressUrl}}" class="button btn-progress">🚗 On My Way</a>
-                <a href="{{acceptUrl}}" class="button btn-success">✅ Pickup Completed</a>
-                <a href="{{rejectUrl}}" class="button btn-danger">❌ Pickup Failed</a>
+            <div class="section-title">Update Pickup Status</div>
+            <div class="action-buttons">
+                <a href="{{inProgressUrl}}" class="action-btn btn-onway">🚗 On My Way</a>
+                <a href="{{acceptUrl}}" class="action-btn btn-done">✅ Pickup Completed</a>
+                <a href="{{rejectUrl}}" class="action-btn btn-failed">❌ Pickup Failed</a>
             </div>
 
-            <p style="font-size: 13px; color: #666; margin-top: 10px;">
-                Click <strong>On My Way</strong> when you leave for the pickup, then <strong>Pickup Completed</strong> once you have collected the device.
-            </p>
+            <div class="note-box">
+                Click <strong>On My Way</strong> when you depart for the pickup, then <strong>Pickup Completed</strong> once you've collected the device.
+            </div>
         </div>
         <div class="footer">
-            <p>ELocate - E-Waste Recycling Platform</p>
-            <p>Making the world cleaner, one device at a time 🌍</p>
+            <div class="brand">ELocate — E-Waste Recycling Platform</div>
+            <div class="tagline">Making the world cleaner, one device at a time 🌍</div>
+            <div class="links">support@elocate.com</div>
         </div>
     </div>
+</div>
 </body>
 </html>

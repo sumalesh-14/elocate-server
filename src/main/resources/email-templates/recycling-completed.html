@@ -4,79 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: #fff; padding: 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 28px; }
-        .content { padding: 30px; }
-        .celebration { text-align: center; font-size: 48px; margin: 20px 0; }
-        .info-box { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .certificate-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 20px; margin: 25px 0; border-radius: 8px; text-align: center; }
-        .button { display: inline-block; padding: 14px 28px; margin: 15px 5px; text-decoration: none; border-radius: 5px; font-weight: bold; background: #fff; color: #667eea; }
-        .impact-stats { display: flex; justify-content: space-around; margin: 25px 0; text-align: center; }
-        .stat { flex: 1; padding: 15px; }
-        .stat-number { font-size: 32px; font-weight: bold; color: #4caf50; }
-        .stat-label { font-size: 12px; color: #666; }
-        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f7f0; color: #2d2d2d; }
+        .wrapper { padding: 30px 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(34,139,34,0.12); }
+        .header { background: linear-gradient(135deg, #1a7a3c 0%, #2ecc71 100%); padding: 36px 30px; text-align: center; }
+        .header .logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 14px; }
+        .header h1 { color: #ffffff; font-size: 24px; font-weight: 800; }
+        .header .subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-top: 12px; }
+        .content { padding: 36px 30px; }
+        .greeting { font-size: 16px; color: #2d2d2d; margin-bottom: 20px; }
+        .payment-hero { background: linear-gradient(135deg, #f4fbf6, #e8f5e9); border: 2px solid #2ecc71; border-radius: 12px; padding: 28px; text-align: center; margin: 24px 0; }
+        .payment-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a7a3c; margin-bottom: 8px; }
+        .payment-value { font-size: 48px; font-weight: 800; color: #1a7a3c; line-height: 1; }
+        .payment-sub { font-size: 13px; color: #6b7280; margin-top: 8px; }
+        .info-card { background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .info-card .card-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a7a3c; margin-bottom: 14px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #dff0e4; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; font-weight: 500; }
+        .info-value { color: #1a1a1a; font-weight: 600; }
+        .impact-grid { display: flex; gap: 12px; margin: 24px 0; }
+        .impact-item { flex: 1; background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 16px; text-align: center; }
+        .impact-icon { font-size: 28px; margin-bottom: 6px; }
+        .impact-label { font-size: 11px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .cert-card { background: linear-gradient(135deg, #1a7a3c 0%, #2ecc71 100%); border-radius: 10px; padding: 24px; margin: 24px 0; text-align: center; }
+        .cert-card h3 { color: #fff; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .cert-card p { color: rgba(255,255,255,0.85); font-size: 13px; margin-bottom: 16px; }
+        .cert-btn { display: inline-block; background: #ffffff; color: #1a7a3c; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 700; }
+        .note-box { background: #f9fafb; border-radius: 8px; padding: 16px 20px; margin-top: 24px; font-size: 13px; color: #6b7280; line-height: 1.7; }
+        .footer { background: #1a7a3c; padding: 24px 30px; text-align: center; }
+        .footer .brand { color: #ffffff; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .footer .tagline { color: rgba(255,255,255,0.7); font-size: 12px; }
+        .footer .links { margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
+<div class="wrapper">
     <div class="container">
         <div class="header">
-            <h1>🎉 Recycling Complete!</h1>
+            <div class="logo">ELocate</div>
+            <h1>Recycling Complete! 🎉</h1>
+            <div class="subtitle">Your device has been responsibly recycled</div>
+            <div class="badge">✓ Completed</div>
         </div>
         <div class="content">
-            <div class="celebration">🌍💚✨</div>
-            
-            <p>Congratulations! Your device has been successfully recycled.</p>
-            
-            <div class="info-box">
-                <p><strong>Request ID:</strong> {{requestId}}</p>
-                <p><strong>Device:</strong> {{deviceName}}</p>
-                <p><strong>Payment Amount:</strong> ${{finalAmount}}</p>
-                <p><strong>Status:</strong> ✅ Payment Credited to Wallet</p>
+            <p class="greeting">Congratulations! Your device has been successfully recycled. Your payment has been credited to your wallet.</p>
+
+            <div class="payment-hero">
+                <div class="payment-label">Payment Credited</div>
+                <div class="payment-value">₹{{finalAmount}}</div>
+                <div class="payment-sub">Added to your ELocate wallet</div>
             </div>
 
-            <h3 style="color: #4caf50;">Your Environmental Impact:</h3>
-            <div class="impact-stats">
-                <div class="stat">
-                    <div class="stat-number">1</div>
-                    <div class="stat-label">Device Recycled</div>
+            <div class="info-card">
+                <div class="card-title">Request Summary</div>
+                <div class="info-row">
+                    <span class="info-label">Request ID</span>
+                    <span class="info-value">{{requestId}}</span>
                 </div>
-                <div class="stat">
-                    <div class="stat-number">🌱</div>
-                    <div class="stat-label">Trees Saved</div>
+                <div class="info-row">
+                    <span class="info-label">Device</span>
+                    <span class="info-value">{{deviceName}}</span>
                 </div>
-                <div class="stat">
-                    <div class="stat-number">♻️</div>
-                    <div class="stat-label">E-Waste Reduced</div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">✓ Recycling Complete</span>
+                </div>
+            </div>
+
+            <div class="impact-grid">
+                <div class="impact-item">
+                    <div class="impact-icon">♻️</div>
+                    <div class="impact-label">E-Waste Diverted</div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">🌱</div>
+                    <div class="impact-label">Carbon Reduced</div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-icon">🌍</div>
+                    <div class="impact-label">Planet Protected</div>
                 </div>
             </div>
 
             {{#if certificateUrl}}
-            <div class="certificate-box">
-                <h3 style="margin-top: 0;">🏆 Certificate of Appreciation</h3>
-                <p>We've created a special certificate recognizing your contribution to environmental sustainability!</p>
-                <a href="{{certificateUrl}}" class="button">View Your Certificate</a>
+            <div class="cert-card">
+                <h3>🏆 Your Certificate is Ready</h3>
+                <p>We've created a certificate recognizing your contribution to environmental sustainability.</p>
+                <a href="{{certificateUrl}}" class="cert-btn">View Certificate</a>
             </div>
             {{/if}}
 
-            <p style="margin-top: 30px;">
-                <strong>What's Next?</strong><br>
-                • Check your wallet balance in your profile<br>
-                • Download and share your certificate<br>
-                • Recycle more devices to increase your impact!
-            </p>
-
-            <p style="font-size: 14px; color: #666; margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
-                <strong>Thank you for being an environmental champion!</strong><br>
-                Your action makes a real difference in creating a cleaner, greener planet. Together, we're building a sustainable future. 🌍
-            </p>
+            <div class="note-box">
+                <strong>What's Next?</strong> Check your wallet balance in your profile. Download and share your certificate. Keep recycling to grow your environmental impact score!
+            </div>
         </div>
         <div class="footer">
-            <p>ELocate - E-Waste Recycling Platform</p>
-            <p>Making the world cleaner, one device at a time</p>
+            <div class="brand">ELocate — E-Waste Recycling Platform</div>
+            <div class="tagline">Making the world cleaner, one device at a time 🌍</div>
+            <div class="links">support@elocate.com</div>
         </div>
     </div>
+</div>
 </body>
 </html>

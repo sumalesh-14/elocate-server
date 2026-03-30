@@ -3,190 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reminder: Pending Recycle Request</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            background-color: #ffffff;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #4CAF50;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            color: #4CAF50;
-            margin: 0;
-            font-size: 28px;
-        }
-        .reminder-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        .content {
-            margin-bottom: 30px;
-        }
-        .info-box {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .info-box h3 {
-            margin-top: 0;
-            color: #856404;
-            font-size: 16px;
-        }
-        .request-details {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #dee2e6;
-        }
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-        .detail-label {
-            font-weight: 600;
-            color: #495057;
-        }
-        .detail-value {
-            color: #212529;
-        }
-        .comment-box {
-            background-color: #e7f3ff;
-            border-left: 4px solid #2196F3;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
-        .comment-box h3 {
-            margin-top: 0;
-            color: #0d47a1;
-            font-size: 16px;
-        }
-        .comment-text {
-            color: #1565c0;
-            font-style: italic;
-            line-height: 1.6;
-        }
-        .action-button {
-            display: inline-block;
-            padding: 12px 30px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin: 20px 0;
-            text-align: center;
-        }
-        .action-button:hover {
-            background-color: #45a049;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #dee2e6;
-            color: #6c757d;
-            font-size: 14px;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            background-color: #ffc107;
-            color: #856404;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f7f0; color: #2d2d2d; }
+        .wrapper { padding: 30px 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(34,139,34,0.12); }
+        .header { background: linear-gradient(135deg, #1a7a3c 0%, #2ecc71 100%); padding: 36px 30px; text-align: center; }
+        .header .logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 14px; }
+        .header h1 { color: #ffffff; font-size: 22px; font-weight: 700; }
+        .header .subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-top: 12px; }
+        .content { padding: 36px 30px; }
+        .greeting { font-size: 16px; color: #2d2d2d; margin-bottom: 20px; }
+        .alert-box { background: #fff8e1; border-left: 3px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 16px 18px; margin: 24px 0; }
+        .alert-box .alert-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #92400e; margin-bottom: 6px; }
+        .alert-box p { font-size: 14px; color: #4b5563; line-height: 1.6; }
+        .info-card { background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .info-card .card-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a7a3c; margin-bottom: 14px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #dff0e4; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; font-weight: 500; }
+        .info-value { color: #1a1a1a; font-weight: 600; text-align: right; max-width: 60%; }
+        .status-pill { display: inline-block; background: #fff3cd; color: #856404; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+        .message-card { background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 18px 20px; margin: 24px 0; }
+        .message-card .msg-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #1a7a3c; margin-bottom: 8px; }
+        .message-card .msg-text { font-size: 14px; color: #4b5563; font-style: italic; line-height: 1.6; }
+        .cta-wrap { text-align: center; margin: 30px 0; }
+        .cta-btn { display: inline-block; background: linear-gradient(135deg, #1a7a3c, #2ecc71); color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-size: 15px; font-weight: 700; }
+        .note-box { background: #f9fafb; border-radius: 8px; padding: 14px 18px; margin-top: 20px; font-size: 13px; color: #6b7280; line-height: 1.7; text-align: center; }
+        .footer { background: #1a7a3c; padding: 24px 30px; text-align: center; }
+        .footer .brand { color: #ffffff; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .footer .tagline { color: rgba(255,255,255,0.7); font-size: 12px; }
+        .footer .links { margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
+<div class="wrapper">
     <div class="container">
         <div class="header">
-            <div class="reminder-icon">🔔</div>
+            <div class="logo">ELocate</div>
             <h1>Reminder: Pending Request</h1>
-            <p style="color: #666; margin: 10px 0 0 0;">A citizen is waiting for action on their recycle request</p>
+            <div class="subtitle">A citizen is waiting for action</div>
+            <div class="badge">⏰ Action Required</div>
         </div>
-
         <div class="content">
-            <div class="info-box">
-                <h3>⏰ Action Required</h3>
-                <p style="margin: 5px 0 0 0;">A citizen has sent you a reminder about their pending recycle request. Please review and take appropriate action.</p>
+            <p class="greeting">A citizen has sent a reminder about their pending recycle request. Please review and take appropriate action as soon as possible.</p>
+
+            <div class="alert-box">
+                <div class="alert-title">Action Required</div>
+                <p>This request has been pending and the citizen is waiting for an update. Please review and respond promptly.</p>
             </div>
 
-            <div class="request-details">
-                <h3 style="margin-top: 0; color: #212529;">Request Details</h3>
-                <div class="detail-row">
-                    <span class="detail-label">Request ID:</span>
-                    <span class="detail-value">{{requestId}}</span>
+            <div class="info-card">
+                <div class="card-title">Request Details</div>
+                <div class="info-row">
+                    <span class="info-label">Request ID</span>
+                    <span class="info-value">{{requestId}}</span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Device:</span>
-                    <span class="detail-value">{{deviceName}}</span>
+                <div class="info-row">
+                    <span class="info-label">Device</span>
+                    <span class="info-value">{{deviceName}}</span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Citizen Name:</span>
-                    <span class="detail-value">{{citizenName}}</span>
+                <div class="info-row">
+                    <span class="info-label">Citizen Name</span>
+                    <span class="info-value">{{citizenName}}</span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Citizen Email:</span>
-                    <span class="detail-value">{{citizenEmail}}</span>
+                <div class="info-row">
+                    <span class="info-label">Citizen Email</span>
+                    <span class="info-value">{{citizenEmail}}</span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Current Status:</span>
-                    <span class="detail-value"><span class="status-badge">{{currentStatus}}</span></span>
+                <div class="info-row">
+                    <span class="info-label">Current Status</span>
+                    <span class="info-value"><span class="status-pill">{{currentStatus}}</span></span>
                 </div>
-                <div class="detail-row">
-                    <span class="detail-label">Submitted On:</span>
-                    <span class="detail-value">{{submittedDate}}</span>
+                <div class="info-row">
+                    <span class="info-label">Submitted On</span>
+                    <span class="info-value">{{submittedDate}}</span>
                 </div>
             </div>
 
             {{#if comment}}
-            <div class="comment-box">
-                <h3>💬 Message from Citizen</h3>
-                <p class="comment-text">"{{comment}}"</p>
+            <div class="message-card">
+                <div class="msg-title">Message from Citizen</div>
+                <div class="msg-text">"{{comment}}"</div>
             </div>
             {{/if}}
 
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="{{dashboardUrl}}" class="action-button">View Request in Dashboard</a>
+            <div class="cta-wrap">
+                <a href="{{dashboardUrl}}" class="cta-btn">View Request in Dashboard</a>
             </div>
 
-            <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                Please review this request and take the necessary action. The citizen is waiting for updates on their recycling request.
-            </p>
+            <div class="note-box">
+                This is an automated reminder email. Please do not reply to this email directly.
+            </div>
         </div>
-
         <div class="footer">
-            <p><strong>ELocate - E-Waste Management Platform</strong></p>
-            <p>Making e-waste recycling easier and more rewarding</p>
-            <p style="font-size: 12px; color: #999; margin-top: 10px;">
-                This is an automated reminder email. Please do not reply to this email.
-            </p>
+            <div class="brand">ELocate — E-Waste Recycling Platform</div>
+            <div class="tagline">Making e-waste recycling easier and more rewarding</div>
+            <div class="links">support@elocate.com</div>
         </div>
     </div>
+</div>
 </body>
 </html>

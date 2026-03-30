@@ -4,63 +4,86 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: #fff; padding: 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .content { padding: 30px; }
-        .icon { text-align: center; font-size: 64px; margin: 20px 0; }
-        .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .reason-box { background: #ffebee; border-left: 4px solid #f44336; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .action-box { background: #e3f2fd; padding: 20px; margin: 20px 0; border-radius: 4px; text-align: center; }
-        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f7f0; color: #2d2d2d; }
+        .wrapper { padding: 30px 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(34,139,34,0.12); }
+        .header { background: linear-gradient(135deg, #1a7a3c 0%, #2ecc71 100%); padding: 36px 30px; text-align: center; }
+        .header .logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 14px; }
+        .header h1 { color: #ffffff; font-size: 22px; font-weight: 700; }
+        .header .subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.15); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-top: 12px; border: 1px solid rgba(255,255,255,0.3); }
+        .content { padding: 36px 30px; }
+        .greeting { font-size: 16px; color: #2d2d2d; margin-bottom: 20px; }
+        .info-card { background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .info-card .card-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a7a3c; margin-bottom: 14px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #dff0e4; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; font-weight: 500; }
+        .info-value { color: #1a1a1a; font-weight: 600; }
+        .reason-card { background: #fff8f8; border: 1px solid #fecaca; border-radius: 8px; padding: 18px 20px; margin: 24px 0; }
+        .reason-card .reason-title { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #dc2626; margin-bottom: 8px; }
+        .reason-card .reason-text { font-size: 14px; color: #4b5563; line-height: 1.6; }
+        .section-title { font-size: 15px; font-weight: 700; color: #1a7a3c; margin: 28px 0 12px; }
+        .tips { list-style: none; }
+        .tips li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #4b5563; }
+        .tips li:last-child { border-bottom: none; }
+        .tip-icon { font-size: 15px; flex-shrink: 0; }
+        .action-box { background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 24px 0; text-align: center; }
+        .action-box p { font-size: 14px; color: #4b5563; line-height: 1.6; }
+        .footer { background: #1a7a3c; padding: 24px 30px; text-align: center; }
+        .footer .brand { color: #ffffff; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .footer .tagline { color: rgba(255,255,255,0.7); font-size: 12px; }
+        .footer .links { margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
+<div class="wrapper">
     <div class="container">
         <div class="header">
-            <h1>⚠️ Pickup Attempt Failed</h1>
+            <div class="logo">ELocate</div>
+            <h1>Pickup Attempt Failed</h1>
+            <div class="subtitle">We'll help you reschedule right away</div>
+            <div class="badge">⚠ Rescheduling Required</div>
         </div>
         <div class="content">
-            <div class="icon">😔</div>
-            
-            <p>Unfortunately, the driver was unable to complete the pickup for your request.</p>
-            
-            <div class="info-box">
-                <p><strong>Request ID:</strong> {{requestId}}</p>
-                <p><strong>Status:</strong> Pickup Failed - Rescheduling Required</p>
+            <p class="greeting">We're sorry — the driver was unable to complete the pickup for your request. Our team will reach out to reschedule at your convenience.</p>
+
+            <div class="info-card">
+                <div class="card-title">Request Details</div>
+                <div class="info-row">
+                    <span class="info-label">Request ID</span>
+                    <span class="info-value">{{requestId}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">Pickup Failed — Rescheduling</span>
+                </div>
             </div>
 
-            <div class="reason-box">
-                <p><strong>Reason:</strong></p>
-                <p>{{reason}}</p>
+            <div class="reason-card">
+                <div class="reason-title">Reason for Failure</div>
+                <div class="reason-text">{{reason}}</div>
             </div>
+
+            <div class="section-title">Tips for a Successful Pickup</div>
+            <ul class="tips">
+                <li><span class="tip-icon">👤</span> Ensure someone is present at the address during the pickup window.</li>
+                <li><span class="tip-icon">📱</span> Have the device backed up, reset, and ready for collection.</li>
+                <li><span class="tip-icon">📍</span> Verify your pickup address is correct in your profile.</li>
+                <li><span class="tip-icon">🚪</span> Provide clear access instructions if needed.</li>
+            </ul>
 
             <div class="action-box">
-                <h3 style="margin-top: 0; color: #2196f3;">What Happens Next?</h3>
-                <p>Our team will contact you shortly to reschedule the pickup at a convenient time.</p>
-                <p style="font-size: 14px; color: #666; margin-top: 15px;">
-                    You can also reach out to us if you'd like to schedule immediately.
-                </p>
+                <p><strong>What happens next?</strong><br>Our team will contact you shortly to reschedule the pickup. You can also reach out to us directly at support@elocate.com.</p>
             </div>
-
-            <p style="font-size: 14px; color: #666; margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
-                <strong>Common Reasons & Solutions:</strong><br>
-                • <strong>No one available:</strong> Ensure someone is present during pickup window<br>
-                • <strong>Device not ready:</strong> Have device backed up and ready for collection<br>
-                • <strong>Address issue:</strong> Verify your pickup address is correct<br>
-                • <strong>Access problem:</strong> Provide clear access instructions
-            </p>
-
-            <p style="text-align: center; margin-top: 25px;">
-                <strong>Need Help?</strong><br>
-                Contact our support team for immediate assistance.
-            </p>
         </div>
         <div class="footer">
-            <p>ELocate - E-Waste Recycling Platform</p>
-            <p>We're here to help! 💚</p>
+            <div class="brand">ELocate — E-Waste Recycling Platform</div>
+            <div class="tagline">We're here to help 💚</div>
+            <div class="links">support@elocate.com</div>
         </div>
     </div>
+</div>
 </body>
 </html>

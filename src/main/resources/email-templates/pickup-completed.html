@@ -4,77 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .content { padding: 30px; }
-        .icon { text-align: center; font-size: 64px; margin: 20px 0; }
-        .info-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .timeline { margin: 25px 0; }
-        .timeline-item { display: flex; align-items: center; margin: 15px 0; }
-        .timeline-icon { font-size: 24px; margin-right: 15px; }
-        .timeline-text { flex: 1; }
-        .timeline-item.done { opacity: 0.6; }
-        .timeline-item.current { font-weight: bold; color: #2196f3; }
-        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f7f0; color: #2d2d2d; }
+        .wrapper { padding: 30px 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(34,139,34,0.12); }
+        .header { background: linear-gradient(135deg, #1a7a3c 0%, #2ecc71 100%); padding: 36px 30px; text-align: center; }
+        .header .logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 14px; }
+        .header h1 { color: #ffffff; font-size: 22px; font-weight: 700; }
+        .header .subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-top: 12px; }
+        .content { padding: 36px 30px; }
+        .greeting { font-size: 16px; color: #2d2d2d; margin-bottom: 20px; }
+        .info-card { background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .info-card .card-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a7a3c; margin-bottom: 14px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #dff0e4; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; font-weight: 500; }
+        .info-value { color: #1a1a1a; font-weight: 600; }
+        .section-title { font-size: 15px; font-weight: 700; color: #1a7a3c; margin: 28px 0 16px; }
+        .timeline { position: relative; padding-left: 28px; }
+        .timeline::before { content: ''; position: absolute; left: 9px; top: 0; bottom: 0; width: 2px; background: #e5e7eb; }
+        .tl-item { position: relative; margin-bottom: 20px; }
+        .tl-item:last-child { margin-bottom: 0; }
+        .tl-dot { position: absolute; left: -28px; top: 2px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+        .tl-dot.done { background: #1a7a3c; color: #fff; }
+        .tl-dot.active { background: #2ecc71; color: #fff; box-shadow: 0 0 0 4px rgba(46,204,113,0.2); }
+        .tl-dot.pending { background: #e5e7eb; color: #9ca3af; }
+        .tl-label { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+        .tl-label.pending { color: #9ca3af; }
+        .tl-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .note-box { background: #f9fafb; border-radius: 8px; padding: 16px 20px; margin-top: 24px; font-size: 13px; color: #6b7280; line-height: 1.7; }
+        .footer { background: #1a7a3c; padding: 24px 30px; text-align: center; }
+        .footer .brand { color: #ffffff; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .footer .tagline { color: rgba(255,255,255,0.7); font-size: 12px; }
+        .footer .links { margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
+<div class="wrapper">
     <div class="container">
         <div class="header">
-            <h1>📦 Pickup Completed</h1>
+            <div class="logo">ELocate</div>
+            <h1>Pickup Completed</h1>
+            <div class="subtitle">Your device is on its way to the facility</div>
+            <div class="badge">🚚 In Transit</div>
         </div>
         <div class="content">
-            <div class="icon">✅</div>
-            
-            <p>Your device has been successfully picked up!</p>
-            
-            <div class="info-box">
-                <p><strong>Request ID:</strong> {{requestId}}</p>
-                <p><strong>Status:</strong> In Transit to Facility</p>
+            <p class="greeting">Your device has been successfully picked up and is now in transit to the recycling facility.</p>
+
+            <div class="info-card">
+                <div class="card-title">Request Details</div>
+                <div class="info-row">
+                    <span class="info-label">Request ID</span>
+                    <span class="info-value">{{requestId}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value">In Transit to Facility</span>
+                </div>
             </div>
 
-            <h3>Recycling Progress:</h3>
+            <div class="section-title">Recycling Progress</div>
             <div class="timeline">
-                <div class="timeline-item done">
-                    <div class="timeline-icon">✅</div>
-                    <div class="timeline-text">Request Created</div>
+                <div class="tl-item">
+                    <div class="tl-dot done">✓</div>
+                    <div class="tl-label">Request Created</div>
                 </div>
-                <div class="timeline-item done">
-                    <div class="timeline-icon">✅</div>
-                    <div class="timeline-text">Request Approved</div>
+                <div class="tl-item">
+                    <div class="tl-dot done">✓</div>
+                    <div class="tl-label">Request Approved</div>
                 </div>
-                <div class="timeline-item done">
-                    <div class="timeline-icon">✅</div>
-                    <div class="timeline-text">Pickup Completed</div>
+                <div class="tl-item">
+                    <div class="tl-dot done">✓</div>
+                    <div class="tl-label">Pickup Completed</div>
                 </div>
-                <div class="timeline-item current">
-                    <div class="timeline-icon">🚚</div>
-                    <div class="timeline-text">In Transit to Facility</div>
+                <div class="tl-item">
+                    <div class="tl-dot active">→</div>
+                    <div class="tl-label">In Transit to Facility</div>
+                    <div class="tl-sub">Currently in progress</div>
                 </div>
-                <div class="timeline-item">
-                    <div class="timeline-icon">⏳</div>
-                    <div class="timeline-text">Recycling Process</div>
+                <div class="tl-item">
+                    <div class="tl-dot pending">○</div>
+                    <div class="tl-label pending">Recycling Process</div>
                 </div>
-                <div class="timeline-item">
-                    <div class="timeline-icon">💰</div>
-                    <div class="timeline-text">Payment & Certificate</div>
+                <div class="tl-item">
+                    <div class="tl-dot pending">○</div>
+                    <div class="tl-label pending">Payment &amp; Certificate</div>
                 </div>
             </div>
 
-            <p style="font-size: 14px; color: #666; margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
-                <strong>What's Next?</strong><br>
-                Your device is on its way to the recycling facility. Once it arrives and is processed, you'll receive:
-                <br>• Payment credited to your wallet
-                <br>• Certificate of environmental contribution
-                <br>• Detailed recycling report
-            </p>
+            <div class="note-box">
+                <strong>What's Next?</strong> Once your device arrives at the facility and is processed, you'll receive payment credited to your wallet along with a certificate of environmental contribution.
+            </div>
         </div>
         <div class="footer">
-            <p>ELocate - E-Waste Recycling Platform</p>
-            <p>Making the world cleaner, one device at a time 🌍</p>
+            <div class="brand">ELocate — E-Waste Recycling Platform</div>
+            <div class="tagline">Making the world cleaner, one device at a time 🌍</div>
+            <div class="links">support@elocate.com</div>
         </div>
     </div>
+</div>
 </body>
 </html>
