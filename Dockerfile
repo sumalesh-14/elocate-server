@@ -1,41 +1,31 @@
 # Multi-stage build for Spring Boot application
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy pom.xml and download dependencies
+# Copy only dependency-related files first (layer cache)
 COPY pom.xml .
 COPY .mvn .mvn
-COPY mvnw .
-COPY mvnw.cmd .
+COPY mvnw mvnw.cmd ./
 
-# Make mvnw executable
 RUN chmod +x mvnw
 
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
+# Download all dependencies — this layer is cached unless pom.xml changes
+RUN ./mvnw dependency:go-offline -B -q
 
-# Copy source code
+# Copy source and build
 COPY src ./src
+RUN ./mvnw clean package -DskipTests -B -q -Dspring-boot.run.profiles=production
 
-# Build the application
-RUN ./mvnw clean package -DskipTests
-
-# Runtime stage
+# Runtime stage — lightweight JRE only
 FROM eclipse-temurin:17-jre-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy the jar from build stage
 COPY --from=build /app/target/elocate-0.0.1-SNAPSHOT.jar app.jar
 
-# Expose port
 EXPOSE 8080
 
-# Set JVM options for 512MB RAM
 ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
-# Run the application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dspring.profiles.active=production -jar app.jar"]
