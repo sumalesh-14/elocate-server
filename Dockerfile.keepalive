@@ -1,0 +1,4 @@
+FROM alpine:3.19
+RUN apk add --no-cache curl
+# Ping the backend health endpoint; exit 0 so Render marks the cron as successful
+CMD curl -sf "${BACKEND_URL}/actuator/health" && echo "Keep-alive ping successful" || echo "Ping failed but continuing"

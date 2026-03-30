@@ -1,26 +1,20 @@
 services:
+  # Main backend web service (Docker-based)
   - type: web
     name: elocate-backend
-    env: java
-    buildCommand: mvn clean package -DskipTests
-    startCommand: java $JAVA_TOOL_OPTIONS -jar target/elocate-0.0.1-SNAPSHOT.jar
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /actuator/health
     envVars:
       - key: DB_URL
-        value: jdbc:postgresql://db.qnnkizacregmdsfgqrsw.supabase.co:5432/postgres?sslmode=require
+        value: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
       - key: DB_USERNAME
-        value: postgres
+        value: postgres.qnnkizacregmdsfgqrsw
       - key: DB_PASSWORD
-        value: AL+4kWTv%A+k9DK
-      - key: EMAIL_HOST
-        value: smtp.gmail.com
-      - key: EMAIL_PORT
-        value: 587
-      - key: EMAIL_USERNAME
-        value: kasumalesh@gmail.com
-      - key: EMAIL_PASSWORD
-        value: dwqx mclv bkkf soxt
+        sync: false
       - key: JWT_SECRET
-        value: elocate-super-secret-key-change-in-production-minimum-256-bits-required
+        sync: false
       - key: JWT_EXPIRATION_MS
         value: 86400000
       - key: OTP_EXPIRY_MINUTES
@@ -30,14 +24,56 @@ services:
       - key: AUTH0_DOMAIN
         value: elocate-dev.us.auth0.com
       - key: AUTH0_CLIENT_ID
-        value: gSMm494WIxE59MtZxODuYvdCRy4yFT10
+        sync: false
       - key: AUTH0_CLIENT_SECRET
-        value: NalHurNjv35rQu_zgmR_vkOHB2-OmuOofKBY2lMRUz4Lu3d6F2RQVM9T8REVqHtZ
+        sync: false
       - key: AUTH0_CONNECTION
         value: Username-Password-Authentication
       - key: SERVER_PORT
         value: 8080
+      - key: CONTEXT_PATH
+        value: /elocate
       - key: SPRING_PROFILES_ACTIVE
         value: production
       - key: JAVA_TOOL_OPTIONS
-        value: -Xmx512m -Xms256m
+        value: -Xmx512m -Xms256m -XX:+UseContainerSupport
+      - key: EMAIL_HOST
+        value: smtp-relay.brevo.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USERNAME
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        value: sumaleshka@gmail.com
+      - key: EMAIL_PROVIDER
+        value: smtp
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_BUCKET_NAME
+        value: elocate-pickup-photos
+      - key: AWS_S3_DOCUMENTS_BUCKET_NAME
+        value: elocate-partner-documents
+      - key: AWS_S3_REGION
+        value: eu-north-1
+      - key: DRIVER_SLA_HOURS
+        value: 24
+      - key: DRIVER_SLA_MONITORING_ENABLED
+        value: true
+      - key: FRONTEND_URL
+        value: https://elocate-frontend.vercel.app
+      - key: APP_BASE_URL
+        value: https://elocate-frontend.vercel.app
+
+  # Cron job: ping the backend every 5 minutes to prevent Render free-tier spin-down
+  - type: cron
+    name: elocate-keep-alive
+    env: docker
+    dockerfilePath: ./Dockerfile.keepalive
+    schedule: "*/5 * * * *"
+    envVars:
+      - key: BACKEND_URL
+        value: https://elocate-backend.onrender.com/elocate
