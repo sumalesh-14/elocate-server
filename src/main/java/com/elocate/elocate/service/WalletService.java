@@ -1,6 +1,8 @@
 package com.elocate.elocate.service;
 
 import com.elocate.elocate.dto.WalletBalanceResponse;
+import com.elocate.elocate.dto.WalletStatsResponse;
+import com.elocate.elocate.dto.WalletTransactionResponse;
 import com.elocate.elocate.model.RecycleRequest;
 import com.elocate.elocate.model.UserWallet;
 import com.elocate.elocate.model.WalletTransaction;
@@ -64,21 +66,15 @@ public class WalletService {
 
                 log.info("Wallet balance updated: {} → {}", wallet.getPointsBalance().subtract(points), newBalance);
 
-                // Calculate monetary amount
-                BigDecimal conversionRate = wallet.getPointsToMoneyRate() != null ? wallet.getPointsToMoneyRate()
-                                : defaultPointsToMoneyRate;
-                BigDecimal monetaryAmount = points.multiply(conversionRate)
-                                .setScale(2, RoundingMode.HALF_UP);
-
-                // Create transaction record
+                // Create transaction record — points are already in INR, no conversion needed
                 WalletTransaction transaction = WalletTransaction.builder()
                                 .userId(userId)
                                 .recycleRequest(recycleRequestId)
                                 .points(points)
                                 .transactionType("CREDIT")
                                 .description(description)
-                                .conversionRate(conversionRate)
-                                .monetaryAmount(monetaryAmount)
+                                .conversionRate(BigDecimal.ONE)
+                                .monetaryAmount(points.setScale(2, RoundingMode.HALF_UP))
                                 .build();
 
                 transactionRepository.save(transaction);
@@ -113,13 +109,7 @@ public class WalletService {
                 log.info("Wallet balance adjusted: {} → {}", wallet.getPointsBalance().subtract(pointsDifference),
                                 newBalance);
 
-                // Calculate monetary amount
-                BigDecimal conversionRate = wallet.getPointsToMoneyRate() != null ? wallet.getPointsToMoneyRate()
-                                : defaultPointsToMoneyRate;
-                BigDecimal monetaryAmount = pointsDifference.multiply(conversionRate)
-                                .setScale(2, RoundingMode.HALF_UP);
-
-                // Create adjustment transaction
+                // Create adjustment transaction — amount is already in INR
                 String transactionType = pointsDifference.compareTo(BigDecimal.ZERO) > 0 ? "CREDIT" : "DEBIT";
                 String description = String.format("Price adjustment: %s. Reason: %s",
                                 transactionType.toLowerCase(), reason);
@@ -130,8 +120,8 @@ public class WalletService {
                                 .points(pointsDifference.abs())
                                 .transactionType(transactionType)
                                 .description(description)
-                                .conversionRate(conversionRate)
-                                .monetaryAmount(monetaryAmount.abs())
+                                .conversionRate(BigDecimal.ONE)
+                                .monetaryAmount(pointsDifference.abs().setScale(2, RoundingMode.HALF_UP))
                                 .build();
 
                 transactionRepository.save(transaction);
@@ -153,19 +143,12 @@ public class WalletService {
                                                 .pointsToMoneyRate(defaultPointsToMoneyRate)
                                                 .build());
 
-                BigDecimal conversionRate = wallet.getPointsToMoneyRate() != null ? wallet.getPointsToMoneyRate()
-                                : defaultPointsToMoneyRate;
-
-                BigDecimal monetaryAmount = wallet.getPointsBalance()
-                                .multiply(conversionRate)
-                                .setScale(2, RoundingMode.HALF_UP);
-
+                // points_balance IS the INR amount — no conversion needed
                 return WalletBalanceResponse.builder()
                                 .pointsBalance(wallet.getPointsBalance())
-                                .monetaryAmount(monetaryAmount)
-                                .currencyCode(wallet.getCurrencyCode() != null ? wallet.getCurrencyCode()
-                                                : defaultCurrencyCode)
-                                .conversionRate(conversionRate)
+                                .monetaryAmount(wallet.getPointsBalance().setScale(2, RoundingMode.HALF_UP))
+                                .currencyCode("INR")
+                                .conversionRate(BigDecimal.ONE)
                                 .build();
         }
 
@@ -199,5 +182,69 @@ public class WalletService {
                                 userId,
                                 startDate.atStartOfDay(),
                                 endDate.plusDays(1).atStartOfDay());
+        }
+
+        /**
+         * Get full wallet stats: balance, highest tx, rank, all transactions
+         */
+        @Transactional(readOnly = true)
+        public WalletStatsResponse getWalletStats(UUID userId) {
+                log.info("Fetching wallet stats for user: {}", userId);
+
+                UserWallet wallet = walletRepository.findByUserId(userId)
+                                .orElseGet(() -> UserWallet.builder()
+                                                .userId(userId)
+                                                .pointsBalance(BigDecimal.ZERO)
+                                                .currencyCode(defaultCurrencyCode)
+                                                .pointsToMoneyRate(defaultPointsToMoneyRate)
+                                                .build());
+
+                List<WalletTransaction> txList = transactionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+
+                // points_balance is already INR — no conversion
+                BigDecimal totalPoints = wallet.getPointsBalance();
+                BigDecimal highest = transactionRepository.findHighestTransactionByUserId(userId)
+                                .orElse(BigDecimal.ZERO);
+
+                int rank = transactionRepository.findUserRank(userId).orElse(0);
+                long totalUsers = transactionRepository.countDistinctUsers();
+
+                String tier = computeTier(rank, totalUsers);
+
+                List<WalletTransactionResponse> txResponses = txList.stream().map(t -> {
+                                String requestNumber = t.getRecycleRequest() != null
+                                                ? t.getRecycleRequest().getRequestNumber()
+                                                : null;
+                                String desc = requestNumber != null
+                                                ? "Recycling reward · " + requestNumber
+                                                : t.getDescription();
+                                return WalletTransactionResponse.builder()
+                                                .id(t.getId())
+                                                .transactionType(t.getTransactionType())
+                                                .amount(t.getPoints())
+                                                .description(desc)
+                                                .recycleRequestNumber(requestNumber)
+                                                .createdAt(t.getCreatedAt())
+                                                .build();
+                }).toList();
+
+                return WalletStatsResponse.builder()
+                                .totalAmount(totalPoints.setScale(2, RoundingMode.HALF_UP))
+                                .highestSingleAmount(highest)
+                                .totalTransactions(txList.size())
+                                .userRank(rank)
+                                .totalUsersRanked(totalUsers)
+                                .rankTier(tier)
+                                .transactions(txResponses)
+                                .build();
+        }
+
+        private String computeTier(int rank, long total) {
+                if (rank <= 0 || total == 0) return "UNRANKED";
+                double pct = (double) rank / total;
+                if (pct <= 0.05) return "PLATINUM";
+                if (pct <= 0.20) return "GOLD";
+                if (pct <= 0.50) return "SILVER";
+                return "BRONZE";
         }
 }
