@@ -4,53 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 30px; text-align: center; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .content { padding: 30px; }
-        .success-icon { text-align: center; font-size: 64px; margin: 20px 0; }
-        .info-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 20px 0; border-radius: 4px; }
-        .info-box p { margin: 8px 0; }
-        .button { display: inline-block; padding: 12px 24px; margin: 20px 0; text-decoration: none; border-radius: 5px; font-weight: bold; background: #667eea; color: #fff; text-align: center; }
-        .footer { background: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f7f0; color: #2d2d2d; }
+        .wrapper { padding: 30px 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(34,139,34,0.12); }
+        .header { background: linear-gradient(135deg, #1a7a3c 0%, #2ecc71 100%); padding: 36px 30px; text-align: center; }
+        .header .logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 14px; }
+        .header h1 { color: #ffffff; font-size: 22px; font-weight: 700; line-height: 1.3; }
+        .header .subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-top: 12px; }
+        .content { padding: 36px 30px; }
+        .greeting { font-size: 16px; color: #2d2d2d; margin-bottom: 20px; }
+        .info-card { background: #f4fbf6; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .info-card .card-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #1a7a3c; margin-bottom: 14px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #dff0e4; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; font-weight: 500; }
+        .info-value { color: #1a1a1a; font-weight: 600; text-align: right; }
+        .status-pill { display: inline-block; background: #fff3cd; color: #856404; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+        .section-title { font-size: 15px; font-weight: 700; color: #1a7a3c; margin: 28px 0 12px; }
+        .steps { list-style: none; }
+        .steps li { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #4b5563; }
+        .steps li:last-child { border-bottom: none; }
+        .step-num { background: #1a7a3c; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+        .cta-wrap { text-align: center; margin: 30px 0; }
+        .cta-btn { display: inline-block; background: linear-gradient(135deg, #1a7a3c, #2ecc71); color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 8px; font-size: 15px; font-weight: 700; letter-spacing: 0.3px; }
+        .note-box { background: #f9fafb; border-radius: 8px; padding: 16px 20px; margin-top: 24px; font-size: 13px; color: #6b7280; line-height: 1.7; }
+        .footer { background: #1a7a3c; padding: 24px 30px; text-align: center; }
+        .footer .brand { color: #ffffff; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .footer .tagline { color: rgba(255,255,255,0.7); font-size: 12px; }
+        .footer .links { margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
+<div class="wrapper">
     <div class="container">
         <div class="header">
-            <h1>✅ Request Created Successfully</h1>
+            <div class="logo">ELocate</div>
+            <h1>Request Created Successfully</h1>
+            <div class="subtitle">Your e-waste recycling journey has begun</div>
+            <div class="badge">✓ Submitted</div>
         </div>
         <div class="content">
-            <div class="success-icon">🎉</div>
-            
-            <p>Thank you for choosing ELocate for your e-waste recycling!</p>
-            
-            <div class="info-box">
-                <p><strong>Request ID:</strong> {{requestId}}</p>
-                <p><strong>Device:</strong> {{deviceName}}</p>
-                <p><strong>Estimated Payment:</strong> ${{estimatedAmount}}</p>
-                <p><strong>Status:</strong> Pending Approval</p>
+            <p class="greeting">Thank you for choosing ELocate for responsible e-waste recycling. Your request has been received and is now under review.</p>
+
+            <div class="info-card">
+                <div class="card-title">Request Details</div>
+                <div class="info-row">
+                    <span class="info-label">Request ID</span>
+                    <span class="info-value">{{requestId}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Device</span>
+                    <span class="info-value">{{deviceName}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Estimated Payment</span>
+                    <span class="info-value">₹{{estimatedAmount}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value"><span class="status-pill">Pending Approval</span></span>
+                </div>
             </div>
 
-            <h3>What's Next?</h3>
-            <p>Your request has been sent to the recycling facility for review. You will receive an email notification once it's approved.</p>
+            <div class="section-title">What happens next?</div>
+            <ul class="steps">
+                <li><span class="step-num">1</span> The recycling facility reviews your request within 1–2 business days.</li>
+                <li><span class="step-num">2</span> You'll receive an approval email with the confirmed payment amount.</li>
+                <li><span class="step-num">3</span> A driver will be assigned and a pickup will be scheduled.</li>
+                <li><span class="step-num">4</span> Payment is credited to your wallet after recycling is complete.</li>
+            </ul>
 
-            <div style="text-align: center;">
-                <a href="{{trackUrl}}" class="button">Track Your Request</a>
+            <div class="cta-wrap">
+                <a href="{{trackUrl}}" class="cta-btn">Track Your Request</a>
             </div>
 
-            <p style="font-size: 14px; color: #666; margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
-                <strong>Timeline:</strong><br>
-                • Facility Review: 1-2 business days<br>
-                • Pickup Scheduling: After approval<br>
-                • Payment: After recycling completion
-            </p>
+            <div class="note-box">
+                <strong>Preparation Tip:</strong> While you wait, back up your data and factory reset the device. Remove any SIM cards or memory cards before the pickup.
+            </div>
         </div>
         <div class="footer">
-            <p>ELocate - E-Waste Recycling Platform</p>
-            <p>Making the world cleaner, one device at a time 🌍</p>
+            <div class="brand">ELocate — E-Waste Recycling Platform</div>
+            <div class="tagline">Making the world cleaner, one device at a time 🌍</div>
+            <div class="links">support@elocate.com</div>
         </div>
     </div>
+</div>
 </body>
 </html>
