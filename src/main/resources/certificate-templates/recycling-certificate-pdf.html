@@ -1,0 +1,350 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <title>ELocate Certificate of Appreciation</title>
+  <style type="text/css">
+    @page {
+      size: 297mm 210mm;
+      margin: 0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 297mm;
+      height: 210mm;
+      background-color: #1c3a1c;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    /* Dark green outer frame */
+    .page {
+      width: 297mm;
+      height: 210mm;
+      padding: 5mm;
+      background-color: #1c3a1c;
+    }
+
+    /* Parchment inner — full height via nested table trick */
+    .inner {
+      width: 100%;
+      height: 100%;
+      background-color: #fdfaf3;
+      border: 1.5pt solid #d4af37;
+    }
+
+    /*
+     * Single full-height layout table.
+     * Each row gets a fixed height so content is spread top-to-bottom.
+     * Total rows: org(8mm) + seal(14mm) + title(18mm) + rule(4mm) +
+     *             presented(6mm) + recipient(14mm) + body(18mm) +
+     *             details(16mm) + impact(14mm) + footer(22mm) + verify(6mm)
+     *             = ~140mm inner height (210 - 10mm padding - 2*border ≈ 198mm usable)
+     * We use percentage heights so Flying Saucer stretches them.
+     */
+    .layout {
+      width: 100%;
+      height: 100%;
+      border-collapse: collapse;
+    }
+    .layout td {
+      text-align: center;
+      vertical-align: middle;
+      padding: 0 10mm;
+    }
+
+    /* ── Org row ── */
+    .org-name {
+      font-size: 7pt;
+      letter-spacing: 3pt;
+      color: #7a5c00;
+      text-transform: uppercase;
+    }
+    .top-border {
+      border-bottom: 0.8pt solid #b8960c;
+      padding-bottom: 1mm;
+    }
+
+    /* ── Seal ── */
+    .seal-circle {
+      display: inline-block;
+      width: 36pt;
+      height: 36pt;
+      border-radius: 18pt;
+      border: 2pt solid #b8960c;
+      background-color: #0f2d0f;
+      padding-top: 4pt;
+    }
+    .seal-icon  { font-size: 13pt; color: #d4af37; display: block; }
+    .seal-label { font-size: 4pt; letter-spacing: 1.5pt; color: #d4af37; text-transform: uppercase; display: block; margin-top: 1pt; }
+
+    /* ── Title ── */
+    .cert-title {
+      font-size: 24pt;
+      font-weight: bold;
+      color: #1a1a1a;
+      letter-spacing: 2pt;
+      text-transform: uppercase;
+    }
+    .cert-subtitle {
+      font-size: 7pt;
+      letter-spacing: 3.5pt;
+      color: #7a5c00;
+      text-transform: uppercase;
+      margin-top: 2pt;
+    }
+
+    /* ── Gold rule row ── */
+    .gold-rule-line {
+      border: none;
+      border-top: 0.8pt solid #b8960c;
+      width: 60%;
+      margin: 0 auto;
+    }
+
+    /* ── Presented to ── */
+    .presented-to {
+      font-size: 9pt;
+      font-style: italic;
+      color: #555555;
+    }
+
+    /* ── Recipient ── */
+    .recipient {
+      font-size: 26pt;
+      font-weight: bold;
+      color: #0f2d0f;
+      border-bottom: 1.5pt solid #b8960c;
+      padding-bottom: 3pt;
+      display: inline-block;
+      padding-left: 20pt;
+      padding-right: 20pt;
+    }
+
+    /* ── Body text ── */
+    .body-text {
+      font-size: 9.5pt;
+      color: #333333;
+      line-height: 1.65;
+      padding: 0 15mm;
+    }
+    .body-text em { font-style: italic; color: #1a5c1a; }
+
+    /* ── Details table ── */
+    .details-table {
+      width: 68%;
+      margin: 0 auto;
+      border: 0.8pt solid #d4af37;
+      border-collapse: collapse;
+    }
+    .details-table td {
+      border: 0.8pt solid #d4af37;
+      padding: 4pt 10pt;
+      text-align: center;
+    }
+    .detail-label {
+      font-family: Arial, sans-serif;
+      font-size: 6pt;
+      font-weight: bold;
+      letter-spacing: 1pt;
+      text-transform: uppercase;
+      color: #7a5c00;
+      display: block;
+      margin-bottom: 2pt;
+    }
+    .detail-value {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #1a1a1a;
+    }
+
+    /* ── Impact strip ── */
+    .impact-table {
+      width: 68%;
+      margin: 0 auto;
+      border: 0.8pt solid #c3e6cb;
+      border-collapse: collapse;
+      background-color: #f0f7f0;
+    }
+    .impact-table td {
+      padding: 4pt 8pt;
+      text-align: center;
+      border: 0.8pt solid #c3e6cb;
+    }
+    .impact-icon  { font-size: 14pt; display: block; margin-bottom: 2pt; }
+    .impact-label {
+      font-family: Arial, sans-serif;
+      font-size: 6.5pt;
+      font-weight: bold;
+      letter-spacing: 0.8pt;
+      text-transform: uppercase;
+      color: #1a5c1a;
+    }
+
+    /* ── Footer ── */
+    .footer-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-top: 0.8pt solid #d4af37;
+      padding-top: 4pt;
+    }
+    .footer-table td {
+      text-align: center;
+      vertical-align: middle;
+      padding: 4pt 8mm;
+    }
+    .sig-line {
+      border: none;
+      border-top: 0.8pt solid #333333;
+      width: 80pt;
+      margin: 0 auto 3pt;
+    }
+    .sig-name  { font-size: 7.5pt; font-weight: bold; color: #1a1a1a; }
+    .sig-title { font-family: Arial, sans-serif; font-size: 6pt; color: #777777; margin-top: 1pt; }
+    .cert-id-label { font-family: Arial, sans-serif; font-size: 6pt; letter-spacing: 1pt; text-transform: uppercase; color: #999999; margin-bottom: 2pt; }
+    .cert-id-value { font-family: Arial, sans-serif; font-size: 9pt; font-weight: bold; color: #555555; }
+
+    /* ── Verify URL ── */
+    .verify-url {
+      font-family: Arial, sans-serif;
+      font-size: 6pt;
+      color: #aaaaaa;
+    }
+    .bottom-border { border-top: 0.8pt solid #b8960c; padding-top: 1mm; }
+  </style>
+</head>
+<body>
+<div class="page">
+<div class="inner">
+
+<!--
+  One big table that fills the entire inner parchment height.
+  height="X%" on each row tells Flying Saucer how to distribute vertical space.
+-->
+<table class="layout">
+
+  <!-- Row 1: Org name -->
+  <tr style="height:7%;">
+    <td class="top-border">
+      <span class="org-name">ELocate &#8226; E-Waste Recycling Platform</span>
+    </td>
+  </tr>
+
+  <!-- Row 2: Seal -->
+  <tr style="height:10%;">
+    <td>
+      <div class="seal-circle">
+        <span class="seal-icon">&#9851;</span>
+        <span class="seal-label">Certified</span>
+      </div>
+    </td>
+  </tr>
+
+  <!-- Row 3: Title + subtitle -->
+  <tr style="height:11%;">
+    <td>
+      <div class="cert-title">Certificate of Appreciation</div>
+      <div class="cert-subtitle">For Environmental Stewardship</div>
+    </td>
+  </tr>
+
+  <!-- Row 4: Gold rule -->
+  <tr style="height:4%;">
+    <td><hr class="gold-rule-line"/></td>
+  </tr>
+
+  <!-- Row 5: Presented to -->
+  <tr style="height:5%;">
+    <td><span class="presented-to">This certificate is proudly presented to</span></td>
+  </tr>
+
+  <!-- Row 6: Recipient name -->
+  <tr style="height:11%;">
+    <td><span class="recipient">{{citizenName}}</span></td>
+  </tr>
+
+  <!-- Row 7: Body text -->
+  <tr style="height:13%;">
+    <td>
+      <div class="body-text">
+        In recognition of your <em>outstanding commitment</em> to environmental sustainability by
+        responsibly recycling electronic waste through the ELocate platform. Your action directly
+        contributes to reducing hazardous e-waste, conserving natural resources, and building
+        a <em>cleaner, greener future</em> for generations to come.
+      </div>
+    </td>
+  </tr>
+
+  <!-- Row 8: Details -->
+  <tr style="height:11%;">
+    <td>
+      <table class="details-table">
+        <tr>
+          <td>
+            <span class="detail-label">Device Recycled</span>
+            <span class="detail-value">{{deviceName}}</span>
+          </td>
+          <td>
+            <span class="detail-label">Request ID</span>
+            <span class="detail-value">{{requestNumber}}</span>
+          </td>
+          <td>
+            <span class="detail-label">Date Issued</span>
+            <span class="detail-value">{{certificateDate}}</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Row 9: Impact -->
+  <tr style="height:10%;">
+    <td>
+      <table class="impact-table">
+        <tr>
+          <td><span class="impact-icon">&#9851;</span><span class="impact-label">E-Waste Diverted</span></td>
+          <td><span class="impact-icon">&#127807;</span><span class="impact-label">Carbon Reduced</span></td>
+          <td><span class="impact-icon">&#127757;</span><span class="impact-label">Planet Protected</span></td>
+          <td><span class="impact-icon">&#127381;</span><span class="impact-label">Resources Saved</span></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Row 10: Footer signatures -->
+  <tr style="height:12%;">
+    <td style="padding: 0 10mm; vertical-align: middle;">
+      <table class="footer-table">
+        <tr>
+          <td style="width:33%;">
+            <hr class="sig-line"/>
+            <div class="sig-name">ELocate Team</div>
+            <div class="sig-title">Environmental Services Division</div>
+          </td>
+          <td style="width:33%;">
+            <div class="cert-id-label">Certificate No.</div>
+            <div class="cert-id-value">{{requestNumber}}</div>
+          </td>
+          <td style="width:33%;">
+            <hr class="sig-line"/>
+            <div class="sig-name">Recycling Authority</div>
+            <div class="sig-title">Certified Facility Partner</div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- Row 11: Verify URL -->
+  <tr style="height:6%;">
+    <td class="bottom-border">
+      <span class="verify-url">Verify this certificate at {{appBaseUrl}}/verify/{{requestId}}</span>
+    </td>
+  </tr>
+
+</table>
+</div>
+</div>
+</body>
+</html>

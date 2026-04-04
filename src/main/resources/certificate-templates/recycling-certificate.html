@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELocate Certificate of Appreciation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      font-family: 'EB Garamond', Georgia, serif;
+    }
+
+    /* ── Outer frame ── */
+    .frame-outer {
+      width: 100%;
+      max-width: 860px;
+      background: linear-gradient(145deg, #1c3a1c 0%, #0f2d0f 50%, #1c3a1c 100%);
+      padding: 6px;
+      border-radius: 4px;
+      box-shadow: 0 0 0 1px #b8960c, 0 0 0 3px #1c3a1c, 0 0 0 5px #b8960c,
+                  0 30px 80px rgba(0,0,0,0.7);
+    }
+
+    /* ── Inner parchment ── */
+    .frame-inner {
+      background: #fdfaf3;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(184,150,12,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(184,150,12,0.06) 0%, transparent 60%);
+      border: 1px solid #d4af37;
+      padding: 52px 60px 44px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Corner ornaments ── */
+    .corner {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      opacity: 0.55;
+    }
+    .corner svg { width: 100%; height: 100%; }
+    .corner-tl { top: 12px; left: 12px; }
+    .corner-tr { top: 12px; right: 12px; transform: scaleX(-1); }
+    .corner-bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+    .corner-br { bottom: 12px; right: 12px; transform: scale(-1); }
+
+    /* ── Watermark ── */
+    .watermark {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .watermark-text {
+      font-family: 'Cinzel', serif;
+      font-size: 120px;
+      font-weight: 700;
+      color: rgba(184,150,12,0.055);
+      letter-spacing: 8px;
+      transform: rotate(-30deg);
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    /* ── Content ── */
+    .content { position: relative; z-index: 1; text-align: center; }
+
+    /* Top badge row */
+    .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, #b8960c, transparent);
+    }
+    .org-name {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: #7a5c00;
+      text-transform: uppercase;
+    }
+
+    /* Seal */
+    .seal-wrap {
+      margin: 18px auto 10px;
+      width: 88px;
+      height: 88px;
+      position: relative;
+    }
+    .seal-ring {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 3px solid #b8960c;
+      box-shadow: 0 0 0 2px #fdfaf3, 0 0 0 4px #b8960c, inset 0 0 0 3px #b8960c;
+      background: radial-gradient(circle at 40% 35%, #2d6a2d, #0f2d0f);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .seal-icon { font-size: 30px; line-height: 1; }
+    .seal-label {
+      font-family: 'Cinzel', serif;
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #d4af37;
+      text-transform: uppercase;
+    }
+
+    /* Certificate title */
+    .cert-title {
+      font-family: 'Cinzel', serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: #1a1a1a;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin: 14px 0 4px;
+      line-height: 1.15;
+    }
+    .cert-subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 5px;
+      color: #7a5c00;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    /* Gold rule */
+    .gold-rule {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 auto 22px;
+      max-width: 480px;
+    }
+    .gold-rule-line { flex: 1; height: 1px; background: #b8960c; }
+    .gold-rule-diamond {
+      width: 8px; height: 8px;
+      background: #b8960c;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* Presented to */
+    .presented-to {
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      font-style: italic;
+      color: #555;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    /* Recipient name */
+    .recipient {
+      font-family: 'Cinzel', serif;
+      font-size: 38px;
+      font-weight: 600;
+      color: #0f2d0f;
+      letter-spacing: 1px;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #b8960c;
+      display: inline-block;
+    }
+
+    /* Body text */
+    .body-text {
+      font-family: 'EB Garamond', serif;
+      font-size: 17px;
+      color: #333;
+      line-height: 1.85;
+      max-width: 640px;
+      margin: 18px auto 0;
+    }
+    .body-text em { font-style: italic; color: #1a5c1a; }
+
+    /* Details card */
+    .details {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      margin: 24px auto;
+      max-width: 560px;
+      border: 1px solid #d4af37;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .detail-cell {
+      flex: 1;
+      padding: 12px 18px;
+      border-right: 1px solid #d4af37;
+      text-align: center;
+    }
+    .detail-cell:last-child { border-right: none; }
+    .detail-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #7a5c00;
+      margin-bottom: 4px;
+    }
+    .detail-value {
+      font-family: 'EB Garamond', serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    /* Impact strip */
+    .impact-strip {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin: 0 auto 24px;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, #f0f7f0, #e8f5e8);
+      border: 1px solid #c3e6cb;
+      border-radius: 2px;
+      max-width: 560px;
+    }
+    .impact-item { text-align: center; }
+    .impact-icon { font-size: 22px; margin-bottom: 3px; }
+    .impact-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #1a5c1a;
+    }
+
+    /* Footer row */
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid #d4af37;
+    }
+    .sig-block { text-align: center; min-width: 160px; }
+    .sig-line { width: 160px; height: 1px; background: #333; margin: 0 auto 6px; }
+    .sig-name {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: #1a1a1a;
+    }
+    .sig-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: #777;
+      margin-top: 2px;
+    }
+
+    .cert-id-block { text-align: center; }
+    .cert-id-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 3px;
+    }
+    .cert-id-value {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      letter-spacing: 1px;
+    }
+
+    .verify-url {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px;
+      color: #aaa;
+      margin-top: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .frame-outer { box-shadow: none; }
+    }
+    @media (max-width: 640px) {
+      .frame-inner { padding: 36px 24px 30px; }
+      .cert-title { font-size: 24px; }
+      .recipient { font-size: 28px; }
+      .details { flex-direction: column; }
+      .detail-cell { border-right: none; border-bottom: 1px solid #d4af37; }
+      .detail-cell:last-child { border-bottom: none; }
+      .footer-row { flex-direction: column; align-items: center; gap: 24px; }
+      .impact-strip { flex-wrap: wrap; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="frame-outer">
+  <div class="frame-inner">
+
+    <!-- Corner ornaments -->
+    <div class="corner corner-tl">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4 L4 28 M4 4 L28 4" stroke="#b8960c" stroke-width="2"/>
+        <path d="M4 4 L20 20" stroke="#b8960c" stroke-width="1" stroke-dasharray="2 3"/>
+        <circle cx="4" cy="4" r="3" fill="#b8960c"/>
+        <circle cx="28" cy="4" r="2" fill="#b8960c" opacity="0.5"/>
+        <circle cx="4" cy="28" r="2" fill="#b8960c" opacity="0.5"/>
+        <path d="M12 4 Q16 8 20 4" stroke="#b8960c" stroke-width="1" fill="none"/>
+        <path d="M4 12 Q8 16 4 20" stroke="#b8960c" stroke-width="1" fill="none"/>
+      </svg>
+    </div>
+    <div class="corner corner-tr">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4 L4 28 M4 4 L28 4" stroke="#b8960c" stroke-width="2"/>
+        <path d="M4 4 L20 20" stroke="#b8960c" stroke-width="1" stroke-dasharray="2 3"/>
+        <circle cx="4" cy="4" r="3" fill="#b8960c"/>
+        <circle cx="28" cy="4" r="2" fill="#b8960c" opacity="0.5"/>
+        <circle cx="4" cy="28" r="2" fill="#b8960c" opacity="0.5"/>
+        <path d="M12 4 Q16 8 20 4" stroke="#b8960c" stroke-width="1" fill="none"/>
+        <path d="M4 12 Q8 16 4 20" stroke="#b8960c" stroke-width="1" fill="none"/>
+      </svg>
+    </div>
+    <div class="corner corner-bl">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4 L4 28 M4 4 L28 4" stroke="#b8960c" stroke-width="2"/>
+        <path d="M4 4 L20 20" stroke="#b8960c" stroke-width="1" stroke-dasharray="2 3"/>
+        <circle cx="4" cy="4" r="3" fill="#b8960c"/>
+        <circle cx="28" cy="4" r="2" fill="#b8960c" opacity="0.5"/>
+        <circle cx="4" cy="28" r="2" fill="#b8960c" opacity="0.5"/>
+        <path d="M12 4 Q16 8 20 4" stroke="#b8960c" stroke-width="1" fill="none"/>
+        <path d="M4 12 Q8 16 4 20" stroke="#b8960c" stroke-width="1" fill="none"/>
+      </svg>
+    </div>
+    <div class="corner corner-br">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 4 L4 28 M4 4 L28 4" stroke="#b8960c" stroke-width="2"/>
+        <path d="M4 4 L20 20" stroke="#b8960c" stroke-width="1" stroke-dasharray="2 3"/>
+        <circle cx="4" cy="4" r="3" fill="#b8960c"/>
+        <circle cx="28" cy="4" r="2" fill="#b8960c" opacity="0.5"/>
+        <circle cx="4" cy="28" r="2" fill="#b8960c" opacity="0.5"/>
+        <path d="M12 4 Q16 8 20 4" stroke="#b8960c" stroke-width="1" fill="none"/>
+        <path d="M4 12 Q8 16 4 20" stroke="#b8960c" stroke-width="1" fill="none"/>
+      </svg>
+    </div>
+
+    <!-- Watermark -->
+    <div class="watermark">
+      <div class="watermark-text">ELOCATE</div>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+
+      <div class="top-row">
+        <div class="divider-line"></div>
+        <div class="org-name">ELocate &nbsp;&#8226;&nbsp; E-Waste Recycling Platform</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- Seal -->
+      <div class="seal-wrap">
+        <div class="seal-ring">
+          <div class="seal-icon">&#9851;</div>
+          <div class="seal-label">Certified</div>
+        </div>
+      </div>
+
+      <h1 class="cert-title">Certificate of Appreciation</h1>
+      <p class="cert-subtitle">For Environmental Stewardship</p>
+
+      <div class="gold-rule">
+        <div class="gold-rule-line"></div>
+        <div class="gold-rule-diamond"></div>
+        <div class="gold-rule-line"></div>
+      </div>
+
+      <p class="presented-to">This certificate is proudly presented to</p>
+
+      <div class="recipient">{{citizenName}}</div>
+
+      <p class="body-text">
+        In recognition of your <em>outstanding commitment</em> to environmental sustainability by
+        responsibly recycling electronic waste through the ELocate platform. Your action directly
+        contributes to reducing hazardous e-waste, conserving natural resources, and building
+        a <em>cleaner, greener future</em> for generations to come.
+      </p>
+
+      <!-- Details -->
+      <div class="details">
+        <div class="detail-cell">
+          <div class="detail-label">Device Recycled</div>
+          <div class="detail-value">{{deviceName}}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Request ID</div>
+          <div class="detail-value">{{requestNumber}}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="detail-label">Date Issued</div>
+          <div class="detail-value">{{certificateDate}}</div>
+        </div>
+      </div>
+
+      <!-- Impact -->
+      <div class="impact-strip">
+        <div class="impact-item">
+          <div class="impact-icon">&#9851;</div>
+          <div class="impact-label">E-Waste Diverted</div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-icon">&#127807;</div>
+          <div class="impact-label">Carbon Reduced</div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-icon">&#127757;</div>
+          <div class="impact-label">Planet Protected</div>
+        </div>
+        <div class="impact-item">
+          <div class="impact-icon">&#127381;</div>
+          <div class="impact-label">Resources Saved</div>
+        </div>
+      </div>
+
+      <div class="verify-url">
+        Verify this certificate at {{appBaseUrl}}/verify/{{requestId}}
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /frame-inner -->
+</div><!-- /frame-outer -->
+</body>
+</html>

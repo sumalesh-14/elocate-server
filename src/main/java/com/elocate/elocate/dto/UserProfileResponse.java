@@ -22,6 +22,24 @@ public class UserProfileResponse {
     private TokenData tokens;
     private AddressData address;
     private WalletData wallet;
+    private FacilityData facility;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class FacilityData {
+        private UUID id;
+        private String facilityName;
+        private String operatingHours;
+        private String address;
+        private String city;
+        private String state;
+        private String pincode;
+        private java.math.BigDecimal latitude;
+        private java.math.BigDecimal longitude;
+        private String registrationNumber;
+    }
 
     @Data
     @Builder

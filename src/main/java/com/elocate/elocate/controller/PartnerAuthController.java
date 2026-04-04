@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.elocate.elocate.context.UserContextHolder;
 import java.util.UUID;
 
 /**
@@ -45,8 +46,8 @@ public class PartnerAuthController {
      * Get partner dashboard (authenticated partner)
      */
     @GetMapping("/dashboard")
-    public ResponseEntity<PartnerDashboardResponse> getDashboard(
-            @RequestHeader("X-User-Id") UUID userId) {
+    public ResponseEntity<PartnerDashboardResponse> getDashboard() {
+        UUID userId = UserContextHolder.getContext().getUserId();
         log.info("Fetching dashboard for partner user: {}", userId);
         PartnerDashboardResponse dashboard = partnerManagementService.getPartnerDashboard(userId);
         return ResponseEntity.ok(dashboard);

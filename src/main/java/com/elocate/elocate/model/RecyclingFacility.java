@@ -64,6 +64,10 @@ public class RecyclingFacility {
     @Column(name = "state", length = 100)
     private String state;
 
+    @Size(max = 100)
+    @Column(name = "city", length = 100)
+    private String city;
+
     @Size(max = 20)
     @Column(name = "pincode", length = 20)
     private String pincode;

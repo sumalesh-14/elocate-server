@@ -125,6 +125,13 @@
 			<version>4.10.2</version>
 		</dependency>
 
+		<!-- HTML to PDF via headless Chromium (pixel-perfect rendering) -->
+		<dependency>
+			<groupId>com.microsoft.playwright</groupId>
+			<artifactId>playwright</artifactId>
+			<version>1.44.0</version>
+		</dependency>
+
 		<!-- AWS S3 for photo uploads -->
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>

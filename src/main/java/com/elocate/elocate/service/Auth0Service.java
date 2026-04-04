@@ -132,13 +132,64 @@ public class Auth0Service {
 
     public String createUser(String email, String password, String username) {
         try {
-            // "connection" is required for sign up
             Request<CreatedUser> request = authAPI.signUp(email, username, password.toCharArray(), connection);
             CreatedUser user = request.execute().getBody();
             return "auth0|" + user.getUserId();
         } catch (Auth0Exception e) {
             log.error("Auth0 registration failed: {}", e.getMessage());
             throw new RuntimeException("Registration failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Update a user's email in Auth0 via the Management API.
+     * Requires the app to have the "update:users" permission in Auth0 Management API.
+     * Uses client_credentials grant to obtain a management token first.
+     */
+    public void updateUserEmail(String auth0UserId, String newEmail) {
+        try {
+            // 1. Get management API token via client_credentials
+            RestTemplate rest = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, String> tokenReq = new HashMap<>();
+            tokenReq.put("client_id", clientId);
+            tokenReq.put("client_secret", clientSecret);
+            tokenReq.put("audience", "https://" + domain + "/api/v2/");
+            tokenReq.put("grant_type", "client_credentials");
+
+            ResponseEntity<Map> tokenRes = rest.exchange(
+                "https://" + domain + "/oauth/token",
+                HttpMethod.POST,
+                new HttpEntity<>(tokenReq, headers),
+                Map.class
+            );
+
+            String mgmtToken = (String) tokenRes.getBody().get("access_token");
+            if (mgmtToken == null) throw new RuntimeException("Failed to obtain Auth0 management token");
+
+            // 2. PATCH /api/v2/users/{id} with new email
+            HttpHeaders patchHeaders = new HttpHeaders();
+            patchHeaders.setContentType(MediaType.APPLICATION_JSON);
+            patchHeaders.setBearerAuth(mgmtToken);
+
+            Map<String, Object> patchBody = new HashMap<>();
+            patchBody.put("email", newEmail);
+            patchBody.put("email_verified", true);
+            patchBody.put("connection", connection);
+
+            rest.exchange(
+                "https://" + domain + "/api/v2/users/" + auth0UserId,
+                HttpMethod.PATCH,
+                new HttpEntity<>(patchBody, patchHeaders),
+                Map.class
+            );
+
+            log.info("Auth0 email updated for user {} to {}", auth0UserId, newEmail);
+        } catch (Exception e) {
+            log.error("Failed to update Auth0 email: {}", e.getMessage());
+            throw new RuntimeException("Failed to update email in Auth0: " + e.getMessage());
         }
     }
 }

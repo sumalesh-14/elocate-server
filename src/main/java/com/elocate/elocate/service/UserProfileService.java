@@ -1,13 +1,9 @@
 package com.elocate.elocate.service;
 
-import com.elocate.elocate.dto.UpdateProfileDto;
-import com.elocate.elocate.dto.UserProfileResponse;
-import com.elocate.elocate.model.User;
-import com.elocate.elocate.model.UserAddress;
-import com.elocate.elocate.model.UserWallet;
-import com.elocate.elocate.repository.UserAddressRepository;
-import com.elocate.elocate.repository.UserRepository;
-import com.elocate.elocate.repository.UserWalletRepository;
+import com.elocate.elocate.dto.*;
+import com.elocate.elocate.model.*;
+import com.elocate.elocate.model.enums.OtpType;
+import com.elocate.elocate.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +22,10 @@ public class UserProfileService {
         private final UserRepository userRepository;
         private final UserAddressRepository userAddressRepository;
         private final UserWalletRepository userWalletRepository;
+        private final RecyclingFacilityRepository facilityRepository;
+        private final NotificationPreferencesRepository notifPrefsRepository;
+        private final OtpService otpService;
+        private final Auth0Service auth0Service;
 
         /**
          * Get complete user profile
@@ -41,17 +41,28 @@ public class UserProfileService {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-                // Get user's address (should always have exactly one default address)
+                // Fetch facility for PARTNER/INTERMEDIARY
+                RecyclingFacility facility = facilityRepository.findByUserId(userId).orElse(null);
+
+                // Address: citizens have user_address; PARTNER users may not — fall back to facility address
                 UserAddress address = userAddressRepository.findByUserIdAndIsDefault(userId, true)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "User address not found for user: " + userId));
+                                .orElse(null);
 
-                // Get wallet
-                UserWallet wallet = userWalletRepository.findById(userId)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "Wallet not found for user: " + userId));
+                // For PARTNER with no user_address, synthesise one from the facility row
+                if (address == null && facility != null) {
+                        UserAddress a = new UserAddress();
+                        a.setAddress(facility.getAddress());
+                        a.setCity(facility.getCity());
+                        a.setState(facility.getState());
+                        a.setPincode(facility.getPincode());
+                        a.setLatitude(facility.getLatitude());
+                        a.setLongitude(facility.getLongitude());
+                        address = a;
+                }
 
-                return buildProfileResponse(user, address, wallet);
+                UserWallet wallet = userWalletRepository.findById(userId).orElse(null);
+
+                return buildProfileResponse(user, address, wallet, facility);
         }
 
         /**
@@ -74,10 +85,14 @@ public class UserProfileService {
                 // user.setEmail(dto.getEmail());
                 User updatedUser = userRepository.save(user);
 
-                // Get and update address
+                // Get and update address — create one if it doesn't exist (PARTNER case)
                 UserAddress address = userAddressRepository.findByUserIdAndIsDefault(userId, true)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "User address not found for user: " + userId));
+                                .orElseGet(() -> {
+                                        UserAddress a = new UserAddress();
+                                        a.setUserId(userId);
+                                        a.setIsDefault(true);
+                                        return a;
+                                });
 
                 address.setAddress(dto.getAddress());
                 address.setCity(dto.getCity());
@@ -87,13 +102,11 @@ public class UserProfileService {
                 address.setLongitude(dto.getLongitude());
                 UserAddress updatedAddress = userAddressRepository.save(address);
 
-                // Get wallet (no update needed, just for response)
-                UserWallet wallet = userWalletRepository.findById(userId)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "Wallet not found for user: " + userId));
+                UserWallet wallet = userWalletRepository.findById(userId).orElse(null);
 
                 log.info("Profile updated successfully for user: {}", userId);
-                return buildProfileResponse(updatedUser, updatedAddress, wallet);
+                RecyclingFacility facility = facilityRepository.findByUserId(userId).orElse(null);
+                return buildProfileResponse(updatedUser, updatedAddress, wallet, facility);
         }
 
         /**
@@ -116,11 +129,120 @@ public class UserProfileService {
                 throw new UnsupportedOperationException("Email change with OTP not yet implemented");
         }
 
+        /** Request mobile number change — sends OTP to the user's current verified email */
+        @Transactional
+        public String requestMobileChange(UUID userId, String newMobile) {
+                if (userRepository.existsByMobileNumber(newMobile)) {
+                        throw new IllegalArgumentException("Mobile number already in use");
+                }
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                otpService.generateAndSendOtp(user.getEmail(), OtpType.MOBILE_CHANGE);
+                return "OTP sent to your registered email address";
+        }
+
+        /** Verify OTP and apply mobile number change */
+        @Transactional
+        public String verifyMobileChange(UUID userId, String newMobile, String otp) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                if (!otpService.verifyOtp(user.getEmail(), otp, OtpType.MOBILE_CHANGE)) {
+                        throw new IllegalArgumentException("Invalid or expired OTP");
+                }
+                if (userRepository.existsByMobileNumber(newMobile)) {
+                        throw new IllegalArgumentException("Mobile number already in use");
+                }
+                user.setMobileNumber(newMobile);
+                userRepository.save(user);
+                return "Mobile number updated successfully";
+        }
+
+        /** Update facility profile fields (name, operating hours, address) */
+        @Transactional
+        public void updateFacilityProfile(UUID userId, UpdateFacilityProfileDto dto) {
+                RecyclingFacility facility = facilityRepository.findByUserId(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("Facility not found for user"));
+                if (dto.getFacilityName() != null && !dto.getFacilityName().isBlank())
+                        facility.setName(dto.getFacilityName());
+                if (dto.getOperatingHours() != null) facility.setOperatingHours(dto.getOperatingHours());
+                if (dto.getAddress() != null && !dto.getAddress().isBlank()) facility.setAddress(dto.getAddress());
+                if (dto.getCity() != null) facility.setCity(dto.getCity());
+                if (dto.getState() != null && !dto.getState().isBlank()) facility.setState(dto.getState());
+                if (dto.getPincode() != null && !dto.getPincode().isBlank()) facility.setPincode(dto.getPincode());
+                if (dto.getCapacity() != null) facility.setCapacity(dto.getCapacity());
+                facilityRepository.save(facility);
+                // Also update owner's full name in user table
+                if (dto.getOwnerName() != null && !dto.getOwnerName().isBlank()) {
+                        userRepository.findById(userId).ifPresent(u -> {
+                                u.setFullName(dto.getOwnerName());
+                                userRepository.save(u);
+                        });
+                }
+        }
+
+        /** Change password via Auth0 — verifies current password first, then sends reset email */
+        @Transactional
+        public String changePassword(UUID userId, ChangePasswordDto dto) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                try {
+                        auth0Service.login(user.getEmail(), dto.getCurrentPassword());
+                } catch (Exception e) {
+                        throw new IllegalArgumentException("Current password is incorrect");
+                }
+                auth0Service.resetPassword(user.getEmail());
+                return "Password reset email sent to your registered email address";
+        }
+
+        /** Soft-delete account — deactivates user and facility */
+        @Transactional
+        public String deleteAccount(UUID userId) {
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                user.setIsActive(false);
+                userRepository.save(user);
+                facilityRepository.findByUserId(userId).ifPresent(f -> {
+                        f.setIsActive(false);
+                        facilityRepository.save(f);
+                });
+                return "Account deactivated successfully";
+        }
+
+        /** Get notification preferences (creates defaults if not exist) */
+        @Transactional
+        public NotificationPreferencesDto getNotificationPreferences(UUID userId) {
+                NotificationPreferences prefs = notifPrefsRepository.findById(userId)
+                                .orElseGet(() -> notifPrefsRepository.save(
+                                                NotificationPreferences.builder().userId(userId).build()));
+                return toDto(prefs);
+        }
+
+        /** Save notification preferences */
+        @Transactional
+        public NotificationPreferencesDto updateNotificationPreferences(UUID userId, NotificationPreferencesDto dto) {
+                NotificationPreferences prefs = notifPrefsRepository.findById(userId)
+                                .orElseGet(() -> NotificationPreferences.builder().userId(userId).build());
+                if (dto.getNewRequests() != null) prefs.setNewRequests(dto.getNewRequests());
+                if (dto.getDailySummary() != null) prefs.setDailySummary(dto.getDailySummary());
+                if (dto.getWeeklyReport() != null) prefs.setWeeklyReport(dto.getWeeklyReport());
+                if (dto.getMarketing() != null) prefs.setMarketing(dto.getMarketing());
+                return toDto(notifPrefsRepository.save(prefs));
+        }
+
+        private NotificationPreferencesDto toDto(NotificationPreferences p) {
+                return NotificationPreferencesDto.builder()
+                                .newRequests(p.getNewRequests())
+                                .dailySummary(p.getDailySummary())
+                                .weeklyReport(p.getWeeklyReport())
+                                .marketing(p.getMarketing())
+                                .build();
+        }
+
         /**
          * Build profile response from entities
          */
         private UserProfileResponse buildProfileResponse(
-                        User user, UserAddress address, UserWallet wallet) {
+                        User user, UserAddress address, UserWallet wallet, RecyclingFacility facility) {
 
                 return UserProfileResponse.builder()
                                 .status("success")
@@ -131,8 +253,9 @@ public class UserProfileService {
                                                 .mobileNumber(user.getMobileNumber())
                                                 .email(user.getEmail())
                                                 .role(user.getRole())
+                                                .facilityId(facility != null ? facility.getId() : null)
                                                 .build())
-                                .address(UserProfileResponse.AddressData.builder()
+                                .address(address != null ? UserProfileResponse.AddressData.builder()
                                                 .id(address.getId())
                                                 .address(address.getAddress())
                                                 .city(address.getCity())
@@ -140,11 +263,22 @@ public class UserProfileService {
                                                 .pincode(address.getPincode())
                                                 .latitude(address.getLatitude())
                                                 .longitude(address.getLongitude())
-                                                .build())
-                                .wallet(UserProfileResponse.WalletData.builder()
+                                                .build() : null)
+                                .facility(facility != null ? UserProfileResponse.FacilityData.builder()
+                                                .id(facility.getId())
+                                                .facilityName(facility.getName())
+                                                .operatingHours(facility.getOperatingHours())
+                                                .address(facility.getAddress())
+                                                .city(facility.getCity())
+                                                .state(facility.getState())
+                                                .pincode(facility.getPincode())
+                                                .latitude(facility.getLatitude())
+                                                .longitude(facility.getLongitude())
+                                                .registrationNumber(facility.getRegistrationNumber())
+                                                .build() : null)
+                                .wallet(wallet != null ? UserProfileResponse.WalletData.builder()
                                                 .pointsBalance(wallet.getPointsBalance())
-                                                .build())
-                                // No tokens for profile fetch, or maybe we shouldn't return tokens here
+                                                .build() : null)
                                 .tokens(null)
                                 .build();
         }

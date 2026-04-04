@@ -79,7 +79,7 @@ public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, 
         Long countByRecyclingFacility(com.elocate.elocate.model.RecyclingFacility recyclingFacility);
 
         Long countByRecyclingFacilityAndStatus(com.elocate.elocate.model.RecyclingFacility recyclingFacility,
-                        String status);
+                        com.elocate.elocate.model.RecycleStatus status);
 
         // Find requests with SLA breach (driver assigned but not picked up within time
         // limit)

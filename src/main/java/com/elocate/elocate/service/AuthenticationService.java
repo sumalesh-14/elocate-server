@@ -225,8 +225,11 @@ public class AuthenticationService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         try {
-            // TODO: Update email in Auth0 (Requires Management API)
-            // For now, we only update local DB
+            // Update email in Auth0 if firebaseUid (auth0 user_id) is present
+            if (user.getFirebaseUid() != null) {
+                auth0Service.updateUserEmail(user.getFirebaseUid(), newEmail);
+                log.info("Auth0 email updated for user: {}", userId);
+            }
 
             // Update email in our database
             user.setEmail(newEmail);
@@ -238,7 +241,7 @@ public class AuthenticationService {
 
         } catch (Exception e) {
             log.error("Failed to update email: {}", e.getMessage());
-            throw new RuntimeException("Failed to update email");
+            throw new RuntimeException("Failed to update email: " + e.getMessage());
         }
     }
 

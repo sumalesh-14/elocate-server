@@ -155,7 +155,7 @@ public class AdminManagementService {
                 if (newFacility.getUser() != null && newFacility.getUser().getEmail() != null) {
                         emailService.sendFacilityReassignmentEmail(
                                         newFacility.getUser().getEmail(),
-                                        recycleRequest.getId().toString(),
+                                        recycleRequest.getRequestNumber(),
                                         true);
                 }
 
@@ -220,7 +220,7 @@ public class AdminManagementService {
                 if (user != null && user.getEmail() != null) {
                         emailService.sendPriceChangeNotification(
                                         user.getEmail(),
-                                        recycleRequest.getId().toString(),
+                                        recycleRequest.getRequestNumber(),
                                         request.getReason());
                 }
 

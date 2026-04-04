@@ -44,4 +44,5 @@ public class PartnerDashboardResponse {
     private Long pendingRequests;
     private Long completedRequests;
     private Long rejectedRequests;
+    private BigDecimal totalCredited; // sum of RECYCLED wallet transactions for this facility
 }

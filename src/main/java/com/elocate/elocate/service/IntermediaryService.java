@@ -78,7 +78,7 @@ public class IntermediaryService {
         if (citizen != null && citizen.getEmail() != null) {
             emailService.sendRequestApprovedEmail(
                     citizen.getEmail(),
-                    requestId.toString(),
+                    recycleRequest.getRequestNumber(),
                     recycleRequest.getEstimatedAmount());
         }
 
@@ -151,7 +151,7 @@ public class IntermediaryService {
         if (citizen != null && citizen.getEmail() != null) {
             emailService.sendPriceChangeNotification(
                     citizen.getEmail(),
-                    requestId.toString(),
+                    recycleRequest.getRequestNumber(),
                     request.getReason());
         }
     }
@@ -256,16 +256,20 @@ public class IntermediaryService {
                 recycleRequest.getUserId(),
                 recycleRequest,
                 finalAmount,
-                "Recycling reward for request " + requestId);
+                "Recycling reward · " + recycleRequest.getRequestNumber());
 
         // Send email notification to citizen with certificate link
         if (citizen.getEmail() != null) {
             BigDecimal monetaryAmount = pricingService.convertPointsToMoney(finalAmount);
+            String deviceName = recycleRequest.getDeviceModel() != null
+                    ? recycleRequest.getDeviceModel().getModelName()
+                    : "Your E-Waste Device";
             emailService.sendRecyclingCompletedWithCertificateEmail(
                     citizen.getEmail(),
-                    requestId.toString(),
+                    recycleRequest.getRequestNumber(),
                     monetaryAmount,
-                    certificateUrl);
+                    certificateUrl,
+                    deviceName);
         }
 
         log.info("Request {} marked as recycled, wallet credited with {} points, certificate generated", 
@@ -302,7 +306,7 @@ public class IntermediaryService {
         // Send email notification to citizen
         User citizen = userRepository.findById(recycleRequest.getUserId()).orElse(null);
         if (citizen != null && citizen.getEmail() != null) {
-            emailService.sendDeviceReceivedEmail(citizen.getEmail(), requestId.toString());
+            emailService.sendDeviceReceivedEmail(citizen.getEmail(), recycleRequest.getRequestNumber());
         }
 
         log.info("Request {} marked as dropped at facility", requestId);

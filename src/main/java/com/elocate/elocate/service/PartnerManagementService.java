@@ -34,6 +34,7 @@ public class PartnerManagementService {
     private final AdminAuditLogService adminAuditLogService;
     private final EmailService emailService;
     private final Auth0Service auth0Service;
+    private final com.elocate.elocate.repository.WalletTransactionRepository walletTransactionRepository;
 
     @Transactional
     public PartnerResponse onboardPartner(PartnerOnboardingRequest request) {
@@ -435,9 +436,16 @@ public class PartnerManagementService {
 
         // Get statistics
         Long totalRequests = recycleRequestRepository.countByRecyclingFacility(facility);
-        Long pendingRequests = recycleRequestRepository.countByRecyclingFacilityAndStatus(facility, "CREATED");
-        Long completedRequests = recycleRequestRepository.countByRecyclingFacilityAndStatus(facility, "RECYCLED");
-        Long rejectedRequests = recycleRequestRepository.countByRecyclingFacilityAndStatus(facility, "REJECTED");
+        Long pendingRequests   = recycleRequestRepository.countByRecyclingFacilityAndStatus(facility, com.elocate.elocate.model.RecycleStatus.CREATED);
+        Long completedRequests = recycleRequestRepository.countByRecyclingFacilityAndStatus(facility, com.elocate.elocate.model.RecycleStatus.RECYCLED);
+        Long rejectedRequests  = recycleRequestRepository.countByRecyclingFacilityAndStatus(facility, com.elocate.elocate.model.RecycleStatus.REJECTED);
+
+        // Total credited = sum of all RECYCLED wallet transactions for this facility
+        BigDecimal totalCredited = walletTransactionRepository.findByFacilityId(facility.getId())
+                .stream()
+                .filter(t -> "RECYCLED".equals(t.getTransactionType()))
+                .map(t -> t.getPoints() != null ? t.getPoints() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return PartnerDashboardResponse.builder()
                 .facilityId(facility.getId())
@@ -461,6 +469,7 @@ public class PartnerManagementService {
                 .pendingRequests(pendingRequests)
                 .completedRequests(completedRequests)
                 .rejectedRequests(rejectedRequests)
+                .totalCredited(totalCredited)
                 .build();
     }
 

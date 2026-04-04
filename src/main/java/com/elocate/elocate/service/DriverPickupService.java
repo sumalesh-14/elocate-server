@@ -98,7 +98,7 @@ public class DriverPickupService {
         String rejectLink     = frontendUrl + "/driver/pickup/reject/" + rejectToken;
         String inProgressLink = frontendUrl + "/driver/pickup/on-my-way/" + inProgressToken;
 
-        sendDriverPickupEmail(driver.getEmail(), driver.getName(), requestId.toString(), 
+        sendDriverPickupEmail(driver.getEmail(), driver.getName(), request.getRequestNumber(),
                 citizenAddress, deviceName, acceptLink, rejectLink, inProgressLink, assignmentComments);
 
         log.info("✅ Pickup tokens generated and email sent to driver: {}", driver.getEmail());
@@ -199,7 +199,7 @@ public class DriverPickupService {
         // Send notification to citizen
         User citizen = userRepository.findById(request.getUserId()).orElse(null);
         if (citizen != null && citizen.getEmail() != null) {
-            emailService.sendPickupCompletedEmail(citizen.getEmail(), request.getId().toString());
+            emailService.sendPickupCompletedEmail(citizen.getEmail(), request.getRequestNumber());
         }
 
         log.info("✅ Pickup accepted for request: {}", request.getId());
@@ -281,7 +281,7 @@ public class DriverPickupService {
         // Send notification to citizen
         User citizen = userRepository.findById(request.getUserId()).orElse(null);
         if (citizen != null && citizen.getEmail() != null) {
-            emailService.sendPickupFailedEmail(citizen.getEmail(), request.getId().toString(), dto.getReason());
+            emailService.sendPickupFailedEmail(citizen.getEmail(), request.getRequestNumber(), dto.getReason());
         }
 
         log.info("✅ Pickup rejected for request: {}", request.getId());

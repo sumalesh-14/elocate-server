@@ -1,0 +1,1 @@
+ALTER TABLE recycling_facility ADD COLUMN IF NOT EXISTS city VARCHAR(100);
