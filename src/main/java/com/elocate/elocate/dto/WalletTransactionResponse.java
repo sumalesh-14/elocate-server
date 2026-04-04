@@ -15,5 +15,6 @@ public class WalletTransactionResponse {
     private BigDecimal amount;
     private String description;
     private String recycleRequestNumber;
+    private String citizenName;
     private LocalDateTime createdAt;
 }

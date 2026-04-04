@@ -723,16 +723,122 @@ public class EmailService {
 
     /**
      * Send test email (for testing email configuration)
-     *
-     * @param toEmail Recipient email
-     * @param subject Email subject
-     * @param body Email body
      */
     public void sendTestEmail(String toEmail, String subject, String body) {
         log.info("Sending test email to: {}", toEmail);
         sendEmail(toEmail, subject, body);
     }
 
+    /**
+     * Send withdrawal approved HTML email
+     */
+    public void sendWithdrawalApprovedEmail(String toEmail, String fullName, java.math.BigDecimal amount,
+            String bankName, String maskedAccount) {
+        log.info("Sending withdrawal approved email to: {}", toEmail);
+        String subject = "ELocate: Withdrawal Approved ✅";
+        String html = buildWithdrawalApprovedHtml(fullName, amount, bankName, maskedAccount);
+        sendHtmlEmail(toEmail, subject, html);
+    }
+
+    /**
+     * Send withdrawal rejected HTML email
+     */
+    public void sendWithdrawalRejectedEmail(String toEmail, String fullName, java.math.BigDecimal amount,
+            String reason) {
+        log.info("Sending withdrawal rejected email to: {}", toEmail);
+        String subject = "ELocate: Withdrawal Request Rejected";
+        String html = buildWithdrawalRejectedHtml(fullName, amount, reason);
+        sendHtmlEmail(toEmail, subject, html);
+    }
+
+    private String buildWithdrawalApprovedHtml(String name, java.math.BigDecimal amount,
+            String bankName, String maskedAccount) {
+        return "<!DOCTYPE html><html><head><meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
+            "<title>Withdrawal Approved</title></head>" +
+            "<body style='margin:0;padding:0;background:#f0fdf4;font-family:Arial,sans-serif'>" +
+            "<table width='100%' cellpadding='0' cellspacing='0'><tr><td align='center' style='padding:40px 16px'>" +
+            "<table width='560' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)'>" +
+            // Header
+            "<tr><td style='background:linear-gradient(135deg,#16a34a,#15803d);padding:40px 40px 32px;text-align:center'>" +
+            "<div style='width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center'>" +
+            "<span style='font-size:32px'>✅</span></div>" +
+            "<h1 style='margin:0;color:#ffffff;font-size:26px;font-weight:700'>Withdrawal Approved!</h1>" +
+            "<p style='margin:8px 0 0;color:#bbf7d0;font-size:15px'>Your funds are on their way</p>" +
+            "</td></tr>" +
+            // Body
+            "<tr><td style='padding:36px 40px'>" +
+            "<p style='margin:0 0 24px;color:#374151;font-size:16px'>Hi <strong>" + name + "</strong>,</p>" +
+            "<p style='margin:0 0 28px;color:#6b7280;font-size:15px;line-height:1.6'>Great news! Your withdrawal request has been approved and the transfer is being processed.</p>" +
+            // Amount card
+            "<div style='background:#f0fdf4;border:2px solid #bbf7d0;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px'>" +
+            "<p style='margin:0 0 4px;color:#16a34a;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em'>Amount Approved</p>" +
+            "<p style='margin:0;color:#15803d;font-size:36px;font-weight:800'>&#8377;" + String.format("%.2f", amount) + "</p>" +
+            "</div>" +
+            // Bank details
+            "<table width='100%' cellpadding='0' cellspacing='0' style='background:#f9fafb;border-radius:10px;overflow:hidden;margin-bottom:28px'>" +
+            "<tr><td style='padding:16px 20px;border-bottom:1px solid #e5e7eb'>" +
+            "<span style='color:#9ca3af;font-size:13px'>Bank</span><br>" +
+            "<span style='color:#111827;font-size:15px;font-weight:600'>" + bankName + "</span></td></tr>" +
+            "<tr><td style='padding:16px 20px'>" +
+            "<span style='color:#9ca3af;font-size:13px'>Account</span><br>" +
+            "<span style='color:#111827;font-size:15px;font-weight:600;font-family:monospace'>" + maskedAccount + "</span></td></tr>" +
+            "</table>" +
+            "<p style='margin:0 0 28px;color:#6b7280;font-size:14px;line-height:1.6'>Transfers typically arrive within <strong>1–3 business days</strong> depending on your bank.</p>" +
+            // CTA
+            "<div style='text-align:center;margin-bottom:8px'>" +
+            "<a href='" + appBaseUrl + "/citizen/book-recycle/wallet' style='display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600'>View My Wallet</a>" +
+            "</div>" +
+            "</td></tr>" +
+            // Footer
+            "<tr><td style='background:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb'>" +
+            "<p style='margin:0 0 4px;color:#9ca3af;font-size:13px'>Thank you for recycling with ELocate 🌱</p>" +
+            "<p style='margin:0;color:#d1d5db;font-size:12px'>If you have questions, contact our support team.</p>" +
+            "</td></tr>" +
+            "</table></td></tr></table></body></html>";
+    }
+
+    private String buildWithdrawalRejectedHtml(String name, java.math.BigDecimal amount, String reason) {
+        return "<!DOCTYPE html><html><head><meta charset='UTF-8'>" +
+            "<meta name='viewport' content='width=device-width,initial-scale=1'>" +
+            "<title>Withdrawal Update</title></head>" +
+            "<body style='margin:0;padding:0;background:#f0fdf4;font-family:Arial,sans-serif'>" +
+            "<table width='100%' cellpadding='0' cellspacing='0'><tr><td align='center' style='padding:40px 16px'>" +
+            "<table width='560' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)'>" +
+            // Header — still green/white brand but softer tone
+            "<tr><td style='background:linear-gradient(135deg,#16a34a,#15803d);padding:40px 40px 32px;text-align:center'>" +
+            "<div style='width:64px;height:64px;background:rgba(255,255,255,0.2);border-radius:50%;margin:0 auto 16px'>" +
+            "<span style='font-size:32px;line-height:64px'>↩️</span></div>" +
+            "<h1 style='margin:0;color:#ffffff;font-size:26px;font-weight:700'>Withdrawal Update</h1>" +
+            "<p style='margin:8px 0 0;color:#bbf7d0;font-size:15px'>Your request could not be processed</p>" +
+            "</td></tr>" +
+            // Body
+            "<tr><td style='padding:36px 40px'>" +
+            "<p style='margin:0 0 24px;color:#374151;font-size:16px'>Hi <strong>" + name + "</strong>,</p>" +
+            "<p style='margin:0 0 28px;color:#6b7280;font-size:15px;line-height:1.6'>We were unable to process your withdrawal request at this time. The amount has been <strong>refunded to your wallet</strong> and is available immediately.</p>" +
+            // Amount card
+            "<div style='background:#f0fdf4;border:2px solid #bbf7d0;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px'>" +
+            "<p style='margin:0 0 4px;color:#16a34a;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em'>Amount Refunded</p>" +
+            "<p style='margin:0;color:#15803d;font-size:36px;font-weight:800'>&#8377;" + String.format("%.2f", amount) + "</p>" +
+            "</div>" +
+            // Reason
+            "<div style='background:#fefce8;border-left:4px solid #facc15;border-radius:0 8px 8px 0;padding:16px 20px;margin-bottom:28px'>" +
+            "<p style='margin:0 0 4px;color:#854d0e;font-size:13px;font-weight:600'>Reason</p>" +
+            "<p style='margin:0;color:#713f12;font-size:14px;line-height:1.5'>" + (reason != null && !reason.isBlank() ? reason : "No reason provided.") + "</p>" +
+            "</div>" +
+            "<p style='margin:0 0 28px;color:#6b7280;font-size:14px;line-height:1.6'>You can submit a new withdrawal request from your wallet. If you believe this was an error, please contact our support team.</p>" +
+            // CTA
+            "<div style='text-align:center;margin-bottom:8px'>" +
+            "<a href='" + appBaseUrl + "/citizen/book-recycle/wallet' style='display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600'>Go to My Wallet</a>" +
+            "</div>" +
+            "</td></tr>" +
+            // Footer
+            "<tr><td style='background:#f9fafb;padding:24px 40px;text-align:center;border-top:1px solid #e5e7eb'>" +
+            "<p style='margin:0 0 4px;color:#9ca3af;font-size:13px'>Thank you for recycling with ELocate 🌱</p>" +
+            "<p style='margin:0;color:#d1d5db;font-size:12px'>Questions? Reach out to our support team anytime.</p>" +
+            "</td></tr>" +
+            "</table></td></tr></table></body></html>";
+    }
 
     /**
      * Send simple email

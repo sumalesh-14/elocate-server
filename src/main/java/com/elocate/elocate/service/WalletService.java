@@ -71,7 +71,7 @@ public class WalletService {
                                 .userId(userId)
                                 .recycleRequest(recycleRequestId)
                                 .points(points)
-                                .transactionType("CREDIT")
+                                .transactionType("RECYCLED")
                                 .description(description)
                                 .conversionRate(BigDecimal.ONE)
                                 .monetaryAmount(points.setScale(2, RoundingMode.HALF_UP))
