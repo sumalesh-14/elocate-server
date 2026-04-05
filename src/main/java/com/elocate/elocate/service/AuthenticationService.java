@@ -118,9 +118,16 @@ public class AuthenticationService {
         }
 
         log.info("Login successful for user: {}", user.getId());
+        log.info("[LOGIN DEBUG] email={} | role={} | isActive={} | isEmailVerified={} | facilityId={}",
+                user.getEmail(),
+                user.getRole(),
+                user.getIsActive(),
+                user.getIsEmailVerified(),
+                facilityRepository.findByUserId(user.getId()).map(f -> f.getId().toString()).orElse("none"));
 
         // Generate JWT token for API authentication
         String jwtToken = jwtUtil.generateToken(user.getId(), user.getFullName(), user.getEmail(), user.getRole());
+        log.info("[LOGIN DEBUG] JWT generated with role='{}' for userId={}", user.getRole(), user.getId());
 
         // Build profile response with structured tokens
         return buildProfileResponse(user, jwtToken, auth0Response.getRefreshToken(), auth0Response.getAccessToken());
