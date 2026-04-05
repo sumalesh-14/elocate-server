@@ -98,9 +98,45 @@ public class EmailService {
         log.info("Sending OTP email to: {}, type: {}", toEmail, otpType);
 
         String subject = getEmailSubject(otpType);
-        String body = getEmailBody(otpCode, otpType);
 
-        sendEmail(toEmail, subject, body);
+        Map<String, Object> vars = new java.util.HashMap<>();
+        vars.put("otpCode", otpCode);
+
+        switch (otpType) {
+            case EMAIL_VERIFICATION -> {
+                vars.put("title", "Verify Your Email");
+                vars.put("subtitle", "Complete your ELocate registration");
+                vars.put("greeting", "Thanks for signing up! Please verify your email address to activate your account.");
+                vars.put("action", "verify your email address");
+            }
+            case PASSWORD_RESET -> {
+                vars.put("title", "Reset Your Password");
+                vars.put("subtitle", "We received a password reset request");
+                vars.put("greeting", "We received a request to reset your ELocate account password. Use the code below to proceed.");
+                vars.put("action", "reset your password");
+            }
+            case EMAIL_CHANGE -> {
+                vars.put("title", "Verify New Email");
+                vars.put("subtitle", "Confirm your new email address");
+                vars.put("greeting", "You requested an email address change on your ELocate account. Use the code below to verify your new email.");
+                vars.put("action", "verify your new email address");
+            }
+            case MOBILE_CHANGE -> {
+                vars.put("title", "Verify Mobile Number");
+                vars.put("subtitle", "Confirm your mobile number change");
+                vars.put("greeting", "You requested a mobile number change on your ELocate account. Use the code below to verify.");
+                vars.put("action", "verify your mobile number change");
+            }
+            case LOGIN -> {
+                vars.put("title", "Your Login Code");
+                vars.put("subtitle", "Passwordless sign-in to ELocate");
+                vars.put("greeting", "You requested a one-time login code for your ELocate account. Use the code below to sign in.");
+                vars.put("action", "complete your sign-in");
+            }
+        }
+
+        String htmlBody = templateService.processTemplate("otp", vars);
+        sendHtmlEmail(toEmail, subject, htmlBody);
     }
 
     /**
@@ -112,6 +148,7 @@ public class EmailService {
             case PASSWORD_RESET -> "Password Reset Request - ELocate";
             case EMAIL_CHANGE -> "Verify Your New Email - ELocate";
             case MOBILE_CHANGE -> "Verify Your Mobile Number Change - ELocate";
+            case LOGIN -> "Your Login OTP - ELocate";
         };
     }
 
@@ -131,6 +168,9 @@ public class EmailService {
                         "We received a request to change your email address. Use the OTP below to verify your new email:\n\n";
             case MOBILE_CHANGE ->
                 "Mobile Number Change\n\nWe received a request to change your mobile number. Use the OTP below to verify:\n\n";
+            case LOGIN ->
+                "Login Verification\n\n" +
+                        "Use the OTP below to complete your sign-in:\n\n";
         };
 
         return baseMessage +

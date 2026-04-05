@@ -1,5 +1,7 @@
 package com.elocate.elocate.controller;
 
+import com.elocate.elocate.dto.RequestLoginOtpDto;
+import com.elocate.elocate.dto.VerifyLoginOtpDto;
 import com.elocate.elocate.context.UserContext;
 import com.elocate.elocate.context.UserContextHolder;
 import com.elocate.elocate.dto.*;
@@ -104,6 +106,26 @@ public class AuthController {
     public ResponseEntity<UserProfileResponse> refresh(@Valid @RequestBody TokenRefreshRequest request) {
         log.info("POST /api/v1/auth/refresh");
         UserProfileResponse response = authenticationService.refreshToken(request.getRefreshToken());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Request OTP for passwordless email login
+     */
+    @PostMapping("/request-login-otp")
+    public ResponseEntity<Map<String, String>> requestLoginOtp(@Valid @RequestBody RequestLoginOtpDto dto) {
+        log.info("POST /api/v1/auth/request-login-otp - email: {}", dto.getEmail());
+        String message = authenticationService.requestLoginOtp(dto.getEmail());
+        return ResponseEntity.ok(Map.of("message", message));
+    }
+
+    /**
+     * Verify OTP and complete passwordless login — returns JWT token
+     */
+    @PostMapping("/verify-login-otp")
+    public ResponseEntity<UserProfileResponse> verifyLoginOtp(@Valid @RequestBody VerifyLoginOtpDto dto) {
+        log.info("POST /api/v1/auth/verify-login-otp - email: {}", dto.getEmail());
+        UserProfileResponse response = authenticationService.verifyLoginOtp(dto.getEmail(), dto.getOtp());
         return ResponseEntity.ok(response);
     }
 

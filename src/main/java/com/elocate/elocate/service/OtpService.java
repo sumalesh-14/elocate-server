@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 public class OtpService {
 
     private final OtpRepository otpRepository;
+    private final EmailService emailService;
 
     @Value("${app.otp.expiry-minutes:10}")
     private int otpExpiryMinutes;
@@ -60,7 +61,7 @@ public class OtpService {
         log.info("OTP saved for email: {}, expires at: {}", email, expiresAt);
 
         // Send OTP via email
-        // emailService.sendOtpEmail(email, otpCode, otpType);
+        emailService.sendOtpEmail(email, otpCode, otpType);
 
         return otpCode; // Return for testing, should be removed in production
     }

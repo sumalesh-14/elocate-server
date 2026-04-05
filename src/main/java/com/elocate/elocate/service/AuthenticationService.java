@@ -176,6 +176,47 @@ public class AuthenticationService {
     }
 
     /**
+     * Request OTP for email-based login (passwordless)
+     */
+    public String requestLoginOtp(String email) {
+        log.info("Login OTP requested for email: {}", email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
+
+        if (Boolean.FALSE.equals(user.getIsEmailVerified())) {
+            throw new IllegalArgumentException("Email not verified. Please verify your email first.");
+        }
+
+        if (Boolean.FALSE.equals(user.getIsActive())) {
+            throw new IllegalArgumentException("Account is inactive. Please contact support.");
+        }
+
+        otpService.generateAndSendOtp(email, OtpType.LOGIN);
+        return "OTP sent to " + email;
+    }
+
+    /**
+     * Verify OTP for email-based login and return tokens
+     */
+    @Transactional(readOnly = true)
+    public UserProfileResponse verifyLoginOtp(String email, String otp) {
+        log.info("Verifying login OTP for email: {}", email);
+
+        if (!otpService.verifyOtp(email, otp, OtpType.LOGIN)) {
+            throw new IllegalArgumentException("Invalid or expired OTP");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String jwtToken = jwtUtil.generateToken(user.getId(), user.getFullName(), user.getEmail(), user.getRole());
+        log.info("[OTP LOGIN] JWT generated for userId={}", user.getId());
+
+        return buildProfileResponse(user, jwtToken, null, null);
+    }
+
+    /**
      * Request password reset via Firebase
      */
     public String forgotPassword(String email) {

@@ -7,5 +7,6 @@ public enum OtpType {
     EMAIL_VERIFICATION,
     PASSWORD_RESET,
     EMAIL_CHANGE,
-    MOBILE_CHANGE
+    MOBILE_CHANGE,
+    LOGIN
 }

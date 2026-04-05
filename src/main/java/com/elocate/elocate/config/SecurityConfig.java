@@ -38,6 +38,8 @@ public class SecurityConfig {
             "/api/v1/auth/verify-email",
             "/api/v1/auth/resend-otp",
             "/api/v1/auth/forgot-password",
+            "/api/v1/auth/request-login-otp",
+            "/api/v1/auth/verify-login-otp",
             "/api/v1/partner-auth/register",          // Partner self-registration
             "/api/v1/partner-auth/upload-document",   // Partner document upload (pre-registration)
             "/api/v1/test/**",
