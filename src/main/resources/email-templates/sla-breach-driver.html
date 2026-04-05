@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #fff8f0; color: #2d2d2d; }
+        .wrapper { padding: 30px 15px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(220,53,69,0.12); }
+        .header { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%); padding: 36px 30px; text-align: center; }
+        .header .logo { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 14px; }
+        .header h1 { color: #ffffff; font-size: 24px; font-weight: 800; }
+        .header .subtitle { color: rgba(255,255,255,0.85); font-size: 14px; margin-top: 6px; }
+        .badge { display: inline-block; background: rgba(255,255,255,0.2); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-top: 12px; }
+        .content { padding: 36px 30px; }
+        .greeting { font-size: 16px; color: #2d2d2d; margin-bottom: 20px; }
+        .alert-box { background: linear-gradient(135deg, #fff5f5, #fee2e2); border: 2px solid #ef4444; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0; }
+        .alert-icon { font-size: 48px; margin-bottom: 10px; }
+        .alert-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #b91c1c; margin-bottom: 6px; }
+        .alert-value { font-size: 32px; font-weight: 800; color: #b91c1c; line-height: 1; }
+        .alert-sub { font-size: 13px; color: #6b7280; margin-top: 8px; }
+        .info-card { background: #fff5f5; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 24px 0; }
+        .info-card .card-title { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #b91c1c; margin-bottom: 14px; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #fecaca; font-size: 14px; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #6b7280; font-weight: 500; }
+        .info-value { color: #1a1a1a; font-weight: 600; }
+        .action-card { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%); border-radius: 10px; padding: 24px; margin: 24px 0; text-align: center; }
+        .action-card h3 { color: #fff; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .action-card p { color: rgba(255,255,255,0.85); font-size: 13px; }
+        .note-box { background: #f9fafb; border-radius: 8px; padding: 16px 20px; margin-top: 24px; font-size: 13px; color: #6b7280; line-height: 1.7; }
+        .footer { background: #b91c1c; padding: 24px 30px; text-align: center; }
+        .footer .brand { color: #ffffff; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .footer .tagline { color: rgba(255,255,255,0.7); font-size: 12px; }
+        .footer .links { margin-top: 12px; font-size: 12px; color: rgba(255,255,255,0.6); }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="container">
+        <div class="header">
+            <div class="logo">ELocate</div>
+            <h1>⚠️ Urgent: SLA Breach</h1>
+            <div class="subtitle">Immediate action required for your assigned pickup</div>
+            <div class="badge">SLA Exceeded</div>
+        </div>
+        <div class="content">
+            <p class="greeting">Hello {{driverName}},</p>
+            <p style="font-size:15px; color:#4b5563; margin-bottom:20px;">
+                This is an automated alert. The pickup assigned to you has exceeded the allowed SLA window and requires your immediate attention.
+            </p>
+
+            <div class="alert-box">
+                <div class="alert-icon">⏰</div>
+                <div class="alert-label">SLA Exceeded By</div>
+                <div class="alert-value">{{slaHours}} Hours</div>
+                <div class="alert-sub">Pickup must be completed immediately</div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title">Pickup Details</div>
+                <div class="info-row">
+                    <span class="info-label">Request ID</span>
+                    <span class="info-value">{{requestId}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pickup Address</span>
+                    <span class="info-value">{{address}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status</span>
+                    <span class="info-value" style="color:#b91c1c;">⚠️ SLA Breached</span>
+                </div>
+            </div>
+
+            <div class="action-card">
+                <h3>Action Required</h3>
+                <p>Please complete this pickup immediately or contact the facility owner if you are facing any issues with this request.</p>
+            </div>
+
+            <div class="note-box">
+                <strong>Need help?</strong> If you are unable to complete this pickup, contact your facility manager right away so the request can be reassigned without further delay.
+            </div>
+        </div>
+        <div class="footer">
+            <div class="brand">ELocate — E-Waste Recycling Platform</div>
+            <div class="tagline">Timely pickups keep our planet cleaner 🌍</div>
+            <div class="links">support@elocate.com</div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
