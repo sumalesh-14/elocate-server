@@ -804,6 +804,47 @@ public class EmailService {
     }
 
 
+
+    /**
+     * Send SLA breach notification to driver
+     */
+    public void sendSLABreachEmailToDriver(String toEmail, String driverName, String requestId, int slaHours, String address) {
+        if (!isEmailEnabled()) return;
+        
+        log.info("Sending SLA breach notification to driver: {}", toEmail);
+        
+        String subject = "ΓÜá∩╕Å URGENT: Pickup SLA Breach - Request #" + requestId;
+        String body = "Hello " + driverName + ",\n\n" +
+                "This is an automated notification that the pickup for Request #" + requestId + 
+                " has exceeded the allowed time of " + slaHours + " hours.\n\n" +
+                "Pickup Address: " + address + "\n\n" +
+                "Please complete this pickup immediately or contact the facility owner if there are any issues.\n\n" +
+                "Best regards,\n" +
+                "ELocate Team";
+        
+        sendEmail(toEmail, subject, body);
+    }
+
+    /**
+     * Send SLA breach notification to facility owner
+     */
+    public void sendSLABreachEmailToFacility(String toEmail, String facilityName, String requestId, int slaHours, String driverName) {
+        if (!isEmailEnabled()) return;
+        
+        log.info("Sending SLA breach notification to facility owner: {}", toEmail);
+        
+        String subject = "ΓÜá∩╕Å Service Alert: Driver SLA Breach - Request #" + requestId;
+        String body = "Hello " + facilityName + " Team,\n\n" +
+                "An SLA breach has been detected for Request #" + requestId + ".\n\n" +
+                "The assigned driver, " + driverName + ", has not completed the pickup within the required " + slaHours + " hours.\n\n" +
+                "Please follow up with the driver or reassign the request to ensure timely fulfillment.\n\n" +
+                "View on Dashboard: " + appBaseUrl + "/intermediary/collections\n\n" +
+                "Best regards,\n" +
+                "ELocate Team";
+        
+        sendEmail(toEmail, subject, body);
+    }
+
     /**
      * Send simple email
      */

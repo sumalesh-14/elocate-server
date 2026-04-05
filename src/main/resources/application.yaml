@@ -62,7 +62,7 @@ management:
 app:
   jwt:
     secret: ${JWT_SECRET:elocate-super-secret-key-change-in-production-minimum-256-bits-required}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    expiration-ms: ${JWT_EXPIRATION_MS:1800000}
   otp:
     expiry-minutes: ${OTP_EXPIRY_MINUTES:10}
     max-attempts: ${OTP_MAX_ATTEMPTS:3}

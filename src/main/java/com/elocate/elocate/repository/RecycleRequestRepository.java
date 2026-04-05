@@ -84,6 +84,9 @@ public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, 
         // Find requests with SLA breach (driver assigned but not picked up within time
         // limit)
         @Query("SELECT r FROM RecycleRequest r " +
+                        "JOIN FETCH r.recyclingFacility f " +
+                        "JOIN FETCH f.user u " +
+                        "LEFT JOIN FETCH r.pickupAddress pa " +
                         "WHERE r.fulfillmentStatus IN :statuses " +
                         "AND r.updatedAt < :deadline " +
                         "AND r.assignedDriverId IS NOT NULL")

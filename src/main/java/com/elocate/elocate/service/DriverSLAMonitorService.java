@@ -1,8 +1,10 @@
 package com.elocate.elocate.service;
 
 import com.elocate.elocate.model.RecycleRequest;
+import com.elocate.elocate.model.User;
 import com.elocate.elocate.model.enums.FulfillmentStatus;
 import com.elocate.elocate.repository.RecycleRequestRepository;
+import com.elocate.elocate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +24,7 @@ public class DriverSLAMonitorService {
 
     private final RecycleRequestRepository recycleRequestRepository;
     private final EmailService emailService;
+    private final UserRepository userRepository;
 
     @Value("${app.driver.sla-hours:24}")
     private int slaHours;
@@ -73,15 +76,47 @@ public class DriverSLAMonitorService {
                     request.getAssignedDriverId(), 
                     request.getUpdatedAt());
 
-            // TODO: Send notification to intermediary about SLA breach
-            // For now, just log it
-            // In future, you can:
-            // 1. Send email to intermediary
-            // 2. Auto-reassign to another driver
-            // 3. Escalate to admin
-            // 4. Update request status to SLA_BREACHED
+            // 1. Notify Facility Owner
+            if (request.getRecyclingFacility() != null && request.getRecyclingFacility().getUser() != null) {
+                User facilityOwner = request.getRecyclingFacility().getUser();
+                emailService.sendSLABreachEmailToFacility(
+                        facilityOwner.getEmail(),
+                        request.getRecyclingFacility().getName(),
+                        request.getId().toString(),
+                        slaHours,
+                        "Your assigned driver" // Fallback name
+                );
+            }
 
-            log.info("SLA breach logged for request {}. Manual intervention required.", request.getId());
+            // 2. Notify Driver
+            if (request.getAssignedDriverId() != null) {
+                userRepository.findById(request.getAssignedDriverId()).ifPresent(driver -> {
+                    String address = request.getPickupAddress() != null ? 
+                            request.getPickupAddress().getAddress() + ", " + request.getPickupAddress().getCity() : 
+                            "your registered pickup location";
+                    
+                    emailService.sendSLABreachEmailToDriver(
+                            driver.getEmail(),
+                            driver.getFullName(),
+                            request.getId().toString(),
+                            slaHours,
+                            address
+                    );
+                    
+                    // Update the "fallback name" for facility email if we found the driver
+                    if (request.getRecyclingFacility() != null && request.getRecyclingFacility().getUser() != null) {
+                        emailService.sendSLABreachEmailToFacility(
+                                request.getRecyclingFacility().getUser().getEmail(),
+                                request.getRecyclingFacility().getName(),
+                                request.getId().toString(),
+                                slaHours,
+                                driver.getFullName()
+                        );
+                    }
+                });
+            }
+
+            log.info("SLA breach notifications sent for request {}.", request.getId());
 
         } catch (Exception e) {
             log.error("Error handling SLA breach for request {}", request.getId(), e);
