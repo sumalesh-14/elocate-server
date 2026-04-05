@@ -7,6 +7,7 @@ import com.elocate.elocate.repository.UserRepository;
 import com.elocate.elocate.service.CertificateService;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.Media;
+import com.microsoft.playwright.options.WaitUntilState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
