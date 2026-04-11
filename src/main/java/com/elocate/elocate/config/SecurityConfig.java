@@ -49,6 +49,7 @@ public class SecurityConfig {
             "/api/v1/facility/**",
             "/api/v1/recycle-requests/driver-action/**",
             "/api/v1/driver/pickup/**", // Driver pickup actions via email links (accept, reject, on-my-way)
+            "/api/v1/contact-issues",   // Public contact form submission
             "/actuator/health",
             "/actuator/health/**",
             "/actuator/info",
@@ -83,6 +84,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/device-brands/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/device-models/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/category-brands/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/contact-issues").permitAll()
                         .anyRequest().authenticated())
 
                 // Add JWT filter before Spring Security's filter

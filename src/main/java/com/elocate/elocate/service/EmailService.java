@@ -1021,4 +1021,85 @@ public class EmailService {
             // Don't throw exception - operations should still succeed even if email fails
         }
     }
+
+    /**
+     * Send contact issue reply email to the user.
+     */
+    public void sendContactIssueReplyEmail(String toEmail, String userName, String originalMessage, String adminNote) {
+        if (!isEmailEnabled()) return;
+        log.info("Sending contact issue reply to: {}", toEmail);
+        String subject = "Re: Your Message to ELocate Support";
+
+        if (useHtmlTemplates && templateService.templateExists("contact-issue-reply")) {
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("userName", userName);
+            variables.put("originalMessage", originalMessage);
+            variables.put("adminNote", adminNote);
+            variables.put("contactUrl", appBaseUrl + "/citizen/contactus");
+            String html = templateService.processTemplate("contact-issue-reply", variables);
+            sendHtmlEmail(toEmail, subject, html);
+        } else {
+            String html = buildContactIssueReplyHtml(userName, originalMessage, adminNote);
+            sendHtmlEmail(toEmail, subject, html);
+        }
+    }
+
+    private String buildContactIssueReplyHtml(String name, String originalMessage, String adminNote) {
+        return "<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+            + "<title>ELocate Support Reply</title></head>"
+            + "<body style='margin:0;padding:0;background:#f0fdf4;font-family:Arial,sans-serif'>"
+            + "<table width='100%' cellpadding='0' cellspacing='0'><tr><td align='center' style='padding:40px 16px'>"
+            + "<table width='580' cellpadding='0' cellspacing='0' style='background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(0,0,0,0.08)'>"
+
+            // Header
+            + "<tr><td style='background:linear-gradient(135deg,#16a34a 0%,#15803d 100%);padding:44px 48px 36px;text-align:center'>"
+            + "<div style='width:72px;height:72px;background:rgba(255,255,255,0.15);border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center'>"
+            + "<span style='font-size:36px;line-height:72px'>&#128233;</span></div>"
+            + "<h1 style='margin:0;color:#ffffff;font-size:28px;font-weight:800;letter-spacing:-0.5px'>We've Reviewed Your Message</h1>"
+            + "<p style='margin:10px 0 0;color:#bbf7d0;font-size:15px'>Our support team has responded to your inquiry</p>"
+            + "</td></tr>"
+
+            // Body
+            + "<tr><td style='padding:40px 48px'>"
+            + "<p style='margin:0 0 8px;color:#374151;font-size:16px'>Hi <strong style='color:#111827'>" + escapeHtml(name) + "</strong>,</p>"
+            + "<p style='margin:0 0 32px;color:#6b7280;font-size:15px;line-height:1.7'>Thank you for reaching out to ELocate Support. We've reviewed your message and have a response for you below.</p>"
+
+            // Original message box
+            + "<div style='margin-bottom:28px'>"
+            + "<p style='margin:0 0 10px;color:#9ca3af;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em'>Your Original Message</p>"
+            + "<div style='background:#f9fafb;border-left:4px solid #d1d5db;border-radius:0 10px 10px 0;padding:18px 20px'>"
+            + "<p style='margin:0;color:#6b7280;font-size:14px;line-height:1.7;font-style:italic'>&ldquo;" + escapeHtml(originalMessage) + "&rdquo;</p>"
+            + "</div></div>"
+
+            // Admin reply box
+            + "<div style='margin-bottom:36px'>"
+            + "<p style='margin:0 0 10px;color:#16a34a;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em'>&#9989;&nbsp; Response from ELocate Support</p>"
+            + "<div style='background:#f0fdf4;border:2px solid #bbf7d0;border-radius:12px;padding:24px'>"
+            + "<p style='margin:0;color:#166534;font-size:15px;line-height:1.8'>" + escapeHtml(adminNote) + "</p>"
+            + "</div></div>"
+
+            // CTA
+            + "<div style='text-align:center;margin-bottom:32px'>"
+            + "<a href='" + appBaseUrl + "/citizen/contactus' style='display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;padding:15px 36px;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.02em'>Contact Us Again</a>"
+            + "</div>"
+
+            + "<p style='margin:0;color:#9ca3af;font-size:13px;line-height:1.6;text-align:center'>If you have further questions, simply reply to this email or visit our contact page.</p>"
+            + "</td></tr>"
+
+            // Footer
+            + "<tr><td style='background:#f9fafb;padding:28px 48px;text-align:center;border-top:1px solid #e5e7eb'>"
+            + "<div style='margin-bottom:12px'>"
+            + "<span style='display:inline-block;background:#16a34a;color:#fff;font-size:13px;font-weight:800;padding:6px 14px;border-radius:8px;letter-spacing:0.05em'>ELocate</span>"
+            + "</div>"
+            + "<p style='margin:0 0 4px;color:#9ca3af;font-size:13px'>Sustainable E-Waste Recycling &#127807;</p>"
+            + "<p style='margin:0;color:#d1d5db;font-size:12px'>Karamadai, Coimbatore, Tamil Nadu, India 641104</p>"
+            + "</td></tr>"
+
+            + "</table></td></tr></table></body></html>";
+    }
+
+    private String escapeHtml(String input) {
+        if (input == null) return "";
+        return input.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&#39;");
+    }
 }
