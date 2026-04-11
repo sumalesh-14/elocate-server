@@ -4,7 +4,6 @@ import com.auth0.client.auth.AuthAPI;
 import com.auth0.json.auth.CreatedUser;
 import com.auth0.json.auth.TokenHolder;
 import com.auth0.net.Request;
-import com.auth0.net.BaseRequest;
 import com.auth0.exception.Auth0Exception;
 import com.elocate.elocate.exception.InvalidCredentialsException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -132,11 +131,17 @@ public class Auth0Service {
 
     public String createUser(String email, String password, String username) {
         try {
+            // Use signUp endpoint — does not require Management API grant
+            // Auth0 verification email is suppressed by disabling it in the Auth0 dashboard:
+            // Auth0 Dashboard → Branding → Email Templates → Verification Email → disable
             Request<CreatedUser> request = authAPI.signUp(email, username, password.toCharArray(), connection);
             CreatedUser user = request.execute().getBody();
             return "auth0|" + user.getUserId();
         } catch (Auth0Exception e) {
             log.error("Auth0 registration failed: {}", e.getMessage());
+            if (e.getMessage().contains("already exists") || e.getMessage().contains("email_exists")) {
+                throw new RuntimeException("User already exists");
+            }
             throw new RuntimeException("Registration failed: " + e.getMessage());
         }
     }

@@ -117,8 +117,8 @@ public class OtpService {
      * generation in production
      */
     private String generateOtpCode() {
-        // return String.valueOf(otp);
-        // Static OTP for testing purposes
-        return "123456";
+        // TODO: remove static OTP before production
+        // return "123456";
+        return String.format("%06d", random.nextInt(1_000_000));
     }
 }
