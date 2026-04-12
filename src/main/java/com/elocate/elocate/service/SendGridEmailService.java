@@ -1,21 +1,17 @@
 package com.elocate.elocate.service;
 
-import com.sendgrid.*;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
-/**
- * SendGrid HTTP API Email Service
- * Uses SendGrid's HTTP API instead of SMTP (works on Railway and other platforms that block SMTP)
- */
 @Service
 @Slf4j
 @Async
@@ -23,7 +19,7 @@ import java.io.IOException;
 public class SendGridEmailService {
 
     @Value("${sendgrid.api.key:}")
-    private String sendGridApiKey;
+    private String apiKey;
 
     @Value("${app.email.from:noreply@elocate.com}")
     private String fromEmail;
@@ -31,75 +27,58 @@ public class SendGridEmailService {
     @Value("${app.email.from.name:ELocate}")
     private String fromName;
 
-    /**
-     * Send email using SendGrid HTTP API
-     */
-    public void sendEmail(String toEmail, String subject, String body) {
-        if (sendGridApiKey == null || sendGridApiKey.isEmpty()) {
-            log.error("SendGrid API key not configured");
-            return;
-        }
+    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
-        try {
-            Email from = new Email(fromEmail, fromName);
-            Email to = new Email(toEmail);
-            Content content = new Content("text/plain", body);
-            Mail mail = new Mail(from, subject, to, content);
+    private final RestTemplate restTemplate = new RestTemplate();
 
-            SendGrid sg = new SendGrid(sendGridApiKey);
-            Request request = new Request();
-            
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-            
-            Response response = sg.api(request);
-            
-            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                log.info("✅ Email sent successfully via SendGrid to: {}", toEmail);
-            } else {
-                log.error("❌ SendGrid API error: Status {}, Body: {}", 
-                    response.getStatusCode(), response.getBody());
-            }
-            
-        } catch (IOException e) {
-            log.error("❌ Failed to send email via SendGrid to: {}, error: {}", toEmail, e.getMessage());
+    @PostConstruct
+    public void debugConfig() {
+        if (apiKey == null || apiKey.isEmpty()) {
+            log.error("[Brevo] ❌ API key is EMPTY — check sendgrid.api.key / SENDGRID_API_KEY env var");
+        } else {
+            String masked = apiKey.substring(0, Math.min(12, apiKey.length()))
+                    + "..." + apiKey.substring(Math.max(0, apiKey.length() - 6));
+            log.info("[Brevo] ✅ API key loaded: {} (length={})", masked, apiKey.length());
         }
+        log.info("[Brevo] fromEmail={}, fromName={}", fromEmail, fromName);
     }
 
-    /**
-     * Send HTML email using SendGrid HTTP API
-     */
+    public void sendEmail(String toEmail, String subject, String body) {
+        sendBrevoEmail(toEmail, subject, body, false);
+    }
+
     public void sendHtmlEmail(String toEmail, String subject, String htmlBody) {
-        if (sendGridApiKey == null || sendGridApiKey.isEmpty()) {
-            log.error("SendGrid API key not configured");
+        sendBrevoEmail(toEmail, subject, htmlBody, true);
+    }
+
+    private void sendBrevoEmail(String toEmail, String subject, String content, boolean isHtml) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            log.error("[Brevo] ❌ API key empty — skipping email to {}", toEmail);
             return;
         }
 
         try {
-            Email from = new Email(fromEmail, fromName);
-            Email to = new Email(toEmail);
-            Content content = new Content("text/html", htmlBody);
-            Mail mail = new Mail(from, subject, to, content);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", apiKey);
 
-            SendGrid sg = new SendGrid(sendGridApiKey);
-            Request request = new Request();
-            
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-            
-            Response response = sg.api(request);
-            
-            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                log.info("✅ HTML email sent successfully via SendGrid to: {}", toEmail);
+            Map<String, Object> body = Map.of(
+                "sender",  Map.of("name", fromName, "email", fromEmail),
+                "to",      List.of(Map.of("email", toEmail)),
+                "subject", subject,
+                isHtml ? "htmlContent" : "textContent", content
+            );
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(BREVO_API_URL, request, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("[Brevo] ✅ Email sent to {} — status={}", toEmail, response.getStatusCode());
             } else {
-                log.error("❌ SendGrid API error: Status {}, Body: {}", 
-                    response.getStatusCode(), response.getBody());
+                log.error("[Brevo] ❌ Failed to send to {} — status={}, body={}", toEmail, response.getStatusCode(), response.getBody());
             }
-            
-        } catch (IOException e) {
-            log.error("❌ Failed to send HTML email via SendGrid to: {}, error: {}", toEmail, e.getMessage());
+        } catch (Exception e) {
+            log.error("[Brevo] ❌ Exception sending to {}: {}", toEmail, e.getMessage());
         }
     }
 }

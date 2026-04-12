@@ -75,7 +75,7 @@ app:
     url: ${APP_BASE_URL:http://localhost:3000}
   email:
     # Email provider: smtp or sendgrid
-    provider: ${EMAIL_PROVIDER:smtp}
+    provider: ${EMAIL_PROVIDER:sendgrid}
     from: ${EMAIL_FROM:sumaleshka@gmail.com}
     # Enable/disable email notifications for recycling workflow
     notifications:
@@ -93,6 +93,10 @@ app:
       reminder: ${EMAIL_REMINDER:true}
     # Use HTML templates (true) or plain text (false)
     use-html-templates: ${EMAIL_USE_HTML_TEMPLATES:true}
+
+sendgrid:
+  api:
+    key: ${SENDGRID_API_KEY:}
 
 # AWS S3 Configuration
 aws:
