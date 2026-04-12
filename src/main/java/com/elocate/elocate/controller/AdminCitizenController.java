@@ -51,11 +51,19 @@ public class AdminCitizenController {
         log.info("Admin fetching citizens - active: {}, search: {}", isActive, search);
 
         Pageable pageable = PageRequest.of(page, size);
-        // Page<UserProfileResponse> citizens =
-        // userProfileService.getAllUsersWithFilters(
-        // isActive, search, pageable);
+        Page<User> users = adminManagementService.getCitizens(isActive, search, pageable);
 
-        return ResponseEntity.ok(Page.empty());
+        Page<UserProfileResponse> response = users.map(u -> {
+            UserProfileResponse r = new UserProfileResponse();
+            UserProfileResponse.UserData ud = new UserProfileResponse.UserData(
+                u.getId(), u.getFullName(), u.getEmail(), u.getMobileNumber(), u.getRole(), null
+            );
+            r.setUser(ud);
+            r.setStatus(Boolean.TRUE.equals(u.getIsActive()) ? "ACTIVE" : "INACTIVE");
+            return r;
+        });
+
+        return ResponseEntity.ok(response);
     }
 
     /**

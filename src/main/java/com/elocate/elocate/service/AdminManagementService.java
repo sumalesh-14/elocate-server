@@ -8,6 +8,8 @@ import com.elocate.elocate.model.*;
 import com.elocate.elocate.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -248,5 +250,19 @@ public class AdminManagementService {
                                 "Changed citizen " + citizenId + " status to " + newValue + ". Reason: " + reason);
 
                 log.info("Citizen {} status changed to {}", citizenId, newValue);
+        }
+
+        public org.springframework.data.domain.Page<User> getCitizens(Boolean isActive, String search, org.springframework.data.domain.Pageable pageable) {
+                if (search != null && !search.isBlank()) {
+                        String q = "%" + search.toLowerCase() + "%";
+                        if (isActive != null) {
+                                return userRepository.findByRoleAndIsActiveAndSearchTerm("CITIZEN", isActive, q, pageable);
+                        }
+                        return userRepository.findByRoleAndSearchTerm("CITIZEN", q, pageable);
+                }
+                if (isActive != null) {
+                        return userRepository.findByRoleAndIsActive("CITIZEN", isActive, pageable);
+                }
+                return userRepository.findByRole("CITIZEN", pageable);
         }
 }

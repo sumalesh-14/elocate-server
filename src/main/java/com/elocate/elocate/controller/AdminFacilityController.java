@@ -51,6 +51,8 @@ public class AdminFacilityController {
                 .id(f.getId())
                 .name(f.getName())
                 .address(f.getAddress())
+                .lat(f.getLatitude() != null ? f.getLatitude().doubleValue() : 0)
+                .lon(f.getLongitude() != null ? f.getLongitude().doubleValue() : 0)
                 .contact(f.getUser() != null ? f.getUser().getMobileNumber() : null)
                 .time(f.getOperatingHours())
                 .verified(Boolean.TRUE.equals(f.getIsVerified()))

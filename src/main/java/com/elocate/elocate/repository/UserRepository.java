@@ -1,7 +1,11 @@
 package com.elocate.elocate.repository;
 
 import com.elocate.elocate.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -9,44 +13,20 @@ import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-    
-    /**
-     * Find user by mobile number
-     * 
-     * @param mobileNumber Mobile number
-     * @return Optional containing user if found
-     */
+
     Optional<User> findByMobileNumber(String mobileNumber);
-    
-    /**
-     * Find user by email
-     * 
-     * @param email Email address
-     * @return Optional containing user if found
-     */
     Optional<User> findByEmail(String email);
-    
-    /**
-     * Check if email already exists
-     * 
-     * @param email Email to check
-     * @return true if exists, false otherwise
-     */
     boolean existsByEmail(String email);
-    
-    /**
-     * Check if mobile number already exists
-     * 
-     * @param mobileNumber Mobile number to check
-     * @return true if exists, false otherwise
-     */
     boolean existsByMobileNumber(String mobileNumber);
-    
-    /**
-     * Find user by Firebase UID
-     * 
-     * @param firebaseUid Firebase UID
-     * @return Optional containing user if found
-     */
     Optional<User> findByFirebaseUid(String firebaseUid);
+
+    Page<User> findByRole(String role, Pageable pageable);
+
+    Page<User> findByRoleAndIsActive(String role, Boolean isActive, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.role = :role AND (LOWER(u.fullName) LIKE :q OR LOWER(u.email) LIKE :q OR u.mobileNumber LIKE :q)")
+    Page<User> findByRoleAndSearchTerm(@Param("role") String role, @Param("q") String q, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.role = :role AND u.isActive = :isActive AND (LOWER(u.fullName) LIKE :q OR LOWER(u.email) LIKE :q OR u.mobileNumber LIKE :q)")
+    Page<User> findByRoleAndIsActiveAndSearchTerm(@Param("role") String role, @Param("isActive") Boolean isActive, @Param("q") String q, Pageable pageable);
 }
