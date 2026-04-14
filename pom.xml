@@ -139,6 +139,12 @@
 			<version>2.20.26</version>
 		</dependency>
 
+		<!-- WebClient for internal service calls (WhatsApp bot) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>com.auth0</groupId>
 			<artifactId>auth0</artifactId>

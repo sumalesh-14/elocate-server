@@ -8,10 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface RecycleRequestRepository extends JpaRepository<RecycleRequest, UUID> {
+
+        Optional<RecycleRequest> findByRequestNumber(String requestNumber);
 
         // All requests for a user (no filters)
         @Query("SELECT r FROM RecycleRequest r " +

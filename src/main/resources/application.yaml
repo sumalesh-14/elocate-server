@@ -73,6 +73,13 @@ app:
     sla-monitoring-enabled: ${DRIVER_SLA_MONITORING_ENABLED:true}
   base:
     url: ${APP_BASE_URL:http://localhost:3000}
+  whatsapp:
+    bot:
+      # URL of the elocate-whatsapp-bot service
+      url: ${WHATSAPP_BOT_URL:http://localhost:8081}
+      internal-secret: ${INTERNAL_SECRET:elocate-internal-secret}
+      # Set to true once the bot service is deployed and running
+      enabled: ${WHATSAPP_BOT_ENABLED:false}
   email:
     # Email provider: smtp or sendgrid
     provider: ${EMAIL_PROVIDER:sendgrid}

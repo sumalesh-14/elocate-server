@@ -54,6 +54,8 @@ public class SecurityConfig {
             "/actuator/health/**",
             "/actuator/info",
             "/error",
+            // Internal calls from elocate-whatsapp-bot (protected by X-Internal-Secret header)
+            "/internal/**",
             // Swagger UI endpoints
             "/v3/api-docs/**",
             "/swagger-ui/**",

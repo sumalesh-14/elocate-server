@@ -56,6 +56,7 @@ public class RecycleRequestService {
         private final DriverRepository driverRepository;
         private final DriverPickupService driverPickupService;
         private final RequestNumberGenerator requestNumberGenerator;
+        private final WhatsAppNotificationService whatsAppNotificationService;
 
         @Value("${app.frontend.url:http://localhost:3000}")
         private String frontendUrl;
@@ -508,7 +509,24 @@ public class RecycleRequestService {
                 // Generate tokens and send email with frontend links and assignment comments
                 driverPickupService.generateTokensAndSendEmail(id, dto.getDriverId(), dto.getComments());
 
-                log.info("✅ Driver {} assigned to pickup request {} - Email sent with action links",
+                // Send WhatsApp notification to driver
+                String deviceName = saved.getDeviceModel() != null
+                        ? saved.getDeviceModel().getModelName() : "Device";
+                String pickupAddress = saved.getPickupAddress() != null
+                        ? saved.getPickupAddress().getAddress() + ", " + saved.getPickupAddress().getCity()
+                        : "Address not set";
+                whatsAppNotificationService.notifyPickupAssigned(
+                        driver.getPhone(),
+                        driver.getName(),
+                        saved.getRequestNumber(),
+                        deviceName,
+                        pickupAddress,
+                        saved.getPickupDate(),
+                        saved.getEstimatedAmount(),
+                        dto.getComments()
+                );
+
+                log.info("✅ Driver {} assigned to pickup request {} - Email + WhatsApp sent",
                                 driver.getName(), id);
 
                 return mapToResponse(saved);
